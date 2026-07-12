@@ -25,9 +25,12 @@ Opens on **http://localhost:5173**.
 **Backend config needed for this to work:**
 ```bash
 export CORS_ALLOWED_ORIGINS="http://localhost:5173"
-export IG_OAUTH_SUCCESS_REDIRECT="http://localhost:5173/connected"
+export IG_OAUTH_SUCCESS_REDIRECT="http://localhost:5173/#/connected"
 ```
-Restart the backend after setting these.
+Note the `/#/connected` (not `/connected`) - this app uses `HashRouter`, so the route
+lives after the `#`. The backend appends `?igUserId=...` to whatever you set here, and
+`.../#/connected?igUserId=123` resolves correctly - React Router parses the query string
+from within the hash fragment. Restart the backend after setting these.
 
 ## How the OAuth flow works from here
 
@@ -59,7 +62,12 @@ npm run build
 Outputs static files to `dist/` - deploy to Vercel, Netlify, or any static host. Set
 `VITE_API_BASE_URL` to your deployed backend URL (e.g. the Railway domain) before building,
 and update the backend's `CORS_ALLOWED_ORIGINS` and `IG_OAUTH_SUCCESS_REDIRECT` to match
-your deployed frontend URL.
+your deployed frontend URL - remember the `/#/connected` form described above.
+
+This app uses `HashRouter`, so no server-side rewrite rules are needed for routing to work
+on a static host - every route resolves through `index.html` and React Router reads the
+path after the `#` client-side. (An earlier version of this README suggested a
+`vercel.json` rewrite for `BrowserRouter`-style routing; that's no longer needed.)
 
 ## Notes
 
