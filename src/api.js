@@ -44,5 +44,14 @@ export const api = {
     request(`/api/v1/instagram/auth/pending/${selectionToken}/select`, { method: 'POST', body: { pageId }, token }),
 
   discoverCreator: (username, token) =>
-    request(`/api/v1/instagram/discovery/${encodeURIComponent(username)}`, { token })
+    request(`/api/v1/instagram/discovery/${encodeURIComponent(username)}`, { token }),
+
+  fetchRules: (igUserId, token) =>
+    request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, { token }),
+  createRule: (igUserId, rule, token) =>
+    request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, { method: 'POST', body: rule, token }),
+  deleteRule: (igUserId, ruleId, token) =>
+    request(`/api/v1/instagram/${igUserId}/auto-dm-rules/${ruleId}`, { method: 'DELETE', token }),
+  getRuleLogs: (igUserId, ruleId, token) =>
+    request(`/api/v1/instagram/${igUserId}/auto-dm-rules/${ruleId}/log`, { token })
 }
