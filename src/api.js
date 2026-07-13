@@ -36,5 +36,13 @@ export const api = {
   listAccounts: (token) => request('/api/v1/instagram/auth/accounts', { token }),
   disconnectAccount: (igUserId, token) => request(`/api/v1/instagram/auth/${igUserId}`, { method: 'DELETE', token }),
   getInsights: (igUserId, token, reelLimit = 10) =>
-    request(`/api/v1/instagram/${igUserId}/insights?reelLimit=${reelLimit}`, { token })
+    request(`/api/v1/instagram/${igUserId}/insights?reelLimit=${reelLimit}`, { token }),
+
+  getPendingSelection: (selectionToken, token) =>
+    request(`/api/v1/instagram/auth/pending/${selectionToken}`, { token }),
+  selectPage: (selectionToken, pageId, token) =>
+    request(`/api/v1/instagram/auth/pending/${selectionToken}/select`, { method: 'POST', body: { pageId }, token }),
+
+  discoverCreator: (username, token) =>
+    request(`/api/v1/instagram/discovery/${encodeURIComponent(username)}`, { token })
 }

@@ -52,7 +52,10 @@ export default function Dashboard() {
       <div style={{ width: '100%', maxWidth: 720 }}>
         <div className="topbar">
           <span>Signed in as {email}</span>
-          <button className="secondary" onClick={logout}>Log out</button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Link className="btn secondary" to="/discover">Look up a creator</Link>
+            <button className="secondary" onClick={logout}>Log out</button>
+          </div>
         </div>
 
         <div className="card card-wide">

@@ -52,7 +52,16 @@ from within the hash fragment. Restart the backend after setting these.
 - `/login`, `/register` - auth
 - `/dashboard` - list connected accounts, connect new ones, disconnect existing ones
 - `/insights/:igUserId` - follower/media/reel stats for one account
-- `/connected` - post-OAuth landing page
+- `/connected` - post-OAuth landing page (single-Page connect)
+- `/select-page` - shown instead of `/connected` when the connecting Facebook account manages multiple Pages with linked Instagram accounts - lets the user pick which one
+- `/discover` - look up any public Instagram Business/Creator account by username via Meta's Business Discovery (they don't need to connect). Shows profile basics and recent post engagement only - no audience/insights data, which Meta restricts to the account owner regardless of caller.
+
+## Additional backend env var for this app
+
+```bash
+export IG_OAUTH_SELECT_REDIRECT="http://localhost:5173/#/select-page"
+```
+Without this, the backend returns the selection options as raw JSON instead of redirecting here - set it alongside `IG_OAUTH_SUCCESS_REDIRECT`.
 
 ## Build for production
 
