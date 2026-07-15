@@ -33,8 +33,8 @@ export const api = {
   login: (email, password) => request('/api/v1/auth/login', { method: 'POST', body: { email, password } }),
 
   startConnect: (token) => request('/api/v1/instagram-login/connect', { token }),
-  listAccounts: (token) => request('/api/v1/instagram/auth/accounts', { token }),
-  disconnectAccount: (igUserId, token) => request(`/api/v1/instagram/auth/${igUserId}`, { method: 'DELETE', token }),
+  listAccounts: (token) => request('/api/v1/instagram-login/accounts', { token }),
+  disconnectAccount: (igUserId, token) => request(`/api/v1/instagram-login/${igUserId}`, { method: 'DELETE', token }),
   getInsights: (igUserId, token, reelLimit = 10) =>
     request(`/api/v1/instagram/${igUserId}/insights?reelLimit=${reelLimit}`, { token }),
 
