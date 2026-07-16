@@ -584,7 +584,7 @@ export default function Insights() {
                           Total Comments
                         </p>
                         <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(insights.totalReelComments)}
+                          {formatNumber(data.totalReelComments)}
                         </p>
                       </div>
                       <MessageCircle className="h-10 w-10 text-blue-500" />
@@ -599,7 +599,7 @@ export default function Insights() {
                           Total Saves
                         </p>
                         <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(insights.totalReelSaves)}
+                          {formatNumber(data.totalReelSaves)}
                         </p>
                       </div>
                       <Bookmark className="h-10 w-10 text-yellow-500" />
@@ -614,7 +614,7 @@ export default function Insights() {
                           Total Shares
                         </p>
                         <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(insights.totalReelShares)}
+                          {formatNumber(data.totalReelShares)}
                         </p>
                       </div>
                       <Share2 className="h-10 w-10 text-indigo-500" />
@@ -629,7 +629,7 @@ export default function Insights() {
                           Total Reach
                         </p>
                         <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(insights.totalReelReach)}
+                          {formatNumber(data.totalReelReach)}
                         </p>
                       </div>
                       <Eye className="h-10 w-10 text-green-500" />
@@ -644,7 +644,7 @@ export default function Insights() {
                           Total Interactions
                         </p>
                         <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(insights.totalReelInteractions)}
+                          {formatNumber(data.totalReelInteractions)}
                         </p>
                       </div>
                       <Activity className="h-10 w-10 text-purple-500" />
