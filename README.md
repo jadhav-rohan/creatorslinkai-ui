@@ -35,7 +35,7 @@ from within the hash fragment. Restart the backend after setting these.
 ## How the OAuth flow works from here
 
 1. User registers/logs in → backend returns a JWT, stored in `localStorage`.
-2. Dashboard's "Connect Instagram account" button calls `GET /api/v1/instagram/auth/connect`
+2. Dashboard's "Connect Instagram account" button calls `GET /api/v1/instagram-login/connect`
    with the JWT in the `Authorization` header. The backend returns `{ authorizationUrl }`
    as JSON (not a redirect - a `fetch()` call can't follow a redirect while keeping the
    auth header).
@@ -84,6 +84,7 @@ path after the `#` client-side. (An earlier version of this README suggested a
   (any injected script can read it). An httpOnly cookie would be more resistant to that,
   at the cost of needing CSRF protection instead - worth revisiting before this handles
   real user data at scale.
-- No token refresh - when the JWT expires (24h by default on the backend), API calls will
-  start failing with 401s and the user needs to log in again. There's no automatic
-  redirect-to-login on 401 yet.
+- No token refresh - when the JWT expires (24h by default on the backend), an authenticated
+  `401` response clears the local session and returns the user to login.
+- API calls time out after 15 seconds by default. Override this with
+  `VITE_API_TIMEOUT_MS` when a deployment needs a different threshold.

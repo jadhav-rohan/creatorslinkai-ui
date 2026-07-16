@@ -20,10 +20,16 @@ export default function SelectPage() {
       setLoading(false)
       return
     }
-    api.getPendingSelection(selectionToken, token)
+    const controller = new AbortController()
+    api.getPendingSelection(selectionToken, token, { signal: controller.signal })
       .then(result => setPages(result.pages))
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false))
+      .catch(err => {
+        if (err.name !== 'AbortError') setError(err.message)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+    return () => controller.abort()
   }, [selectionToken, token])
 
   async function handleSelect(pageId) {

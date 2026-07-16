@@ -12,20 +12,24 @@ export default function Dashboard() {
   const [quickSearch, setQuickSearch] = useState('')
   const navigate = useNavigate()
 
-  const loadAccounts = useCallback(async () => {
+  const loadAccounts = useCallback(async (signal) => {
     setLoading(true)
     setError(null)
     try {
-      const result = await api.listAccounts(token)
+      const result = await api.listAccounts(token, { signal })
       setAccounts(result)
     } catch (err) {
-      setError(err.message)
+      if (err.name !== 'AbortError') setError(err.message)
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) setLoading(false)
     }
   }, [token])
 
-  useEffect(() => { loadAccounts() }, [loadAccounts])
+  useEffect(() => {
+    const controller = new AbortController()
+    loadAccounts(controller.signal)
+    return () => controller.abort()
+  }, [loadAccounts])
 
   async function handleConnect() {
     setConnecting(true)

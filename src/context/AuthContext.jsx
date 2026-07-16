@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { api } from '../api'
+import { AUTH_UNAUTHORIZED_EVENT } from '../authEvents'
 
 const AuthContext = createContext(null)
 
@@ -8,7 +9,8 @@ const STORAGE_KEY = 'ig_auth'
 function loadStoredAuth() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
+    const stored = raw ? JSON.parse(raw) : null
+    return stored && typeof stored.token === 'string' ? stored : null
   } catch {
     return null
   }
@@ -18,13 +20,19 @@ export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(loadStoredAuth)
 
   const persist = useCallback((value) => {
-    setAuth(value)
-    if (value) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
+    if (value?.token) {
+      const storedAuth = {
+        token: value.token,
+        email: value.email ?? null,
+        userId: value.userId ?? null,
+      }
+      setAuth(storedAuth)
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storedAuth))
       // Keep this in sync too, since the backend's static index.html reads this
       // specific key directly for its own (fallback) connect button.
       window.localStorage.setItem('ig_jwt', value.token)
     } else {
+      setAuth(null)
       window.localStorage.removeItem(STORAGE_KEY)
       window.localStorage.removeItem('ig_jwt')
     }
@@ -43,6 +51,11 @@ export function AuthProvider({ children }) {
   }, [persist])
 
   const logout = useCallback(() => persist(null), [persist])
+
+  useEffect(() => {
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, logout)
+    return () => window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, logout)
+  }, [logout])
 
   const value = {
     token: auth?.token ?? null,

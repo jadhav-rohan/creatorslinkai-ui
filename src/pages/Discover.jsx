@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
@@ -13,20 +13,30 @@ export default function Discover() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [searched, setSearched] = useState(false)
+  const searchController = useRef(null)
 
   const performSearch = useCallback(async (targetUser) => {
     if (!targetUser.trim()) return
     setLoading(true)
     setError(null)
     setSearched(true)
+    searchController.current?.abort()
+    const controller = new AbortController()
+    searchController.current = controller
     try {
-      const result = await api.discoverCreator(targetUser.trim().replace(/^@/, ''), token)
+      const result = await api.discoverCreator(
+        targetUser.trim().replace(/^@/, ''),
+        token,
+        { signal: controller.signal }
+      )
       setProfile(result)
     } catch (err) {
-      setProfile(null)
-      setError(err.message)
+      if (err.name !== 'AbortError') {
+        setProfile(null)
+        setError(err.message)
+      }
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
   }, [token])
 
@@ -37,6 +47,8 @@ export default function Discover() {
       performSearch(initialUsername)
     }
   }, [initialUsername, performSearch])
+
+  useEffect(() => () => searchController.current?.abort(), [])
 
   async function handleSearch(e) {
     e.preventDefault()
