@@ -14,6 +14,15 @@ import {
   Eye,
   Activity,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 export default function Insights() {
   const { igUserId } = useParams();
   const { token } = useAuth();
@@ -40,6 +49,10 @@ export default function Insights() {
   const [publicReplyMessage, setPublicReplyMessage] = useState("");
   const [submittingRule, setSubmittingRule] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [historyData, setHistoryData] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(null);
+  const [historyDays, setHistoryDays] = useState(30);
 
   // "Logs" modal state
   const [selectedRuleForLogs, setSelectedRuleForLogs] = useState(null);
@@ -113,6 +126,25 @@ export default function Insights() {
     },
     [igUserId, token]
   );
+
+  const loadInsightHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    setHistoryError(null);
+
+    try {
+      const result = await api.getInsightHistory(igUserId, token, historyDays);
+
+      setHistoryData(result);
+    } catch (err) {
+      setHistoryError(err.message);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [igUserId, token, historyDays]);
+
+  useEffect(() => {
+    loadInsightHistory();
+  }, [loadInsightHistory]);
 
   const handleOpenLogs = (rule) => {
     setSelectedRuleForLogs(rule);
@@ -191,7 +223,7 @@ export default function Insights() {
       reel.viewCount > 0
         ? ((interactions / reel.viewCount) * 100).toFixed(1)
         : "0.0";
-    return `${engagement.toFixed(1)}%`;
+    return `${engagement}%`;
   }
 
   // Format large numbers for dashboard readability
@@ -245,6 +277,69 @@ export default function Insights() {
       </div>
     );
   }
+
+  function formatGrowth(value) {
+    const numericValue = Number(value || 0);
+    if (numericValue > 0) return `+${formatNumber(numericValue)}`;
+    return formatNumber(numericValue);
+  }
+
+  function formatGrowthPercentage(value) {
+    const numericValue = Number(value || 0);
+    const prefix = numericValue > 0 ? "+" : "";
+    return `${prefix}${numericValue.toFixed(2)}%`;
+  }
+
+  function GrowthCard({
+    label,
+    currentValue,
+    growth,
+    growthPercentage,
+    description,
+  }) {
+    const numericGrowth = Number(growth || 0);
+    const trendClass =
+      numericGrowth > 0
+        ? "text-emerald-400"
+        : numericGrowth < 0
+        ? "text-red-400"
+        : "text-text-secondary";
+
+    return (
+      <div className="p-5 rounded-2xl bg-bg-deep/40 border border-panel-border">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+          {label}
+        </p>
+
+        <div className="mt-3 flex items-end justify-between gap-3">
+          <p className="text-2xl font-extrabold text-text-primary">
+            {formatNumber(Number(currentValue || 0))}
+          </p>
+
+          <div className={`text-right ${trendClass}`}>
+            <p className="text-sm font-bold">
+              {formatGrowthPercentage(growthPercentage)}
+            </p>
+            <p className="text-[10px] font-semibold">
+              {formatGrowth(numericGrowth)}
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-2 text-[10px] text-text-secondary">{description}</p>
+      </div>
+    );
+  }
+
+  const historyChartData = (historyData?.history || []).map((point) => ({
+    ...point,
+    date: new Date(point.timestamp).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+    }),
+  }));
+
+  const hasMultipleHistoryPoints = historyChartData.length >= 2;
 
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary px-4 py-8 md:py-12 relative overflow-hidden">
@@ -730,6 +825,325 @@ export default function Insights() {
                     <p className="text-[11px] text-text-secondary mt-1.5">
                       Overall account audience reached
                     </p>
+                  </div>
+
+                  {/* Historical Growth Panel */}
+                  <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h2 className="text-lg font-bold tracking-tight text-text-primary mb-1">
+                          Historical Growth
+                        </h2>
+                        <p className="text-xs text-text-secondary">
+                          Account and reel performance changes from stored daily
+                          snapshots.
+                        </p>
+                      </div>
+
+                      <div className="inline-flex self-start rounded-xl border border-panel-border bg-bg-deep/50 p-1">
+                        {[7, 30, 90].map((days) => (
+                          <button
+                            key={days}
+                            type="button"
+                            onClick={() => setHistoryDays(days)}
+                            className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                              historyDays === days
+                                ? "bg-accent-primary text-white shadow"
+                                : "text-text-secondary hover:text-text-primary"
+                            }`}
+                          >
+                            {days}D
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {historyLoading ? (
+                      <div className="flex min-h-[260px] flex-col items-center justify-center gap-3">
+                        <svg
+                          className="h-8 w-8 animate-spin text-accent-primary"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        <p className="text-xs text-text-secondary">
+                          Loading {historyDays}-day history...
+                        </p>
+                      </div>
+                    ) : historyError ? (
+                      <div className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4">
+                        <p className="text-xs font-semibold text-red-400">
+                          Could not load historical insights
+                        </p>
+                        <p className="mt-1 text-[11px] text-red-300/80">
+                          {historyError}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={loadInsightHistory}
+                          className="mt-3 rounded-lg border border-red-500/25 px-3 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/10 cursor-pointer"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    ) : !historyData || historyData.snapshots === 0 ? (
+                      <div className="mt-6 rounded-2xl border border-dashed border-panel-border bg-bg-deep/20 px-6 py-12 text-center">
+                        <h3 className="text-sm font-semibold text-text-primary">
+                          No historical snapshots yet
+                        </h3>
+                        <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-text-secondary">
+                          The first daily snapshot will appear after the
+                          scheduler runs or after a successful insights refresh
+                          saves today&apos;s data.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mt-6 flex flex-wrap items-center gap-2 text-[11px] text-text-secondary">
+                          <span className="rounded-full border border-panel-border bg-bg-deep/30 px-3 py-1.5">
+                            {historyData.snapshots} snapshot
+                            {historyData.snapshots === 1 ? "" : "s"}
+                          </span>
+                          <span className="rounded-full border border-panel-border bg-bg-deep/30 px-3 py-1.5">
+                            {historyData.daysAvailable} of{" "}
+                            {historyData.daysRequested} days available
+                          </span>
+                          <span
+                            className={`rounded-full border px-3 py-1.5 ${
+                              historyData.fullPeriodAvailable
+                                ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-400"
+                                : "border-amber-500/25 bg-amber-500/10 text-amber-300"
+                            }`}
+                          >
+                            {historyData.fullPeriodAvailable
+                              ? "Full period available"
+                              : "Partial history"}
+                          </span>
+                        </div>
+
+                        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                          <GrowthCard
+                            label="Followers"
+                            currentValue={historyData.summary?.currentFollowers}
+                            growth={historyData.summary?.followersGrowth}
+                            growthPercentage={
+                              historyData.summary?.followersGrowthPercentage
+                            }
+                            description={`Change across available ${historyDays}-day history`}
+                          />
+
+                          <GrowthCard
+                            label="Reel Views"
+                            currentValue={historyData.summary?.currentViews}
+                            growth={historyData.summary?.viewsGrowth}
+                            growthPercentage={
+                              historyData.summary?.viewsGrowthPercentage
+                            }
+                            description="Change in cumulative analyzed reel views"
+                          />
+
+                          <GrowthCard
+                            label="Reel Likes"
+                            currentValue={historyData.summary?.currentLikes}
+                            growth={historyData.summary?.likesGrowth}
+                            growthPercentage={
+                              historyData.summary?.likesGrowthPercentage
+                            }
+                            description="Change in cumulative analyzed reel likes"
+                          />
+
+                          <GrowthCard
+                            label="Comments"
+                            currentValue={historyData.summary?.currentComments}
+                            growth={historyData.summary?.commentsGrowth}
+                            growthPercentage={
+                              historyData.summary?.commentsGrowthPercentage
+                            }
+                            description="Change in audience conversations"
+                          />
+
+                          <GrowthCard
+                            label="Reel Reach"
+                            currentValue={historyData.summary?.currentReach}
+                            growth={historyData.summary?.reachGrowth}
+                            growthPercentage={
+                              historyData.summary?.reachGrowthPercentage
+                            }
+                            description="Change in combined analyzed reel reach"
+                          />
+                        </div>
+
+                        {!hasMultipleHistoryPoints ? (
+                          <div className="mt-6 rounded-2xl border border-dashed border-panel-border bg-bg-deep/20 px-6 py-10 text-center">
+                            <h3 className="text-sm font-semibold text-text-primary">
+                              One snapshot collected
+                            </h3>
+                            <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-text-secondary">
+                              Growth charts need at least two daily snapshots.
+                              The next scheduled collection will create the
+                              first comparison point.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                            <div className="rounded-2xl border border-panel-border bg-bg-deep/30 p-4">
+                              <div className="mb-4">
+                                <h3 className="text-sm font-semibold text-text-primary">
+                                  Followers Trend
+                                </h3>
+                                <p className="text-[10px] text-text-secondary">
+                                  Daily follower-count snapshots
+                                </p>
+                              </div>
+
+                              <div className="h-72 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart
+                                    data={historyChartData}
+                                    margin={{
+                                      top: 10,
+                                      right: 12,
+                                      left: -12,
+                                      bottom: 0,
+                                    }}
+                                  >
+                                    <CartesianGrid
+                                      strokeDasharray="3 3"
+                                      stroke="rgba(148, 163, 184, 0.12)"
+                                    />
+                                    <XAxis
+                                      dataKey="date"
+                                      tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                      axisLine={false}
+                                      tickLine={false}
+                                    />
+                                    <YAxis
+                                      allowDecimals={false}
+                                      tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                      axisLine={false}
+                                      tickLine={false}
+                                      tickFormatter={formatNumber}
+                                    />
+                                    <Tooltip
+                                      contentStyle={{
+                                        background: "#16161d",
+                                        border:
+                                          "1px solid rgba(148, 163, 184, 0.2)",
+                                        borderRadius: "12px",
+                                      }}
+                                      labelStyle={{ color: "#e2e8f0" }}
+                                      itemStyle={{ color: "#cbd5e1" }}
+                                      formatter={(value) => [
+                                        Number(value).toLocaleString(),
+                                        "Followers",
+                                      ]}
+                                    />
+                                    <Line
+                                      type="monotone"
+                                      dataKey="followersCount"
+                                      name="Followers"
+                                      stroke="currentColor"
+                                      strokeWidth={3}
+                                      dot={{ r: 3 }}
+                                      activeDot={{ r: 5 }}
+                                    />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-panel-border bg-bg-deep/30 p-4">
+                              <div className="mb-4">
+                                <h3 className="text-sm font-semibold text-text-primary">
+                                  Reel Performance Trend
+                                </h3>
+                                <p className="text-[10px] text-text-secondary">
+                                  Views and reach from the analyzed reel set
+                                </p>
+                              </div>
+
+                              <div className="h-72 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart
+                                    data={historyChartData}
+                                    margin={{
+                                      top: 10,
+                                      right: 12,
+                                      left: -12,
+                                      bottom: 0,
+                                    }}
+                                  >
+                                    <CartesianGrid
+                                      strokeDasharray="3 3"
+                                      stroke="rgba(148, 163, 184, 0.12)"
+                                    />
+                                    <XAxis
+                                      dataKey="date"
+                                      tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                      axisLine={false}
+                                      tickLine={false}
+                                    />
+                                    <YAxis
+                                      allowDecimals={false}
+                                      tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                      axisLine={false}
+                                      tickLine={false}
+                                      tickFormatter={formatNumber}
+                                    />
+                                    <Tooltip
+                                      contentStyle={{
+                                        background: "#16161d",
+                                        border:
+                                          "1px solid rgba(148, 163, 184, 0.2)",
+                                        borderRadius: "12px",
+                                      }}
+                                      labelStyle={{ color: "#e2e8f0" }}
+                                      itemStyle={{ color: "#cbd5e1" }}
+                                      formatter={(value, name) => [
+                                        Number(value).toLocaleString(),
+                                        name,
+                                      ]}
+                                    />
+                                    <Line
+                                      type="monotone"
+                                      dataKey="totalReelViews"
+                                      name="Views"
+                                      stroke="currentColor"
+                                      strokeWidth={3}
+                                      dot={{ r: 3 }}
+                                      activeDot={{ r: 5 }}
+                                    />
+                                    <Line
+                                      type="monotone"
+                                      dataKey="totalReelReach"
+                                      name="Reach"
+                                      stroke="currentColor"
+                                      strokeWidth={2}
+                                      strokeDasharray="6 4"
+                                      dot={{ r: 2 }}
+                                      activeDot={{ r: 4 }}
+                                    />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   {/* Reels Gallery Panel (col-span-4) */}
