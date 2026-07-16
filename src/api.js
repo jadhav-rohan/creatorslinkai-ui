@@ -89,4 +89,8 @@ export const api = {
     }),
   getInsightHistory: (igUserId, token, days = 30) =>
     request(`/api/v1/instagram/${igUserId}/history?days=${days}`, { token }),
+  getAudienceQuality: (igUserId, token, days = 30) =>
+    request(`/api/v1/instagram/${igUserId}/audience-quality?days=${days}`, {
+      token,
+    }),
 };

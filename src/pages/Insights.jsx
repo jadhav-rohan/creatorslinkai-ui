@@ -144,7 +144,8 @@ export default function Insights() {
 
   useEffect(() => {
     loadInsightHistory();
-  }, [loadInsightHistory]);
+    loadAudienceQuality();
+  }, [loadInsightHistory, loadAudienceQuality]);
 
   const handleOpenLogs = (rule) => {
     setSelectedRuleForLogs(rule);
@@ -340,6 +341,160 @@ export default function Insights() {
   }));
 
   const hasMultipleHistoryPoints = historyChartData.length >= 2;
+
+  const loadAudienceQuality = useCallback(async () => {
+    if (!igUserId) return;
+
+    setQualityLoading(true);
+    setQualityError(null);
+
+    try {
+      const response = await api.getAudienceQuality(
+        igUserId,
+        token,
+        historyDays
+      );
+
+      setAudienceQuality(response);
+    } catch (err) {
+      setQualityError(err.message);
+    } finally {
+      setQualityLoading(false);
+    }
+  }, [igUserId, token, historyDays]);
+
+  const getAudienceScoreColor = (score) => {
+    if (score >= 75) return "#22c55e"; // green
+    if (score >= 50) return "#eab308"; // yellow
+    return "#ef4444"; // red
+  };
+
+  const getRiskBadgeClass = (risk) => {
+    switch (risk) {
+      case "LOW":
+        return "bg-green-500/10 text-green-400";
+      case "MEDIUM":
+        return "bg-yellow-500/10 text-yellow-400";
+      default:
+        return "bg-red-500/10 text-red-400";
+    }
+  };
+
+  const getConfidenceBadgeClass = (confidence) => {
+    switch (confidence) {
+      case "HIGH":
+        return "bg-green-500/10 text-green-400";
+      case "MEDIUM":
+        return "bg-yellow-500/10 text-yellow-400";
+      default:
+        return "bg-red-500/10 text-red-400";
+    }
+  };
+
+  function AudienceScoreCircle({ score }) {
+    const [displayScore, setDisplayScore] = useState(0);
+
+    useEffect(() => {
+      let current = 0;
+
+      const duration = 900;
+
+      const interval = 20;
+
+      const increment = score / (duration / interval);
+
+      const timer = setInterval(() => {
+        current += increment;
+
+        if (current >= score) {
+          current = score;
+
+          clearInterval(timer);
+        }
+
+        setDisplayScore(Math.round(current));
+      }, interval);
+
+      return () => clearInterval(timer);
+    }, [score]);
+
+    const radius = 75;
+
+    const circumference = 2 * Math.PI * radius;
+
+    const progress = circumference - (displayScore / 100) * circumference;
+
+    const color = getAudienceScoreColor(displayScore);
+
+    return (
+      <div className="flex flex-col items-center">
+        <svg width="180" height="180" className="-rotate-90">
+          <defs>
+            <linearGradient
+              id="scoreGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor="#8b5cf6" />
+
+              <stop offset="100%" stopColor={color} />
+            </linearGradient>
+
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          <circle
+            cx="90"
+            cy="90"
+            r={radius}
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="12"
+            fill="transparent"
+          />
+
+          <circle
+            cx="90"
+            cy="90"
+            r={radius}
+            filter="url(#glow)"
+            stroke="url(#scoreGradient)"
+            strokeWidth="12"
+            fill="transparent"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={progress}
+            style={{
+              transition: "stroke-dashoffset .25s linear, stroke .3s",
+            }}
+          />
+        </svg>
+
+        <div className="-mt-32 text-center">
+          <div
+            className="text-5xl font-extrabold transition-all duration-300"
+            style={{
+              color,
+              transition: "color .3s",
+            }}
+          >
+            {displayScore}
+          </div>
+
+          <div className="text-xs mt-2 text-text-secondary">Audience Score</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary px-4 py-8 md:py-12 relative overflow-hidden">
@@ -825,6 +980,212 @@ export default function Insights() {
                     <p className="text-[11px] text-text-secondary mt-1.5">
                       Overall account audience reached
                     </p>
+                  </div>
+
+                  {/* ================= Audience Quality ================= */}
+
+                  <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-lg font-bold text-text-primary">
+                          Audience Quality
+                        </h2>
+
+                        <p className="text-xs text-text-secondary mt-1">
+                          Estimate of audience authenticity and engagement
+                          quality based on historical Instagram insights.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            audienceQuality?.riskLevel === "LOW"
+                              ? "bg-green-500/10 text-green-400"
+                              : audienceQuality?.riskLevel === "MEDIUM"
+                              ? "bg-yellow-500/10 text-yellow-400"
+                              : "bg-red-500/10 text-red-400"
+                          }`}
+                        >
+                          {audienceQuality?.riskLevel ?? "-"} Risk
+                        </span>
+
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            audienceQuality?.confidence === "HIGH"
+                              ? "bg-green-500/10 text-green-400"
+                              : audienceQuality?.confidence === "MEDIUM"
+                              ? "bg-yellow-500/10 text-yellow-400"
+                              : "bg-red-500/10 text-red-400"
+                          }`}
+                        >
+                          {audienceQuality?.confidence ?? "-"} Confidence
+                        </span>
+                      </div>
+                    </div>
+
+                    {qualityLoading ? (
+                      <div className="py-16 text-center text-text-secondary">
+                        Calculating audience quality...
+                      </div>
+                    ) : qualityError ? (
+                      <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4">
+                        <p className="text-red-400 text-sm font-semibold">
+                          Failed to load audience quality
+                        </p>
+
+                        <p className="text-xs text-red-300 mt-2">
+                          {qualityError}
+                        </p>
+                      </div>
+                    ) : (
+                      audienceQuality && (
+                        <>
+                          {/* Score */}
+
+                          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            <div className="rounded-2xl border border-panel-border bg-bg-deep/30 p-6 flex flex-col items-center justify-center">
+                              <AudienceScoreCircle
+                                score={audienceQuality.score}
+                              />
+
+                              <div className="mt-6 flex gap-2">
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getRiskBadgeClass(
+                                    audienceQuality.riskLevel
+                                  )}`}
+                                >
+                                  {audienceQuality.riskLevel} Risk
+                                </span>
+
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getConfidenceBadgeClass(
+                                    audienceQuality.confidence
+                                  )}`}
+                                >
+                                  {audienceQuality.confidence} Confidence
+                                </span>
+                              </div>
+                            </div>
+                            {/* Signals */}
+
+                            <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                              <MetricItem
+                                label="Reach / Followers"
+                                value={` ${audienceQuality.signals.reachToFollowerRate.toFixed(
+                                  1
+                                )}%`}
+                              />
+
+                              <MetricItem
+                                label="Engagement / Reach"
+                                value={`${audienceQuality.signals.engagementByReachRate.toFixed(
+                                  1
+                                )}%`}
+                              />
+
+                              <MetricItem
+                                label="Views / Followers"
+                                value={`${audienceQuality.signals.viewsToFollowerRate.toFixed(
+                                  1
+                                )}%`}
+                              />
+
+                              <MetricItem
+                                label="Growth"
+                                value={`${audienceQuality.signals.growthConsistencyScore.toFixed(
+                                  0
+                                )}/100`}
+                              />
+
+                              <MetricItem
+                                label="Interactions"
+                                value={`${audienceQuality.signals.meaningfulInteractionScore.toFixed(
+                                  0
+                                )}/100`}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Analysis */}
+
+                          <div className="mt-8 grid md:grid-cols-2 gap-6">
+                            {/* Observations */}
+
+                            <div>
+                              <h3 className="text-sm font-semibold text-text-primary mb-4">
+                                Analysis
+                              </h3>
+
+                              <div className="space-y-3">
+                                {audienceQuality.observations.map(
+                                  (item, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-start gap-3 rounded-xl border border-panel-border bg-bg-deep/20 p-3"
+                                    >
+                                      <div
+                                        className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full ${
+                                          item.includes("Only")
+                                            ? "bg-yellow-500/10 text-yellow-400"
+                                            : item.includes("low")
+                                            ? "bg-red-500/10 text-red-400"
+                                            : "bg-green-500/10 text-green-400"
+                                        }`}
+                                      >
+                                        {item.includes("Only")
+                                          ? "!"
+                                          : item.includes("low")
+                                          ? "✕"
+                                          : "✓"}
+                                      </div>
+
+                                      <p className="text-sm text-text-secondary">
+                                        {item}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Metadata */}
+
+                            <div>
+                              <h3 className="text-sm font-semibold text-text-primary mb-4">
+                                Analysis Summary
+                              </h3>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <MetricItem
+                                  label="Days Requested"
+                                  value={audienceQuality.daysRequested}
+                                />
+
+                                <MetricItem
+                                  label="Days Available"
+                                  value={audienceQuality.daysAnalyzed}
+                                />
+
+                                <MetricItem
+                                  label="Snapshots"
+                                  value={audienceQuality.snapshotsAnalyzed}
+                                />
+
+                                <MetricItem
+                                  label="Coverage"
+                                  value={
+                                    audienceQuality.fullPeriodAvailable
+                                      ? "Complete"
+                                      : "Partial"
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )
+                    )}
                   </div>
 
                   {/* Historical Growth Panel */}
