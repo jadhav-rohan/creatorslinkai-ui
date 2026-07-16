@@ -4,6 +4,10 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
 import { ChevronDown } from "lucide-react";
 import {
+  Users,
+  Image,
+  Play,
+  Heart,
   MessageCircle,
   Bookmark,
   Share2,
@@ -19,12 +23,6 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import {
-  AudienceScoreCircle,
-  GrowthCard,
-  MetricItem,
-  formatNumber,
-} from "../components/insights/InsightComponents";
 export default function Insights() {
   const { igUserId } = useParams();
   const { token } = useAuth();
@@ -38,7 +36,6 @@ export default function Insights() {
   // Auto-DM Rules state
   const [rules, setRules] = useState([]);
   const [loadingRules, setLoadingRules] = useState(false);
-  const [rulesLoaded, setRulesLoaded] = useState(false);
   const [rulesError, setRulesError] = useState(null);
 
   // Toast message state
@@ -88,20 +85,18 @@ export default function Insights() {
       setRulesError(err.message);
     } finally {
       setLoadingRules(false);
-      setRulesLoaded(true);
     }
   }, [igUserId, token]);
 
   // Initial loading
   useEffect(() => {
     let cancelled = false;
-    const controller = new AbortController();
     setLoading(true);
     setError(null);
 
     // Load Insights (with limit of 20 reels as per spec)
     api
-      .getInsights(igUserId, token, 20, { signal: controller.signal })
+      .getInsights(igUserId, token, 20)
       .then((result) => {
         if (!cancelled) setData(result);
       })
@@ -112,17 +107,13 @@ export default function Insights() {
         if (!cancelled) setLoading(false);
       });
 
+    // Load Rules
+    loadRules();
+
     return () => {
       cancelled = true;
-      controller.abort();
     };
-  }, [igUserId, token]);
-
-  useEffect(() => {
-    if (activeTab === "automations" && !loadingRules && !rulesLoaded) {
-      loadRules();
-    }
-  }, [activeTab, loadRules, loadingRules, rulesLoaded]);
+  }, [igUserId, token, loadRules]);
 
   // Logs fetch utility
   const loadLogs = useCallback(
@@ -141,20 +132,18 @@ export default function Insights() {
     [igUserId, token]
   );
 
-  const loadInsightHistory = useCallback(async (signal) => {
+  const loadInsightHistory = useCallback(async () => {
     setHistoryLoading(true);
     setHistoryError(null);
 
     try {
-      const result = await api.getInsightHistory(igUserId, token, historyDays, {
-        signal,
-      });
+      const result = await api.getInsightHistory(igUserId, token, historyDays);
 
       setHistoryData(result);
     } catch (err) {
-      if (err.name !== "AbortError") setHistoryError(err.message);
+      setHistoryError(err.message);
     } finally {
-      if (!signal?.aborted) setHistoryLoading(false);
+      setHistoryLoading(false);
     }
   }, [igUserId, token, historyDays]);
 
@@ -224,6 +213,28 @@ export default function Insights() {
     }
   }
 
+  // Helper to calculate custom engagement rate for reels
+  function getEngagementRate(reel) {
+    if (!reel.viewCount) return "0.0%";
+    const interactions =
+      reel.totalInteractions ??
+      (reel.likeCount || 0) + (reel.commentCount || 0) + (reel.savedCount || 0);
+
+    const engagement =
+      reel.viewCount > 0
+        ? ((interactions / reel.viewCount) * 100).toFixed(1)
+        : "0.0";
+    return `${engagement}%`;
+  }
+
+  // Format large numbers for dashboard readability
+  function formatNumber(num) {
+    const value = Number(num ?? 0);
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toLocaleString();
+  }
+
   function formatWatchTime(ms) {
     if (!ms) return "-";
 
@@ -259,6 +270,69 @@ export default function Insights() {
     return `${seconds}s`;
   }
 
+  function MetricItem({ label, value }) {
+    return (
+      <div className="rounded-lg border border-gray-700 bg-[#16161d] p-4">
+        <p className="text-xs uppercase tracking-wide text-gray-400">{label}</p>
+
+        <p className="mt-2 text-xl font-semibold text-white">{value}</p>
+      </div>
+    );
+  }
+
+  function formatGrowth(value) {
+    const numericValue = Number(value || 0);
+    if (numericValue > 0) return `+${formatNumber(numericValue)}`;
+    return formatNumber(numericValue);
+  }
+
+  function formatGrowthPercentage(value) {
+    const numericValue = Number(value || 0);
+    const prefix = numericValue > 0 ? "+" : "";
+    return `${prefix}${numericValue.toFixed(2)}%`;
+  }
+
+  function GrowthCard({
+    label,
+    currentValue,
+    growth,
+    growthPercentage,
+    description,
+  }) {
+    const numericGrowth = Number(growth || 0);
+    const trendClass =
+      numericGrowth > 0
+        ? "text-emerald-400"
+        : numericGrowth < 0
+        ? "text-red-400"
+        : "text-text-secondary";
+
+    return (
+      <div className="p-5 rounded-2xl bg-bg-deep/40 border border-panel-border">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+          {label}
+        </p>
+
+        <div className="mt-3 flex items-end justify-between gap-3">
+          <p className="text-2xl font-extrabold text-text-primary">
+            {formatNumber(Number(currentValue || 0))}
+          </p>
+
+          <div className={`text-right ${trendClass}`}>
+            <p className="text-sm font-bold">
+              {formatGrowthPercentage(growthPercentage)}
+            </p>
+            <p className="text-[10px] font-semibold">
+              {formatGrowth(numericGrowth)}
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-2 text-[10px] text-text-secondary">{description}</p>
+      </div>
+    );
+  }
+
   const historyChartData = (historyData?.history || []).map((point) => ({
     ...point,
     date: new Date(point.timestamp).toLocaleDateString("en-IN", {
@@ -269,7 +343,7 @@ export default function Insights() {
 
   const hasMultipleHistoryPoints = historyChartData.length >= 2;
 
-  const loadAudienceQuality = useCallback(async (signal) => {
+  const loadAudienceQuality = useCallback(async () => {
     if (!igUserId) return;
 
     setQualityLoading(true);
@@ -279,24 +353,27 @@ export default function Insights() {
       const response = await api.getAudienceQuality(
         igUserId,
         token,
-        historyDays,
-        { signal }
+        historyDays
       );
 
       setAudienceQuality(response);
     } catch (err) {
-      if (err.name !== "AbortError") setQualityError(err.message);
+      setQualityError(err.message);
     } finally {
-      if (!signal?.aborted) setQualityLoading(false);
+      setQualityLoading(false);
     }
   }, [igUserId, token, historyDays]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    loadInsightHistory(controller.signal);
-    loadAudienceQuality(controller.signal);
-    return () => controller.abort();
+    loadInsightHistory();
+    loadAudienceQuality();
   }, [loadInsightHistory, loadAudienceQuality]);
+
+  const getAudienceScoreColor = (score) => {
+    if (score >= 75) return "#22c55e"; // green
+    if (score >= 50) return "#eab308"; // yellow
+    return "#ef4444"; // red
+  };
 
   const getRiskBadgeClass = (risk) => {
     switch (risk) {
@@ -319,6 +396,111 @@ export default function Insights() {
         return "bg-red-500/10 text-red-400";
     }
   };
+
+  function AudienceScoreCircle({ score }) {
+    const [displayScore, setDisplayScore] = useState(0);
+
+    useEffect(() => {
+      let current = 0;
+
+      const duration = 900;
+
+      const interval = 20;
+
+      const increment = score / (duration / interval);
+
+      const timer = setInterval(() => {
+        current += increment;
+
+        if (current >= score) {
+          current = score;
+
+          clearInterval(timer);
+        }
+
+        setDisplayScore(Math.round(current));
+      }, interval);
+
+      return () => clearInterval(timer);
+    }, [score]);
+
+    const radius = 75;
+
+    const circumference = 2 * Math.PI * radius;
+
+    const progress = circumference - (displayScore / 100) * circumference;
+
+    const color = getAudienceScoreColor(displayScore);
+
+    return (
+      <div className="relative w-[180px] h-[180px]">
+        <svg width="180" height="180">
+          <defs>
+            <linearGradient
+              id="scoreGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor="#8b5cf6" />
+
+              <stop offset="100%" stopColor={color} />
+            </linearGradient>
+
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          <circle
+            cx="90"
+            cy="90"
+            r={radius}
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="12"
+            fill="transparent"
+          />
+
+          <circle
+            cx="90"
+            cy="90"
+            r={radius}
+            filter="url(#glow)"
+            stroke="url(#scoreGradient)"
+            strokeWidth="12"
+            fill="transparent"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={progress}
+            style={{
+              transition: "stroke-dashoffset .25s linear, stroke .3s",
+            }}
+          />
+        </svg>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div
+            className="text-5xl font-extrabold transition-all duration-300"
+            style={{
+              color,
+              transition: "color .3s",
+            }}
+          >
+            {displayScore}
+          </div>
+
+          <div className="text-xs mt-2 text-text-secondary">Audience Score</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary px-4 py-8 md:py-12 relative overflow-hidden">
@@ -1348,6 +1530,18 @@ export default function Insights() {
                     ) : (
                       <div className="space-y-8">
                         {data.reels.map((reel, index) => {
+                          const interactions =
+                            reel.totalInteractions ??
+                            (reel.likeCount || 0) +
+                              (reel.commentCount || 0) +
+                              (reel.savedCount || 0);
+
+                          const engagement =
+                            reel.viewCount > 0
+                              ? ((interactions / reel.viewCount) * 100).toFixed(
+                                  1
+                                )
+                              : "0.0";
                           const expanded = expandedReel === reel.mediaId;
                           return (
                             <div
