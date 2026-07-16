@@ -587,78 +587,123 @@ export default function Insights() {
                   </div>
 
                   {/* Total Comments */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          Total Comments
-                        </p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(data.totalReelComments)}
-                        </p>
+                  <div className="p-6 rounded-2xl bg-panel/50 border border-panel-border shadow-md hover:border-panel-border/80 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">
+                        Reel Comments
+                      </span>
+
+                      <div className="h-7 w-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                        <MessageCircle className="w-4 h-4" />
                       </div>
-                      <MessageCircle className="h-10 w-10 text-blue-500" />
                     </div>
+
+                    <div
+                      className="text-3xl font-extrabold text-text-primary tracking-tight"
+                      title={data.totalReelComments.toLocaleString()}
+                    >
+                      {formatNumber(data.totalReelComments)}
+                    </div>
+
+                    <p className="text-[11px] text-text-secondary mt-1.5">
+                      Total audience conversations
+                    </p>
                   </div>
 
                   {/* Total Saves */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          Total Saves
-                        </p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(data.totalReelSaves)}
-                        </p>
+                  <div className="p-6 rounded-2xl bg-panel/50 border border-panel-border shadow-md hover:border-panel-border/80 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">
+                        Reel Saves
+                      </span>
+
+                      <div className="h-7 w-7 rounded-lg bg-yellow-500/10 text-yellow-400 flex items-center justify-center">
+                        <Bookmark className="w-4 h-4" />
                       </div>
-                      <Bookmark className="h-10 w-10 text-yellow-500" />
                     </div>
+
+                    <div
+                      className="text-3xl font-extrabold text-text-primary tracking-tight"
+                      title={data.totalReelSaves.toLocaleString()}
+                    >
+                      {formatNumber(data.totalReelSaves)}
+                    </div>
+
+                    <p className="text-[11px] text-text-secondary mt-1.5">
+                      Users saved your reels
+                    </p>
                   </div>
 
                   {/* Total Shares */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          Total Shares
-                        </p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(data.totalReelShares)}
-                        </p>
+                  <div className="p-6 rounded-2xl bg-panel/50 border border-panel-border shadow-md hover:border-panel-border/80 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">
+                        Reel Shares
+                      </span>
+
+                      <div className="h-7 w-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                        <Share2 className="w-4 h-4" />
                       </div>
-                      <Share2 className="h-10 w-10 text-indigo-500" />
                     </div>
+
+                    <div
+                      className="text-3xl font-extrabold text-text-primary tracking-tight"
+                      title={data.totalReelShares.toLocaleString()}
+                    >
+                      {formatNumber(data.totalReelShares)}
+                    </div>
+
+                    <p className="text-[11px] text-text-secondary mt-1.5">
+                      Viral distribution signal
+                    </p>
                   </div>
 
                   {/* Total Reach */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          Total Reach
-                        </p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(data.totalReelReach)}
-                        </p>
+                  <div className="p-6 rounded-2xl bg-panel/50 border border-panel-border shadow-md hover:border-panel-border/80 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">
+                        Reel Reach
+                      </span>
+
+                      <div className="h-7 w-7 rounded-lg bg-green-500/10 text-green-400 flex items-center justify-center">
+                        <Eye className="w-4 h-4" />
                       </div>
-                      <Eye className="h-10 w-10 text-green-500" />
                     </div>
+
+                    <div
+                      className="text-3xl font-extrabold text-text-primary tracking-tight"
+                      title={data.totalReelReach.toLocaleString()}
+                    >
+                      {formatNumber(data.totalReelReach)}
+                    </div>
+
+                    <p className="text-[11px] text-text-secondary mt-1.5">
+                      Unique accounts reached
+                    </p>
                   </div>
 
                   {/* Total Interactions */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          Total Interactions
-                        </p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">
-                          {formatNumber(data.totalReelInteractions)}
-                        </p>
+                  <div className="p-6 rounded-2xl bg-panel/50 border border-panel-border shadow-md hover:border-panel-border/80 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">
+                        Total Interactions
+                      </span>
+
+                      <div className="h-7 w-7 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                        <Activity className="w-4 h-4" />
                       </div>
-                      <Activity className="h-10 w-10 text-purple-500" />
                     </div>
+
+                    <div
+                      className="text-3xl font-extrabold text-text-primary tracking-tight"
+                      title={data.totalReelInteractions.toLocaleString()}
+                    >
+                      {formatNumber(data.totalReelInteractions)}
+                    </div>
+
+                    <p className="text-[11px] text-text-secondary mt-1.5">
+                      Likes + comments + saves + shares
+                    </p>
                   </div>
 
                   {/* Reels Gallery Panel (col-span-4) */}
