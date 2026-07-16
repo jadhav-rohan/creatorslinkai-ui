@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
+import { ChevronDown } from "lucide-react";
 import {
   Users,
   Image,
@@ -46,6 +47,7 @@ export default function Insights() {
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [logsError, setLogsError] = useState(null);
 
+  const [expandedReel, setExpandedReel] = useState(null);
   // Toast trigger utility
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type });
@@ -759,97 +761,133 @@ export default function Insights() {
                                   1
                                 )
                               : "0.0";
-
+                          const expanded = expandedReel === reel.mediaId;
                           return (
                             <div
                               key={reel.mediaId}
-                              className="border border-panel-border rounded-xl p-6 bg-panel"
+                              className="rounded-2xl border border-panel-border bg-panel/50 overflow-hidden"
                             >
-                              {/* Reel Header */}
-                              <div className="flex justify-between items-start mb-6 border-b border-panel-border pb-4">
-                                <div className="flex-1">
-                                  <h3 className="text-lg font-semibold text-text-primary">
+                              {/* Header */}
+                              <button
+                                onClick={() =>
+                                  setExpandedReel(
+                                    expanded ? null : reel.mediaId
+                                  )
+                                }
+                                className="w-full p-5 flex justify-between items-center hover:bg-panel/40 transition"
+                              >
+                                <div className="text-left flex-1">
+                                  <div className="font-semibold text-text-primary">
                                     {reel.caption?.trim()
                                       ? reel.caption
-                                      : `Untitled Reel #${index + 1}`}
-                                  </h3>
+                                      : `Reel #${index + 1}`}
+                                  </div>
 
-                                  <p className="text-sm text-text-secondary mt-1">
-                                    Published{" "}
+                                  <div className="text-xs text-text-secondary mt-1">
+                                    {reel.mediaId}
+                                  </div>
+
+                                  <div className="text-xs text-text-secondary mt-2">
                                     {new Date(
                                       reel.timestamp
-                                    ).toLocaleDateString("en-IN", {
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric",
-                                    })}
-                                  </p>
-
-                                  <p className="text-xs text-text-secondary mt-2 font-mono">
-                                    Reel ID: {reel.mediaId.slice(-8)}
-                                  </p>
+                                    ).toLocaleDateString()}
+                                  </div>
                                 </div>
 
-                                <div className="text-right">
-                                  <p className="text-xs uppercase tracking-wide text-text-secondary">
-                                    Engagement
-                                  </p>
+                                <div className="flex items-center gap-6">
+                                  <div className="text-right">
+                                    <div className="text-sm text-text-secondary">
+                                      Views
+                                    </div>
 
-                                  <p className="text-3xl font-bold text-green-400">
-                                    {engagement}%
-                                  </p>
+                                    <div className="font-bold text-lg">
+                                      {formatNumber(reel.viewCount)}
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right">
+                                    <div className="text-sm text-text-secondary">
+                                      Engagement
+                                    </div>
+
+                                    <div className="font-bold text-lg">
+                                      {(
+                                        (reel.totalInteractions /
+                                          Math.max(
+                                            reel.reach || reel.viewCount,
+                                            1
+                                          )) *
+                                        100
+                                      ).toFixed(1)}
+                                      %
+                                    </div>
+                                  </div>
+
+                                  <ChevronDown
+                                    className={`h-5 w-5 transition-transform ${
+                                      expanded ? "rotate-180" : ""
+                                    }`}
+                                  />
                                 </div>
-                              </div>
+                              </button>
 
-                              {/* Reel Metrics */}
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-                                <MetricItem
-                                  label="Views"
-                                  value={formatNumber(reel.viewCount)}
-                                />
+                              {/* Expanded Body */}
+                              {expanded && (
+                                <div className="border-t border-panel-border p-5">
+                                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+                                    <MetricItem
+                                      label="Views"
+                                      value={formatNumber(reel.viewCount)}
+                                    />
 
-                                <MetricItem
-                                  label="Reach"
-                                  value={formatNumber(reel.reach)}
-                                />
+                                    <MetricItem
+                                      label="Reach"
+                                      value={formatNumber(reel.reach)}
+                                    />
 
-                                <MetricItem
-                                  label="Likes"
-                                  value={formatNumber(reel.likeCount)}
-                                />
+                                    <MetricItem
+                                      label="Likes"
+                                      value={formatNumber(reel.likeCount)}
+                                    />
 
-                                <MetricItem
-                                  label="Comments"
-                                  value={formatNumber(reel.commentCount)}
-                                />
+                                    <MetricItem
+                                      label="Comments"
+                                      value={formatNumber(reel.commentCount)}
+                                    />
 
-                                <MetricItem
-                                  label="Saves"
-                                  value={formatNumber(reel.savedCount)}
-                                />
+                                    <MetricItem
+                                      label="Saves"
+                                      value={formatNumber(reel.savedCount)}
+                                    />
 
-                                <MetricItem
-                                  label="Shares"
-                                  value={formatNumber(reel.shareCount)}
-                                />
+                                    <MetricItem
+                                      label="Shares"
+                                      value={formatNumber(reel.shareCount)}
+                                    />
 
-                                <MetricItem
-                                  label="Interactions"
-                                  value={formatNumber(reel.totalInteractions)}
-                                />
+                                    <MetricItem
+                                      label="Interactions"
+                                      value={formatNumber(
+                                        reel.totalInteractions
+                                      )}
+                                    />
 
-                                <MetricItem
-                                  label="Avg Watch Time"
-                                  value={formatWatchTime(reel.averageWatchTime)}
-                                />
+                                    <MetricItem
+                                      label="Avg Watch Time"
+                                      value={formatWatchTime(
+                                        reel.averageWatchTime
+                                      )}
+                                    />
 
-                                <MetricItem
-                                  label="Total Watch Time"
-                                  value={formatTotalWatchTime(
-                                    reel.totalWatchTime
-                                  )}
-                                />
-                              </div>
+                                    <MetricItem
+                                      label="Total Watch Time"
+                                      value={formatTotalWatchTime(
+                                        reel.totalWatchTime
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
