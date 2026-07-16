@@ -433,8 +433,8 @@ export default function Insights() {
     const color = getAudienceScoreColor(displayScore);
 
     return (
-      <div className="flex flex-col items-center">
-        <svg width="180" height="180" className="-rotate-90">
+      <div className="relative w-[180px] h-[180px]">
+        <svg width="180" height="180">
           <defs>
             <linearGradient
               id="scoreGradient"
@@ -485,7 +485,7 @@ export default function Insights() {
           />
         </svg>
 
-        <div className="-mt-32 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div
             className="text-5xl font-extrabold transition-all duration-300"
             style={{
