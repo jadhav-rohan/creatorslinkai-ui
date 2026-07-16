@@ -54,6 +54,11 @@ export default function Insights() {
   const [historyError, setHistoryError] = useState(null);
   const [historyDays, setHistoryDays] = useState(30);
 
+  // Audience quality state
+  const [audienceQuality, setAudienceQuality] = useState(null);
+  const [qualityLoading, setQualityLoading] = useState(false);
+  const [qualityError, setQualityError] = useState(null);
+
   // "Logs" modal state
   const [selectedRuleForLogs, setSelectedRuleForLogs] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -139,6 +144,27 @@ export default function Insights() {
       setHistoryError(err.message);
     } finally {
       setHistoryLoading(false);
+    }
+  }, [igUserId, token, historyDays]);
+
+  const loadAudienceQuality = useCallback(async () => {
+    if (!igUserId) return;
+
+    setQualityLoading(true);
+    setQualityError(null);
+
+    try {
+      const response = await api.getAudienceQuality(
+        igUserId,
+        token,
+        historyDays
+      );
+
+      setAudienceQuality(response);
+    } catch (err) {
+      setQualityError(err.message);
+    } finally {
+      setQualityLoading(false);
     }
   }, [igUserId, token, historyDays]);
 
@@ -229,9 +255,10 @@ export default function Insights() {
 
   // Format large numbers for dashboard readability
   function formatNumber(num) {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toLocaleString();
+    const value = Number(num || 0);
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toLocaleString();
   }
 
   function formatWatchTime(ms) {
@@ -342,27 +369,6 @@ export default function Insights() {
 
   const hasMultipleHistoryPoints = historyChartData.length >= 2;
 
-  const loadAudienceQuality = useCallback(async () => {
-    if (!igUserId) return;
-
-    setQualityLoading(true);
-    setQualityError(null);
-
-    try {
-      const response = await api.getAudienceQuality(
-        igUserId,
-        token,
-        historyDays
-      );
-
-      setAudienceQuality(response);
-    } catch (err) {
-      setQualityError(err.message);
-    } finally {
-      setQualityLoading(false);
-    }
-  }, [igUserId, token, historyDays]);
-
   const getAudienceScoreColor = (score) => {
     if (score >= 75) return "#22c55e"; // green
     if (score >= 50) return "#eab308"; // yellow
@@ -391,7 +397,8 @@ export default function Insights() {
     }
   };
 
-  function AudienceScoreCircle({ score }) {
+  function AudienceScoreCircle({ score = 0 }) {
+    const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
     const [displayScore, setDisplayScore] = useState(0);
 
     useEffect(() => {
@@ -401,13 +408,13 @@ export default function Insights() {
 
       const interval = 20;
 
-      const increment = score / (duration / interval);
+      const increment = safeScore / (duration / interval);
 
       const timer = setInterval(() => {
         current += increment;
 
-        if (current >= score) {
-          current = score;
+        if (current >= safeScore) {
+          current = safeScore;
 
           clearInterval(timer);
         }
@@ -416,7 +423,7 @@ export default function Insights() {
       }, interval);
 
       return () => clearInterval(timer);
-    }, [score]);
+    }, [safeScore]);
 
     const radius = 75;
 
