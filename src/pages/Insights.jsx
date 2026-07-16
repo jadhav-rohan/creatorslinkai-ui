@@ -709,7 +709,7 @@ export default function Insights() {
                   {/* Reels Gallery Panel (col-span-4) */}
                   <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
                     <h2 className="text-lg font-bold tracking-tight text-text-primary mb-1">
-                      Reels Performance Logs
+                      Recent Reels Performance
                     </h2>
                     <p className="text-xs text-text-secondary mb-6">
                       Specific posts performance and computed engagement
