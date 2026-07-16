@@ -234,6 +234,16 @@ export default function Insights() {
     return `${seconds}s`;
   }
 
+  function MetricItem({ label, value }) {
+    return (
+      <div className="rounded-lg border border-gray-700 bg-[#16161d] p-4">
+        <p className="text-xs uppercase tracking-wide text-gray-400">{label}</p>
+
+        <p className="mt-2 text-xl font-semibold text-white">{value}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary px-4 py-8 md:py-12 relative overflow-hidden">
       {/* Toast Notification Container */}
