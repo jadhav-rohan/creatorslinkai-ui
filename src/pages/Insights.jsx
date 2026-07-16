@@ -666,148 +666,114 @@ export default function Insights() {
                         No video reels detected on this creator profile.
                       </div>
                     ) : (
-                      <div className="divide-y divide-panel-border/60">
-                        {data.reels.map((reel) => (
-                          // <div
-                          //   key={reel.mediaId}
-                          //   className="py-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 first:pt-0 last:pb-0"
-                          // >
-                          //   <div className="max-w-xl">
-                          //     <p className="text-sm font-medium text-text-primary line-clamp-2 leading-relaxed">
-                          //       {reel.caption || (
-                          //         <span className="text-text-secondary/40 italic">
-                          //           No caption provided
-                          //         </span>
-                          //       )}
-                          //     </p>
-                          //     <p className="text-[10px] text-text-secondary/50 mt-1.5">
-                          //       ID: {reel.mediaId}
-                          //     </p>
-                          //   </div>
+                      <div className="space-y-8">
+                        {data.reels.map((reel, index) => {
+                          const interactions =
+                            reel.totalInteractions ??
+                            (reel.likeCount || 0) +
+                              (reel.commentCount || 0) +
+                              (reel.savedCount || 0);
 
-                          //   <div className="flex flex-wrap items-center gap-2">
-                          //     {/* Views Badge */}
-                          //     <div className="px-2.5 py-1.5 rounded-lg bg-panel-light border border-panel-border flex items-center gap-1.5">
-                          //       <span className="text-[10px] text-text-secondary uppercase font-semibold">
-                          //         Views
-                          //       </span>
-                          //       <span className="text-xs text-text-primary font-bold">
-                          //         {reel.viewCount.toLocaleString()}
-                          //       </span>
-                          //     </div>
+                          const engagement =
+                            reel.viewCount > 0
+                              ? ((interactions / reel.viewCount) * 100).toFixed(
+                                  1
+                                )
+                              : "0.0";
 
-                          //     {/* Likes Badge */}
-                          //     <div className="px-2.5 py-1.5 rounded-lg bg-panel-light border border-panel-border flex items-center gap-1.5">
-                          //       <span className="text-[10px] text-text-secondary uppercase font-semibold">
-                          //         Likes
-                          //       </span>
-                          //       <span className="text-xs text-text-primary font-bold">
-                          //         {reel.likeCount.toLocaleString()}
-                          //       </span>
-                          //     </div>
+                          return (
+                            <div
+                              key={reel.mediaId}
+                              className="border border-panel-border rounded-xl p-6 bg-panel"
+                            >
+                              {/* Reel Header */}
+                              <div className="flex justify-between items-start mb-6 border-b border-panel-border pb-4">
+                                <div className="flex-1">
+                                  <h3 className="text-lg font-semibold text-text-primary">
+                                    {reel.caption?.trim()
+                                      ? reel.caption
+                                      : `Untitled Reel #${index + 1}`}
+                                  </h3>
 
-                          //     {/* Comments Badge */}
-                          //     <div className="px-2.5 py-1.5 rounded-lg bg-panel-light border border-panel-border flex items-center gap-1.5">
-                          //       <span className="text-[10px] text-text-secondary uppercase font-semibold">
-                          //         Comments
-                          //       </span>
-                          //       <span className="text-xs text-text-primary font-bold">
-                          //         {reel.commentCount.toLocaleString()}
-                          //       </span>
-                          //     </div>
+                                  <p className="text-sm text-text-secondary mt-1">
+                                    Published{" "}
+                                    {new Date(
+                                      reel.timestamp
+                                    ).toLocaleDateString("en-IN", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                  </p>
 
-                          //     {/* Saves Badge */}
-                          //     <div className="px-2.5 py-1.5 rounded-lg bg-panel-light border border-panel-border flex items-center gap-1.5">
-                          //       <span className="text-[10px] text-text-secondary uppercase font-semibold">
-                          //         Saves
-                          //       </span>
-                          //       <span className="text-xs text-text-primary font-bold">
-                          //         {reel.savedCount.toLocaleString()}
-                          //       </span>
-                          //     </div>
+                                  <p className="text-xs text-text-secondary mt-2 font-mono">
+                                    Reel ID: {reel.mediaId.slice(-8)}
+                                  </p>
+                                </div>
 
-                          //     {/* Engagement Rate Badge */}
-                          //     <div className="px-2.5 py-1.5 rounded-lg bg-accent-primary/10 border border-accent-primary/25 flex items-center gap-1.5">
-                          //       <span className="text-[10px] text-accent-primary uppercase font-bold">
-                          //         Engagement
-                          //       </span>
-                          //       <span className="text-xs text-accent-primary font-black">
-                          //         {getEngagementRate(reel)}
-                          //       </span>
-                          //     </div>
-                          //   </div>
-                          // </div>
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-                            <div>
-                              <p className="text-sm text-gray-500">Views</p>
-                              <p className="text-lg font-semibold">
-                                {formatNumber(reel.viewCount)}
-                              </p>
+                                <div className="text-right">
+                                  <p className="text-xs uppercase tracking-wide text-text-secondary">
+                                    Engagement
+                                  </p>
+
+                                  <p className="text-3xl font-bold text-green-400">
+                                    {engagement}%
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Reel Metrics */}
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+                                <MetricItem
+                                  label="Views"
+                                  value={formatNumber(reel.viewCount)}
+                                />
+
+                                <MetricItem
+                                  label="Reach"
+                                  value={formatNumber(reel.reach)}
+                                />
+
+                                <MetricItem
+                                  label="Likes"
+                                  value={formatNumber(reel.likeCount)}
+                                />
+
+                                <MetricItem
+                                  label="Comments"
+                                  value={formatNumber(reel.commentCount)}
+                                />
+
+                                <MetricItem
+                                  label="Saves"
+                                  value={formatNumber(reel.savedCount)}
+                                />
+
+                                <MetricItem
+                                  label="Shares"
+                                  value={formatNumber(reel.shareCount)}
+                                />
+
+                                <MetricItem
+                                  label="Interactions"
+                                  value={formatNumber(reel.totalInteractions)}
+                                />
+
+                                <MetricItem
+                                  label="Avg Watch Time"
+                                  value={formatWatchTime(reel.averageWatchTime)}
+                                />
+
+                                <MetricItem
+                                  label="Total Watch Time"
+                                  value={formatTotalWatchTime(
+                                    reel.totalWatchTime
+                                  )}
+                                />
+                              </div>
                             </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">Reach</p>
-                              <p className="text-lg font-semibold">
-                                {formatNumber(reel.reach)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">Likes</p>
-                              <p className="text-lg font-semibold">
-                                {formatNumber(reel.likeCount)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">Comments</p>
-                              <p className="text-lg font-semibold">
-                                {formatNumber(reel.commentCount)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">Saves</p>
-                              <p className="text-lg font-semibold">
-                                {formatNumber(reel.savedCount)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">Shares</p>
-                              <p className="text-lg font-semibold">
-                                {formatNumber(reel.shareCount)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">
-                                Interactions
-                              </p>
-                              <p className="text-lg font-semibold">
-                                {formatNumber(reel.totalInteractions)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">
-                                Avg Watch Time
-                              </p>
-                              <p className="text-lg font-semibold">
-                                {formatWatchTime(reel.averageWatchTime)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">
-                                Total Watch Time
-                              </p>
-                              <p className="text-lg font-semibold">
-                                {formatTotalWatchTime(reel.totalWatchTime)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
