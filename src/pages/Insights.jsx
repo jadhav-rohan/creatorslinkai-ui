@@ -147,32 +147,6 @@ export default function Insights() {
     }
   }, [igUserId, token, historyDays]);
 
-  const loadAudienceQuality = useCallback(async () => {
-    if (!igUserId) return;
-
-    setQualityLoading(true);
-    setQualityError(null);
-
-    try {
-      const response = await api.getAudienceQuality(
-        igUserId,
-        token,
-        historyDays
-      );
-
-      setAudienceQuality(response);
-    } catch (err) {
-      setQualityError(err.message);
-    } finally {
-      setQualityLoading(false);
-    }
-  }, [igUserId, token, historyDays]);
-
-  useEffect(() => {
-    loadInsightHistory();
-    loadAudienceQuality();
-  }, [loadInsightHistory, loadAudienceQuality]);
-
   const handleOpenLogs = (rule) => {
     setSelectedRuleForLogs(rule);
     setLogs([]);
@@ -255,7 +229,7 @@ export default function Insights() {
 
   // Format large numbers for dashboard readability
   function formatNumber(num) {
-    const value = Number(num || 0);
+    const value = Number(num ?? 0);
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
     return value.toLocaleString();
@@ -369,6 +343,32 @@ export default function Insights() {
 
   const hasMultipleHistoryPoints = historyChartData.length >= 2;
 
+  const loadAudienceQuality = useCallback(async () => {
+    if (!igUserId) return;
+
+    setQualityLoading(true);
+    setQualityError(null);
+
+    try {
+      const response = await api.getAudienceQuality(
+        igUserId,
+        token,
+        historyDays
+      );
+
+      setAudienceQuality(response);
+    } catch (err) {
+      setQualityError(err.message);
+    } finally {
+      setQualityLoading(false);
+    }
+  }, [igUserId, token, historyDays]);
+
+  useEffect(() => {
+    loadInsightHistory();
+    loadAudienceQuality();
+  }, [loadInsightHistory, loadAudienceQuality]);
+
   const getAudienceScoreColor = (score) => {
     if (score >= 75) return "#22c55e"; // green
     if (score >= 50) return "#eab308"; // yellow
@@ -397,8 +397,7 @@ export default function Insights() {
     }
   };
 
-  function AudienceScoreCircle({ score = 0 }) {
-    const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
+  function AudienceScoreCircle({ score }) {
     const [displayScore, setDisplayScore] = useState(0);
 
     useEffect(() => {
@@ -408,13 +407,13 @@ export default function Insights() {
 
       const interval = 20;
 
-      const increment = safeScore / (duration / interval);
+      const increment = score / (duration / interval);
 
       const timer = setInterval(() => {
         current += increment;
 
-        if (current >= safeScore) {
-          current = safeScore;
+        if (current >= score) {
+          current = score;
 
           clearInterval(timer);
         }
@@ -423,7 +422,7 @@ export default function Insights() {
       }, interval);
 
       return () => clearInterval(timer);
-    }, [safeScore]);
+    }, [score]);
 
     const radius = 75;
 
