@@ -706,6 +706,30 @@ export default function Insights() {
                     </p>
                   </div>
 
+                  {/* Account Reach */}
+                  <div className="p-6 rounded-2xl bg-panel/50 border border-panel-border shadow-md hover:border-panel-border/80 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">
+                        Account Reach
+                      </span>
+
+                      <div className="h-7 w-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                        <Eye className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    <div
+                      className="text-3xl font-extrabold text-text-primary tracking-tight"
+                      title={data.accountReach.toLocaleString()}
+                    >
+                      {formatNumber(data.accountReach)}
+                    </div>
+
+                    <p className="text-[11px] text-text-secondary mt-1.5">
+                      Overall account audience reached
+                    </p>
+                  </div>
+
                   {/* Reels Gallery Panel (col-span-4) */}
                   <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
                     <h2 className="text-lg font-bold tracking-tight text-text-primary mb-1">
