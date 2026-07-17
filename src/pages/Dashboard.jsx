@@ -161,45 +161,29 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto space-y-6 relative z-10">
         
         {/* Topbar Bento Cell (Full width card) */}
-        <header className="p-6 rounded-2xl bg-panel/40 backdrop-blur-md border border-panel-border flex flex-col sm:flex-row gap-4 items-center justify-between shadow-lg">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center font-bold text-white shadow-md shadow-accent-primary/20">
-              C
+        <header className="rounded-2xl border border-panel-border bg-panel/40 p-4 shadow-lg backdrop-blur-md sm:p-5">
+          <div className="flex items-center justify-between gap-4 border-b border-panel-border pb-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent-primary to-accent-secondary font-bold text-white shadow-md shadow-accent-primary/20">C</div>
+              <div className="min-w-0">
+                <span className="block text-xs font-semibold uppercase tracking-wider text-accent-primary">CreatorLinksAI</span>
+                <span className="block truncate text-xs text-text-secondary">Signed in as <strong className="text-text-primary">{email}</strong></span>
+              </div>
             </div>
-            <div>
-              <span className="text-xs font-semibold text-accent-primary tracking-wider uppercase block">CreatorLinksAI</span>
-              <span className="text-xs text-text-secondary">Signed in as <strong className="text-text-primary">{email}</strong></span>
-            </div>
+            <button className="shrink-0 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500/20 sm:px-4" onClick={logout}>Log out</button>
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Link className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" to="/follow-ups">Follow-ups</Link>
-            <Link className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" to="/settings/outreach-templates">Outreach Templates</Link>
-            <Link className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" to="/campaigns">Campaigns</Link>
-            <Link
-              className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all"
-              to="/creator-lists"
-            >
-              Creator Lists
-            </Link>
-            <Link
-              className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all"
-              to="/creator-marketplace"
-            >
-              Creator Marketplace
-            </Link>
-            <Link 
-              className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" 
-              to="/discover"
-            >
-              Discover
-            </Link>
-            <button 
-              className="flex-1 sm:flex-initial py-2 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold border border-red-500/20 cursor-pointer transition-all"
-              onClick={logout}
-            >
-              Log out
-            </button>
-          </div>
+          <nav aria-label="Workspace navigation" className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              ["Follow-ups", "/follow-ups"],
+              ["Outreach Templates", "/settings/outreach-templates"],
+              ["Campaigns", "/campaigns"],
+              ["Creator Lists", "/creator-lists"],
+              ["Creator Marketplace", "/creator-marketplace"],
+              ["Discover", "/discover"],
+            ].map(([label, to]) => (
+              <Link key={to} className="flex min-h-11 items-center justify-center rounded-xl border border-panel-border bg-panel-light px-3 py-2 text-center text-xs font-medium leading-tight text-text-primary transition-all hover:border-accent-primary/40 hover:bg-panel-light/80 hover:text-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary" to={to}>{label}</Link>
+            ))}
+          </nav>
         </header>
 
         <section className="rounded-2xl border border-panel-border bg-panel/40 p-5 shadow-lg">
