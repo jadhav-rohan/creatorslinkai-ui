@@ -172,6 +172,8 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Link className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" to="/follow-ups">Follow-ups</Link>
+            <Link className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" to="/settings/outreach-templates">Outreach Templates</Link>
             <Link className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" to="/campaigns">Campaigns</Link>
             <Link
               className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all"

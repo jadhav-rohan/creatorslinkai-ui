@@ -16,6 +16,8 @@ import CreatorListDetails from "./pages/CreatorListDetails";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import Campaigns from "./pages/Campaigns";
 import CampaignDetails from "./pages/CampaignDetails";
+import FollowUps from "./pages/FollowUps";
+import OutreachTemplates from "./pages/OutreachTemplates";
 import Footer from "./pages/Footer";
 
 export default function App() {
@@ -72,6 +74,8 @@ export default function App() {
           <Route path="/creator-lists/:listId" element={<ProtectedRoute><CreatorListDetails /></ProtectedRoute>} />
           <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
           <Route path="/campaigns/:campaignId" element={<ProtectedRoute><CampaignDetails /></ProtectedRoute>} />
+          <Route path="/follow-ups" element={<ProtectedRoute><FollowUps /></ProtectedRoute>} />
+          <Route path="/settings/outreach-templates" element={<ProtectedRoute><OutreachTemplates /></ProtectedRoute>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>
