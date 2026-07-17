@@ -86,6 +86,8 @@ export const api = {
     request(`/api/v1/instagram/discovery/${encodeURIComponent(username)}`, {
       token,
     }),
+  searchCreatorCatalog: (query, token, limit = 25) =>
+    request(`/api/v1/instagram/discovery/catalog?query=${encodeURIComponent(query)}&limit=${limit}`, { token }),
 
   fetchRules: (igUserId, token) =>
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, { token }),
@@ -123,4 +125,23 @@ export const api = {
       )}?brandIgUserId=${encodeURIComponent(brandIgUserId)}`,
       { token }
     ),
+  listWorkspaces: (token) => request("/api/v1/workspaces", { token }),
+  createWorkspace: (name, token) =>
+    request("/api/v1/workspaces", { method: "POST", body: { name }, token }),
+  listCreatorLists: (workspaceId, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists`, { token }),
+  getCreatorList: (workspaceId, listId, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}`, { token }),
+  createCreatorList: (workspaceId, payload, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists`, { method: "POST", body: payload, token }),
+  updateCreatorList: (workspaceId, listId, payload, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}`, { method: "PATCH", body: payload, token }),
+  deleteCreatorList: (workspaceId, listId, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}`, { method: "DELETE", token }),
+  addCreatorToList: (workspaceId, listId, payload, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}/creators`, { method: "POST", body: payload, token }),
+  updateListedCreator: (workspaceId, listId, creatorProfileId, payload, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}/creators/${encodeURIComponent(creatorProfileId)}`, { method: "PATCH", body: payload, token }),
+  removeListedCreator: (workspaceId, listId, creatorProfileId, token) =>
+    request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}/creators/${encodeURIComponent(creatorProfileId)}`, { method: "DELETE", token }),
 };

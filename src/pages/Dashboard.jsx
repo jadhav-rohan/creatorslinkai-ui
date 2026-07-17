@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
+import { useWorkspace } from '../context/WorkspaceContext'
 
 export default function Dashboard() {
   const { token, email, logout } = useAuth()
@@ -15,6 +16,9 @@ export default function Dashboard() {
   const [metaDisconnecting, setMetaDisconnecting] = useState(null)
   const [quickSearch, setQuickSearch] = useState('')
   const navigate = useNavigate()
+  const { workspaces, selectedWorkspaceId, setSelectedWorkspaceId, loading: workspacesLoading, error: workspaceError, createWorkspace } = useWorkspace()
+  const [workspaceName, setWorkspaceName] = useState('')
+  const [creatingWorkspace, setCreatingWorkspace] = useState(false)
 
   const loadAccounts = useCallback(async () => {
     setLoading(true)
@@ -101,6 +105,21 @@ export default function Dashboard() {
     navigate(`/discover?username=${encodeURIComponent(quickSearch.trim().replace(/^@/, ''))}`)
   }
 
+  async function handleCreateWorkspace(e) {
+    e.preventDefault()
+    if (creatingWorkspace || !workspaceName.trim()) return
+    setCreatingWorkspace(true)
+    setError(null)
+    try {
+      await createWorkspace(workspaceName)
+      setWorkspaceName('')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setCreatingWorkspace(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary px-4 py-8 md:py-12 relative overflow-hidden">
       {/* Decorative background glows */}
@@ -123,6 +142,12 @@ export default function Dashboard() {
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <Link
               className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all"
+              to="/creator-lists"
+            >
+              Creator Lists
+            </Link>
+            <Link
+              className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all"
               to="/creator-marketplace"
             >
               Creator Marketplace
@@ -141,6 +166,16 @@ export default function Dashboard() {
             </button>
           </div>
         </header>
+
+        <section className="rounded-2xl border border-panel-border bg-panel/40 p-5 shadow-lg">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div><h2 className="text-sm font-bold">Workspace</h2><p className="mt-1 text-xs text-text-secondary">Creator lists and future collaboration data are scoped to this workspace.</p></div>
+            {workspaces.length > 1 && <label className="text-xs text-text-secondary">Current workspace<select aria-label="Current workspace" value={selectedWorkspaceId} onChange={(event) => setSelectedWorkspaceId(event.target.value)} className="mt-1.5 w-full min-w-56 rounded-xl border border-panel-border bg-bg-deep px-3 py-2.5 text-text-primary">{workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}{workspace.personal ? ' (Personal)' : ''}</option>)}</select></label>}
+          </div>
+          {workspacesLoading && <p className="mt-4 text-xs text-text-secondary">Loading workspaces...</p>}
+          {workspaceError && <p role="alert" className="mt-4 text-xs text-red-400">{workspaceError}</p>}
+          {!workspacesLoading && workspaces.length === 0 && <form onSubmit={handleCreateWorkspace} className="mt-5 rounded-xl border border-dashed border-panel-border bg-bg-deep/30 p-4"><h3 className="text-sm font-semibold">Create your first workspace</h3><p className="mt-1 text-xs text-text-secondary">A workspace is required for creator lists.</p><div className="mt-3 flex flex-col gap-2 sm:flex-row"><label className="sr-only" htmlFor="workspace-name">Workspace name</label><input id="workspace-name" required maxLength={160} value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} placeholder="Agency workspace" className="flex-1 rounded-xl border border-panel-border bg-bg-deep px-3 py-2.5 text-sm text-text-primary" /><button disabled={creatingWorkspace} className="rounded-xl bg-accent-primary px-5 py-2.5 text-xs font-semibold disabled:opacity-50">{creatingWorkspace ? 'Creating...' : 'Create workspace'}</button></div></form>}
+        </section>
 
         {error && (
           <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5 animate-fadeIn">

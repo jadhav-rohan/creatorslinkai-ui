@@ -55,6 +55,15 @@ from within the hash fragment. Restart the backend after setting these.
 - `/connected` - post-OAuth landing page (single-Page connect)
 - `/select-page` - shown instead of `/connected` when the connecting Facebook account manages multiple Pages with linked Instagram accounts - lets the user pick which one
 - `/discover` - look up any public Instagram Business/Creator account by username via Meta's Business Discovery (they don't need to connect). Shows profile basics and recent post engagement only - no audience/insights data, which Meta restricts to the account owner regardless of caller.
+- `/creator-lists` - manage workspace-scoped campaign shortlists.
+- `/creator-lists/:listId` - review and update creators in a shortlist pipeline.
+
+## Workspaces and creator lists
+
+Authenticated sessions load their available workspaces from `GET /api/v1/workspaces`.
+Only the selected workspace ID is persisted locally. Creator-list requests are always
+scoped to that selected workspace. Public discovery results expose “Add to list” only
+after an exact match from the local creator catalog supplies a real `creatorProfileId`.
 
 ## Additional backend env var for this app
 

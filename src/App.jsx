@@ -11,12 +11,16 @@ import Discover from "./pages/Discover";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CreatorMarketplace from "./pages/CreatorMarketplace";
+import CreatorLists from "./pages/CreatorLists";
+import CreatorListDetails from "./pages/CreatorListDetails";
+import { WorkspaceProvider } from "./context/WorkspaceContext";
 import Footer from "./pages/Footer";
 
 export default function App() {
   return (
     <AuthProvider>
       <HashRouter>
+        <WorkspaceProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<Login />} />
@@ -62,10 +66,13 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/creator-lists" element={<ProtectedRoute><CreatorLists /></ProtectedRoute>} />
+          <Route path="/creator-lists/:listId" element={<ProtectedRoute><CreatorListDetails /></ProtectedRoute>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>
         <Footer />
+        </WorkspaceProvider>
       </HashRouter>
     </AuthProvider>
   );

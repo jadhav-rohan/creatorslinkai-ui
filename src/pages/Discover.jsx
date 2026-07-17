@@ -2,9 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
+import { useWorkspace } from '../context/WorkspaceContext'
+import AddToCreatorListDialog from '../components/AddToCreatorListDialog'
 
 export default function Discover() {
   const { token } = useAuth()
+  const { selectedWorkspaceId } = useWorkspace()
   const [searchParams] = useSearchParams()
   const initialUsername = searchParams.get('username') || ''
 
@@ -13,6 +16,8 @@ export default function Discover() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [searched, setSearched] = useState(false)
+  const [catalogProfile, setCatalogProfile] = useState(null)
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
 
   const performSearch = useCallback(async (targetUser) => {
     if (!targetUser.trim()) return
@@ -22,8 +27,16 @@ export default function Discover() {
     try {
       const result = await api.discoverCreator(targetUser.trim().replace(/^@/, ''), token)
       setProfile(result)
+      try {
+        const catalog = await api.searchCreatorCatalog(result.username || targetUser, token, 25)
+        const match = Array.isArray(catalog) ? catalog.find((item) => item.instagramUsername?.toLowerCase() === (result.username || targetUser).replace(/^@/, '').toLowerCase()) : null
+        setCatalogProfile(match || null)
+      } catch {
+        setCatalogProfile(null)
+      }
     } catch (err) {
       setProfile(null)
+      setCatalogProfile(null)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -185,6 +198,7 @@ export default function Discover() {
                   </div>
                 </div>
                 <p className="text-[10px] text-text-secondary/70 mt-4">Audience size of creator channel</p>
+                {catalogProfile?.id && selectedWorkspaceId && <button type="button" onClick={() => setAddDialogOpen(true)} className="mt-4 w-full rounded-xl border border-accent-primary/30 bg-accent-primary/10 px-4 py-2.5 text-xs font-semibold text-accent-primary hover:bg-accent-primary/20">Add to list</button>}
               </div>
 
               {/* Stat card: Total posts */}
@@ -274,6 +288,7 @@ export default function Discover() {
           </div>
         )}
       </div>
+      {addDialogOpen && catalogProfile?.id && <AddToCreatorListDialog creatorProfileId={catalogProfile.id} creatorName={`@${catalogProfile.instagramUsername}`} onClose={() => setAddDialogOpen(false)} />}
     </div>
   )
 }
