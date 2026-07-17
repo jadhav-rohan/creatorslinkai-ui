@@ -156,4 +156,13 @@ export const api = {
     request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}/creators/${encodeURIComponent(creatorProfileId)}`, { method: "PATCH", body: payload, token }),
   removeListedCreator: (workspaceId, listId, creatorProfileId, token) =>
     request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists/${encodeURIComponent(listId)}/creators/${encodeURIComponent(creatorProfileId)}`, { method: "DELETE", token }),
+  listCampaigns: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns`, { token, ...options }),
+  getCampaign: (workspaceId, campaignId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns/${encodeURIComponent(campaignId)}`, { token, ...options }),
+  createCampaign: (workspaceId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns`, { method: "POST", body: payload, token }),
+  updateCampaign: (workspaceId, campaignId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns/${encodeURIComponent(campaignId)}`, { method: "PATCH", body: payload, token }),
+  deleteCampaign: (workspaceId, campaignId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns/${encodeURIComponent(campaignId)}`, { method: "DELETE", token }),
+  addCampaignCreator: (workspaceId, campaignId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns/${encodeURIComponent(campaignId)}/creators`, { method: "POST", body: payload, token }),
+  importCampaignCreatorList: (workspaceId, campaignId, creatorListId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns/${encodeURIComponent(campaignId)}/creators/import-list`, { method: "POST", body: { creatorListId }, token }),
+  updateCampaignCreator: (workspaceId, campaignId, creatorProfileId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns/${encodeURIComponent(campaignId)}/creators/${encodeURIComponent(creatorProfileId)}`, { method: "PATCH", body: payload, token }),
+  removeCampaignCreator: (workspaceId, campaignId, creatorProfileId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/campaigns/${encodeURIComponent(campaignId)}/creators/${encodeURIComponent(creatorProfileId)}`, { method: "DELETE", token }),
 };

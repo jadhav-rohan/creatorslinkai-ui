@@ -14,6 +14,8 @@ import CreatorMarketplace from "./pages/CreatorMarketplace";
 import CreatorLists from "./pages/CreatorLists";
 import CreatorListDetails from "./pages/CreatorListDetails";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
+import Campaigns from "./pages/Campaigns";
+import CampaignDetails from "./pages/CampaignDetails";
 import Footer from "./pages/Footer";
 
 export default function App() {
@@ -68,6 +70,8 @@ export default function App() {
           />
           <Route path="/creator-lists" element={<ProtectedRoute><CreatorLists /></ProtectedRoute>} />
           <Route path="/creator-lists/:listId" element={<ProtectedRoute><CreatorListDetails /></ProtectedRoute>} />
+          <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
+          <Route path="/campaigns/:campaignId" element={<ProtectedRoute><CampaignDetails /></ProtectedRoute>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>

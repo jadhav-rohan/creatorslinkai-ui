@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
 import { useWorkspace } from '../context/WorkspaceContext'
 import AddToCreatorListDialog from '../components/AddToCreatorListDialog'
+import AddToCampaignDialog from '../components/AddToCampaignDialog'
 
 export default function Discover() {
   const { token, logout } = useAuth()
@@ -18,6 +19,7 @@ export default function Discover() {
   const [searched, setSearched] = useState(false)
   const [catalogProfile, setCatalogProfile] = useState(null)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [campaignDialogOpen, setCampaignDialogOpen] = useState(false)
   const searchController = useRef(null)
 
   const performSearch = useCallback(async (targetUser) => {
@@ -212,7 +214,7 @@ export default function Discover() {
                   </div>
                 </div>
                 <p className="text-[10px] text-text-secondary/70 mt-4">Audience size of creator channel</p>
-                {catalogProfile?.id && selectedWorkspaceId && <button type="button" onClick={() => setAddDialogOpen(true)} className="mt-4 w-full rounded-xl border border-accent-primary/30 bg-accent-primary/10 px-4 py-2.5 text-xs font-semibold text-accent-primary hover:bg-accent-primary/20">Add to list</button>}
+                {catalogProfile?.id && selectedWorkspaceId && <div className="mt-4 grid gap-2"><button type="button" onClick={() => setAddDialogOpen(true)} className="w-full rounded-xl border border-accent-primary/30 bg-accent-primary/10 px-4 py-2.5 text-xs font-semibold text-accent-primary hover:bg-accent-primary/20">Add to list</button><button type="button" onClick={() => setCampaignDialogOpen(true)} className="w-full rounded-xl border border-accent-secondary/30 bg-accent-secondary/10 px-4 py-2.5 text-xs font-semibold text-accent-secondary">Add to campaign</button></div>}
               </div>
 
               {/* Stat card: Total posts */}
@@ -303,6 +305,7 @@ export default function Discover() {
         )}
       </div>
       {addDialogOpen && catalogProfile?.id && <AddToCreatorListDialog creatorProfileId={catalogProfile.id} creatorName={`@${catalogProfile.instagramUsername}`} onClose={() => setAddDialogOpen(false)} />}
+      {campaignDialogOpen && catalogProfile?.id && <AddToCampaignDialog creatorProfileId={catalogProfile.id} creatorName={`@${catalogProfile.instagramUsername}`} onClose={() => setCampaignDialogOpen(false)} />}
     </div>
   )
 }

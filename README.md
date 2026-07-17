@@ -58,6 +58,8 @@ from within the hash fragment. Restart the backend after setting these.
 - `/discover` - look up any public Instagram Business/Creator account by username via Meta's Business Discovery (they don't need to connect). Shows profile basics and recent post engagement only - no audience/insights data, which Meta restricts to the account owner regardless of caller.
 - `/creator-lists` - manage workspace-scoped campaign shortlists.
 - `/creator-lists/:listId` - review and update creators in a shortlist pipeline.
+- `/campaigns` - search, create and manage workspace-owned campaigns.
+- `/campaigns/:campaignId` - manage campaign details and creator participation.
 
 ## Workspaces and creator lists
 
