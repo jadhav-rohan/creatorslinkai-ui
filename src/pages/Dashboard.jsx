@@ -155,13 +155,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary px-4 py-8 md:py-12 relative overflow-hidden">
       {/* Decorative background glows */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-accent-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-gradient-lavender/35 blur-3xl"></div>
+      <div className="pointer-events-none absolute -left-24 top-1/3 h-80 w-80 rounded-full bg-gradient-mint/30 blur-3xl"></div>
+      <div className="pointer-events-none absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-gradient-peach/25 blur-3xl"></div>
 
       <div className="max-w-6xl mx-auto space-y-6 relative z-10">
         
         {/* Topbar Bento Cell (Full width card) */}
-        <header className="rounded-2xl border border-panel-border bg-panel/40 p-4 shadow-lg backdrop-blur-md sm:p-5">
+        <header className="rounded-2xl border border-panel-border bg-panel/90 p-4 shadow-lg backdrop-blur-md sm:p-5">
           <div className="flex items-center justify-between gap-4 border-b border-panel-border pb-4">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent-primary to-accent-secondary font-bold text-white shadow-md shadow-accent-primary/20">C</div>
@@ -181,7 +182,7 @@ export default function Dashboard() {
               ["Creator Marketplace", "/creator-marketplace"],
               ["Discover", "/discover"],
             ].map(([label, to]) => (
-              <Link key={to} className="flex min-h-11 items-center justify-center rounded-xl border border-panel-border bg-panel-light px-3 py-2 text-center text-xs font-medium leading-tight text-text-primary transition-all hover:border-accent-primary/40 hover:bg-panel-light/80 hover:text-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary" to={to}>{label}</Link>
+              <Link key={to} className="flex min-h-10 items-center justify-center rounded-full border border-panel-border bg-panel-light px-4 py-2 text-center text-sm font-medium leading-tight text-text-primary transition-all hover:border-accent-primary/40 hover:bg-panel hover:text-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary" to={to}>{label}</Link>
             ))}
           </nav>
         </header>
