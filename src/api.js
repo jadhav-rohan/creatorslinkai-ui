@@ -1,5 +1,13 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 async function request(
   path,
   { method = "GET", body, token, headers = {} } = {}
@@ -27,7 +35,7 @@ async function request(
     const message =
       (data && (data.message || data.error)) ||
       `Request failed (${res.status})`;
-    throw new Error(message);
+    throw new ApiError(message, res.status);
   }
 
   return data;
@@ -51,6 +59,15 @@ export const api = {
     request("/api/v1/instagram-login/accounts", { token }),
   disconnectAccount: (igUserId, token) =>
     request(`/api/v1/instagram-login/${igUserId}`, { method: "DELETE", token }),
+  startMetaBrandConnect: (token) =>
+    request("/api/v1/instagram/auth/connect", { token }),
+  listMetaBrandAccounts: (token) =>
+    request("/api/v1/instagram/auth/accounts", { token }),
+  disconnectMetaBrandAccount: (igUserId, token) =>
+    request(`/api/v1/instagram/auth/${encodeURIComponent(igUserId)}`, {
+      method: "DELETE",
+      token,
+    }),
   getInsights: (igUserId, token, reelLimit = 10) =>
     request(`/api/v1/instagram/${igUserId}/insights?reelLimit=${reelLimit}`, {
       token,
@@ -93,4 +110,17 @@ export const api = {
     request(`/api/v1/instagram/${igUserId}/audience-quality?days=${days}`, {
       token,
     }),
+  searchCreatorMarketplace: (filters, token) =>
+    request("/api/v1/creator-marketplace/search", {
+      method: "POST",
+      body: filters,
+      token,
+    }),
+  getMarketplaceCreator: (username, brandIgUserId, token) =>
+    request(
+      `/api/v1/creator-marketplace/creators/${encodeURIComponent(
+        username
+      )}?brandIgUserId=${encodeURIComponent(brandIgUserId)}`,
+      { token }
+    ),
 };

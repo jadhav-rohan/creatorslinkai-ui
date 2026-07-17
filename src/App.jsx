@@ -10,6 +10,7 @@ import SelectPage from "./pages/SelectPage";
 import Discover from "./pages/Discover";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import CreatorMarketplace from "./pages/CreatorMarketplace";
 import Footer from "./pages/Footer";
 
 export default function App() {
@@ -50,6 +51,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Discover />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/creator-marketplace"
+            element={
+              <ProtectedRoute>
+                <CreatorMarketplace />
               </ProtectedRoute>
             }
           />

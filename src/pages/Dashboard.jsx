@@ -9,6 +9,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [connecting, setConnecting] = useState(false)
+  const [metaAccounts, setMetaAccounts] = useState([])
+  const [metaLoading, setMetaLoading] = useState(true)
+  const [metaConnecting, setMetaConnecting] = useState(false)
+  const [metaDisconnecting, setMetaDisconnecting] = useState(null)
   const [quickSearch, setQuickSearch] = useState('')
   const navigate = useNavigate()
 
@@ -26,6 +30,20 @@ export default function Dashboard() {
   }, [token])
 
   useEffect(() => { loadAccounts() }, [loadAccounts])
+
+  const loadMetaAccounts = useCallback(async () => {
+    setMetaLoading(true)
+    try {
+      const result = await api.listMetaBrandAccounts(token)
+      setMetaAccounts(Array.isArray(result) ? result : [])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setMetaLoading(false)
+    }
+  }, [token])
+
+  useEffect(() => { loadMetaAccounts() }, [loadMetaAccounts])
 
   async function handleConnect() {
     setConnecting(true)
@@ -46,6 +64,34 @@ export default function Dashboard() {
       setAccounts(prev => prev.filter(a => a.igUserId !== igUserId))
     } catch (err) {
       setError(err.message)
+    }
+  }
+
+  async function handleMetaConnect() {
+    if (metaConnecting) return
+    setMetaConnecting(true)
+    setError(null)
+    try {
+      const response = await api.startMetaBrandConnect(token)
+      if (!response?.authorizationUrl) throw new Error('The server did not return a Meta authorization URL.')
+      window.location.assign(response.authorizationUrl)
+    } catch (err) {
+      setError(err.message)
+      setMetaConnecting(false)
+    }
+  }
+
+  async function handleMetaDisconnect(igUserId) {
+    if (!window.confirm('Disconnect this Meta brand account? This revokes access and removes the stored connection.')) return
+    setMetaDisconnecting(igUserId)
+    setError(null)
+    try {
+      await api.disconnectMetaBrandAccount(igUserId, token)
+      setMetaAccounts(prev => prev.filter(account => account.igUserId !== igUserId))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setMetaDisconnecting(null)
     }
   }
 
@@ -75,6 +121,12 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Link
+              className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all"
+              to="/creator-marketplace"
+            >
+              Creator Marketplace
+            </Link>
             <Link 
               className="flex-1 sm:flex-initial text-center py-2 px-4 rounded-xl bg-panel-light hover:bg-panel-light/80 text-text-primary text-xs font-medium border border-panel-border transition-all" 
               to="/discover"
@@ -186,8 +238,9 @@ export default function Dashboard() {
             )}
           </section>
 
-          {/* Right Side Bento Grid Stack */}
+          {/* Connections and discovery */}
           <div className="space-y-6 flex flex-col justify-between">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-text-secondary">Connections</h2>
             
             {/* Connect Account CTA Card (col-span-1) */}
             <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-panel/75 to-accent-primary/10 border border-panel-border shadow-xl hover:border-accent-primary/30 transition-all duration-300 relative overflow-hidden flex-1 flex flex-col justify-between min-h-[220px]">
@@ -200,9 +253,9 @@ export default function Dashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
-                <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Connect Instagram</h3>
+                <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Instagram Creator Account</h3>
                 <p className="text-xs text-text-secondary leading-relaxed mb-6">
-                  Add another Business or Creator account managed by your Facebook page to inspect media reach and audience stats.
+                  Connect your professional Instagram account for creator-owned insights, media and automation.
                 </p>
               </div>
 
@@ -211,7 +264,21 @@ export default function Dashboard() {
                 onClick={handleConnect} 
                 disabled={connecting}
               >
-                {connecting ? 'Redirecting to Meta...' : 'Link New Profile'}
+                {connecting ? 'Redirecting to Meta...' : 'Connect Instagram Creator Account'}
+              </button>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-panel/75 to-accent-secondary/10 border border-panel-border shadow-xl hover:border-accent-secondary/30 transition-all duration-300 relative overflow-hidden flex-1 flex flex-col justify-between min-h-[240px]">
+              <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-accent-secondary/20 rounded-full blur-2xl pointer-events-none"></div>
+              <div>
+                <div className="h-9 w-9 rounded-xl bg-accent-secondary/10 border border-accent-secondary/20 text-accent-secondary flex items-center justify-center mb-4">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                </div>
+                <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Meta Brand Account</h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-6">Connect the Facebook Page linked to your brand’s Instagram business account to search and evaluate creators through Instagram Creator Marketplace.</p>
+              </div>
+              <button type="button" className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-secondary to-accent-primary hover:opacity-95 text-white text-xs font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all" onClick={handleMetaConnect} disabled={metaConnecting}>
+                {metaConnecting ? 'Redirecting to Meta...' : 'Connect Meta Brand Account'}
               </button>
             </div>
 
@@ -249,6 +316,11 @@ export default function Dashboard() {
           </div>
 
         </main>
+
+        <section className="p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6"><div><h2 className="text-xl font-bold">Meta Brand Connections</h2><p className="mt-1 text-sm text-text-secondary">Facebook Pages linked to brand Instagram business accounts.</p></div><Link to="/creator-marketplace" className="rounded-xl bg-accent-secondary/10 border border-accent-secondary/20 px-4 py-2 text-xs font-semibold text-accent-secondary hover:bg-accent-secondary/20">Open Creator Marketplace</Link></div>
+          {metaLoading ? <div className="py-10 text-center text-xs text-text-secondary">Loading Meta brand accounts...</div> : metaAccounts.length === 0 ? <div className="rounded-2xl border border-dashed border-panel-border bg-bg-deep/30 p-8 text-center"><h3 className="text-sm font-semibold">No Meta brand account connected</h3><p className="mt-1 text-xs text-text-secondary">Use the Meta Brand Account connection card above to get started.</p></div> : <div className="grid gap-4 md:grid-cols-2">{metaAccounts.map(account => <div key={account.igUserId} className="rounded-2xl border border-panel-border bg-bg-deep/40 p-5"><div className="flex items-start justify-between gap-3"><div><div className="font-bold">@{account.igUsername || account.igUserId}</div><div className="mt-1 text-xs text-text-secondary">{account.pageName || 'Facebook Page'}</div></div><span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-400">Connected</span></div>{account.tokenExpiresAt && <p className="mt-4 text-[10px] text-text-secondary">Token expires {new Date(account.tokenExpiresAt).toLocaleDateString()}</p>}<button type="button" onClick={() => handleMetaDisconnect(account.igUserId)} disabled={metaDisconnecting !== null} className="mt-4 rounded-lg border border-red-500/20 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-50">{metaDisconnecting === account.igUserId ? 'Disconnecting...' : 'Disconnect'}</button></div>)}</div>}
+        </section>
       </div>
     </div>
   )

@@ -35,7 +35,7 @@ from within the hash fragment. Restart the backend after setting these.
 ## How the OAuth flow works from here
 
 1. User registers/logs in → backend returns a JWT, stored in `localStorage`.
-2. Dashboard's "Connect Instagram account" button calls `GET /api/v1/instagram/auth/connect`
+2. Dashboard's "Connect Instagram Creator Account" button calls `GET /api/v1/instagram-login/connect`
    with the JWT in the `Authorization` header. The backend returns `{ authorizationUrl }`
    as JSON (not a redirect - a `fetch()` call can't follow a redirect while keeping the
    auth header).
@@ -62,6 +62,13 @@ from within the hash fragment. Restart the backend after setting these.
 export IG_OAUTH_SELECT_REDIRECT="http://localhost:5173/#/select-page"
 ```
 Without this, the backend returns the selection options as raw JSON instead of redirecting here - set it alongside `IG_OAUTH_SUCCESS_REDIRECT`.
+
+## Meta brand connection and Creator Marketplace
+
+Authenticated users can also connect a brand through `GET /api/v1/instagram/auth/connect`.
+Brand connections are listed from `GET /api/v1/instagram/auth/accounts` and are used by
+the `/creator-marketplace` page. The creator-owned Instagram connection above remains
+separate and continues to power insights and auto-DM functionality.
 
 ## Build for production
 
