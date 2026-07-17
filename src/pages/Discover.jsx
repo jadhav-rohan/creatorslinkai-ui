@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
@@ -6,8 +6,8 @@ import { useWorkspace } from '../context/WorkspaceContext'
 import AddToCreatorListDialog from '../components/AddToCreatorListDialog'
 
 export default function Discover() {
-  const { token } = useAuth()
-  const { selectedWorkspaceId } = useWorkspace()
+  const { token, logout } = useAuth()
+  const { selectedWorkspace, selectedWorkspaceId, loading: workspacesLoading, reloadWorkspaces } = useWorkspace()
   const [searchParams] = useSearchParams()
   const initialUsername = searchParams.get('username') || ''
 
@@ -18,30 +18,44 @@ export default function Discover() {
   const [searched, setSearched] = useState(false)
   const [catalogProfile, setCatalogProfile] = useState(null)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const searchController = useRef(null)
 
   const performSearch = useCallback(async (targetUser) => {
-    if (!targetUser.trim()) return
+    if (!targetUser.trim() || workspacesLoading) return
+    if (!selectedWorkspaceId) { setError('Create or select a workspace before searching creators.'); return }
+    searchController.current?.abort()
+    const controller = new AbortController()
+    searchController.current = controller
     setLoading(true)
     setError(null)
     setSearched(true)
     try {
-      const result = await api.discoverCreator(targetUser.trim().replace(/^@/, ''), token)
+      const result = await api.discoverCreator(targetUser.trim().replace(/^@/, ''), selectedWorkspaceId, token, undefined, { signal: controller.signal })
+      if (controller.signal.aborted) return
       setProfile(result)
       try {
-        const catalog = await api.searchCreatorCatalog(result.username || targetUser, token, 25)
+        const catalog = await api.searchCreatorCatalog(result.username || targetUser, token, 25, { signal: controller.signal })
         const match = Array.isArray(catalog) ? catalog.find((item) => item.instagramUsername?.toLowerCase() === (result.username || targetUser).replace(/^@/, '').toLowerCase()) : null
         setCatalogProfile(match || null)
       } catch {
         setCatalogProfile(null)
       }
     } catch (err) {
+      if (err.name === 'AbortError') return
       setProfile(null)
       setCatalogProfile(null)
-      setError(err.message)
+      if (err.status === 401) logout()
+      else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }
+      else setError(err.status >= 500 ? 'Creator discovery is temporarily unavailable. Please retry.' : err.message)
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
-  }, [token])
+  }, [selectedWorkspaceId, workspacesLoading, token, logout, reloadWorkspaces])
+
+  useEffect(() => {
+    searchController.current?.abort()
+    setProfile(null); setCatalogProfile(null); setSearched(false); setError(null); setAddDialogOpen(false)
+  }, [selectedWorkspaceId])
 
   // Automatically trigger search if username is present in the URL query string
   useEffect(() => {
@@ -85,7 +99,7 @@ export default function Discover() {
           <div className="max-w-2xl">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-text-primary">Discover Public Creators</h1>
             <p className="text-xs md:text-sm text-text-secondary mt-1 mb-6 leading-relaxed">
-              Search any public Instagram Business or Creator account by username. Only public stats are shown - Meta restricts rich demographic and reach insights to the owner.
+              Search any public Instagram Business or Creator account using a Facebook Login connection in {selectedWorkspace?.name || 'the selected workspace'}. Only public stats are shown.
             </p>
           </div>
 
@@ -102,7 +116,7 @@ export default function Discover() {
             </div>
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || workspacesLoading || !selectedWorkspaceId}
               className="py-3 px-6 rounded-xl bg-accent-primary hover:bg-accent-primary/95 text-white text-sm font-semibold shadow-lg shadow-accent-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? 'Searching...' : 'Lookup Creator'}

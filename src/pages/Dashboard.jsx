@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { api } from '../api'
 import { useWorkspace } from '../context/WorkspaceContext'
+import { clearConnectionMarker, connectionService, markConnectionInProgress, readConnectionMarker } from '../services/connectionService'
 
 export default function Dashboard() {
   const { token, email, logout } = useAuth()
@@ -16,47 +16,61 @@ export default function Dashboard() {
   const [metaDisconnecting, setMetaDisconnecting] = useState(null)
   const [quickSearch, setQuickSearch] = useState('')
   const navigate = useNavigate()
-  const { workspaces, selectedWorkspaceId, setSelectedWorkspaceId, loading: workspacesLoading, error: workspaceError, createWorkspace } = useWorkspace()
+  const { workspaces, selectedWorkspace, selectedWorkspaceId, setSelectedWorkspaceId, loading: workspacesLoading, error: workspaceError, createWorkspace, reloadWorkspaces } = useWorkspace()
   const [workspaceName, setWorkspaceName] = useState('')
   const [creatingWorkspace, setCreatingWorkspace] = useState(false)
+  const [connectionNotice, setConnectionNotice] = useState(null)
+  const [connectionsWorkspaceId, setConnectionsWorkspaceId] = useState('')
 
-  const loadAccounts = useCallback(async () => {
-    setLoading(true)
+  useEffect(() => {
+    setAccounts([])
+    setMetaAccounts([])
+    setConnectionNotice(null)
+    setConnectionsWorkspaceId('')
     setError(null)
-    try {
-      const result = await api.listAccounts(token)
-      setAccounts(result)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    if (workspacesLoading) { setLoading(true); setMetaLoading(true); return }
+    if (!selectedWorkspaceId) { setLoading(false); setMetaLoading(false); return }
+    const controller = new AbortController()
+    let loadedInstagram = []
+    let loadedFacebook = []
+    setLoading(true); setMetaLoading(true)
+    const handleLoadError = (err) => {
+      if (err.name === 'AbortError') return
+      if (err.status === 401) logout()
+      else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }
+      else setError(err.status >= 500 ? 'Connections are temporarily unavailable. Please retry.' : err.message)
     }
-  }, [token])
-
-  useEffect(() => { loadAccounts() }, [loadAccounts])
-
-  const loadMetaAccounts = useCallback(async () => {
-    setMetaLoading(true)
-    try {
-      const result = await api.listMetaBrandAccounts(token)
-      setMetaAccounts(Array.isArray(result) ? result : [])
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setMetaLoading(false)
-    }
-  }, [token])
-
-  useEffect(() => { loadMetaAccounts() }, [loadMetaAccounts])
+    const instagramRequest = connectionService.listInstagram(selectedWorkspaceId, token, controller.signal)
+      .then(result => { loadedInstagram = Array.isArray(result) ? result : []; if (!controller.signal.aborted) setAccounts(loadedInstagram) })
+      .catch(handleLoadError).finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    const facebookRequest = connectionService.listFacebook(selectedWorkspaceId, token, controller.signal)
+      .then(result => { loadedFacebook = Array.isArray(result) ? result : []; if (!controller.signal.aborted) setMetaAccounts(loadedFacebook) })
+      .catch(handleLoadError).finally(() => { if (!controller.signal.aborted) setMetaLoading(false) })
+    Promise.allSettled([instagramRequest, facebookRequest]).then(() => {
+      if (controller.signal.aborted) return
+      setConnectionsWorkspaceId(selectedWorkspaceId)
+      const marker = readConnectionMarker()
+      if (!marker || marker.workspaceId !== selectedWorkspaceId) return
+      const current = marker.connectionType === 'INSTAGRAM_LOGIN' ? loadedInstagram : loadedFacebook
+      const hasNewAccount = current.some(account => !marker.existingAccountIds?.includes(account.igUserId))
+      if (hasNewAccount) setConnectionNotice(`${marker.connectionType === 'INSTAGRAM_LOGIN' ? 'Instagram Login' : 'Facebook Login'} connected to this workspace.`)
+      clearConnectionMarker()
+    })
+    return () => controller.abort()
+  }, [selectedWorkspaceId, workspacesLoading, token, logout, reloadWorkspaces])
 
   async function handleConnect() {
+    if (!selectedWorkspaceId || workspacesLoading) return
     setConnecting(true)
     setError(null)
     try {
-      const { authorizationUrl } = await api.startConnect(token)
+      const { authorizationUrl } = await connectionService.connectInstagram(selectedWorkspaceId, token)
+      markConnectionInProgress(selectedWorkspaceId, 'INSTAGRAM_LOGIN', accounts.map(account => account.igUserId))
       window.location.href = authorizationUrl
     } catch (err) {
-      setError(err.message)
+      if (err.status === 401) logout()
+      else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }
+      else setError(err.status >= 500 ? 'Instagram Login is temporarily unavailable. Please retry.' : err.message)
       setConnecting(false)
     }
   }
@@ -64,23 +78,32 @@ export default function Dashboard() {
   async function handleDisconnect(igUserId) {
     if (!window.confirm('Disconnect this account? This revokes access and deletes the stored token.')) return
     try {
-      await api.disconnectAccount(igUserId, token)
+      await connectionService.disconnectInstagram(igUserId, selectedWorkspaceId, token)
       setAccounts(prev => prev.filter(a => a.igUserId !== igUserId))
     } catch (err) {
-      setError(err.message)
+      if (err.status === 404) {
+        setAccounts(prev => prev.filter(a => a.igUserId !== igUserId))
+        try { const refreshed = await connectionService.listInstagram(selectedWorkspaceId, token); setAccounts(Array.isArray(refreshed) ? refreshed : []) } catch { /* keep stale entry removed */ }
+      }
+      else if (err.status === 401) logout()
+      else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }
+      else setError(err.status >= 500 ? 'The connection could not be removed. Please retry.' : err.message)
     }
   }
 
   async function handleMetaConnect() {
-    if (metaConnecting) return
+    if (metaConnecting || !selectedWorkspaceId || workspacesLoading) return
     setMetaConnecting(true)
     setError(null)
     try {
-      const response = await api.startMetaBrandConnect(token)
+      const response = await connectionService.connectFacebook(selectedWorkspaceId, token)
       if (!response?.authorizationUrl) throw new Error('The server did not return a Meta authorization URL.')
+      markConnectionInProgress(selectedWorkspaceId, 'FACEBOOK_LOGIN', metaAccounts.map(account => account.igUserId))
       window.location.assign(response.authorizationUrl)
     } catch (err) {
-      setError(err.message)
+      if (err.status === 401) logout()
+      else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }
+      else setError(err.status >= 500 ? 'Facebook Login is temporarily unavailable. Please retry.' : err.message)
       setMetaConnecting(false)
     }
   }
@@ -90,10 +113,16 @@ export default function Dashboard() {
     setMetaDisconnecting(igUserId)
     setError(null)
     try {
-      await api.disconnectMetaBrandAccount(igUserId, token)
+      await connectionService.disconnectFacebook(igUserId, selectedWorkspaceId, token)
       setMetaAccounts(prev => prev.filter(account => account.igUserId !== igUserId))
     } catch (err) {
-      setError(err.message)
+      if (err.status === 404) {
+        setMetaAccounts(prev => prev.filter(account => account.igUserId !== igUserId))
+        try { const refreshed = await connectionService.listFacebook(selectedWorkspaceId, token); setMetaAccounts(Array.isArray(refreshed) ? refreshed : []) } catch { /* keep stale entry removed */ }
+      }
+      else if (err.status === 401) logout()
+      else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }
+      else setError(err.status >= 500 ? 'The connection could not be removed. Please retry.' : err.message)
     } finally {
       setMetaDisconnecting(null)
     }
@@ -119,6 +148,9 @@ export default function Dashboard() {
       setCreatingWorkspace(false)
     }
   }
+
+  const displayAccounts = connectionsWorkspaceId === selectedWorkspaceId ? accounts : []
+  const displayMetaAccounts = connectionsWorkspaceId === selectedWorkspaceId ? metaAccounts : []
 
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary px-4 py-8 md:py-12 relative overflow-hidden">
@@ -185,6 +217,8 @@ export default function Dashboard() {
             <span>{error}</span>
           </div>
         )}
+        {connectionNotice && <div role="status" className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">{connectionNotice}</div>}
+        {!workspacesLoading && !selectedWorkspaceId && <div role="status" className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-300">Create or select a workspace before connecting Instagram or Facebook accounts.</div>}
 
         {/* Bento Grid */}
         <main className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -193,16 +227,16 @@ export default function Dashboard() {
           <section className="md:col-span-2 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl flex flex-col justify-between min-h-[400px]">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-bold tracking-tight text-text-primary">Your Instagram Accounts</h2>
+                <h2 className="text-xl font-bold tracking-tight text-text-primary">Instagram Login Accounts</h2>
                 <span className="px-2.5 py-1 rounded-full bg-accent-primary/10 border border-accent-primary/20 text-[10px] font-bold text-accent-primary uppercase tracking-wider">
-                  {accounts.length} Connected
+                  {displayAccounts.length} Connected
                 </span>
               </div>
               <p className="text-sm text-text-secondary mb-8">
-                Connect and manage your Instagram Business or Creator profiles to check target stats.
+                Creator-owned accounts connected to {selectedWorkspace?.name || 'the selected workspace'} for insights, media and automation.
               </p>
 
-              {loading ? (
+              {loading || connectionsWorkspaceId !== selectedWorkspaceId ? (
                 <div className="flex flex-col items-center justify-center py-16 space-y-3">
                   <svg className="animate-spin h-8 w-8 text-accent-primary" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -210,7 +244,7 @@ export default function Dashboard() {
                   </svg>
                   <span className="text-xs text-text-secondary">Retrieving active profiles...</span>
                 </div>
-              ) : accounts.length === 0 ? (
+              ) : displayAccounts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-panel-border rounded-2xl bg-bg-deep/30">
                   <svg className="w-10 h-10 text-text-secondary/30 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -222,7 +256,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
-                  {accounts.map(acc => (
+                  {displayAccounts.map(acc => (
                     <div 
                       key={acc.igUserId} 
                       className="p-4 rounded-2xl bg-bg-deep/40 border border-panel-border hover:border-panel-border/80 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
@@ -239,9 +273,7 @@ export default function Dashboard() {
                                 Page: {acc.pageName}
                               </span>
                             )}
-                            <span className="text-[10px] text-text-secondary/75">
-                              Expires {new Date(acc.tokenExpiresAt).toLocaleDateString()}
-                            </span>
+                            {acc.tokenExpiresAt && <span className={`text-[10px] ${new Date(acc.tokenExpiresAt) <= new Date() ? 'text-red-400' : 'text-text-secondary/75'}`}>{new Date(acc.tokenExpiresAt) <= new Date() ? 'Expired' : `Expires ${new Date(acc.tokenExpiresAt).toLocaleDateString()}`}</span>}
                           </div>
                         </div>
                       </div>
@@ -266,7 +298,7 @@ export default function Dashboard() {
             </div>
 
             {/* Bottom Actions if loaded */}
-            {!loading && accounts.length > 0 && (
+            {!loading && displayAccounts.length > 0 && (
               <p className="text-[11px] text-text-secondary/70 text-center mt-6">
                 Need to link another page? Use the link card to sign in with your Facebook workspace permissions.
               </p>
@@ -288,18 +320,18 @@ export default function Dashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
-                <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Instagram Creator Account</h3>
+                <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Instagram Login</h3>
                 <p className="text-xs text-text-secondary leading-relaxed mb-6">
-                  Connect your professional Instagram account for creator-owned insights, media and automation.
+                  Creator-owned access for insights, media and automation in {selectedWorkspace?.name || 'the selected workspace'}.
                 </p>
               </div>
 
               <button 
                 className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-95 text-white text-xs font-semibold shadow-lg shadow-accent-primary/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 onClick={handleConnect} 
-                disabled={connecting}
+                disabled={connecting || workspacesLoading || !selectedWorkspaceId}
               >
-                {connecting ? 'Redirecting to Meta...' : 'Connect Instagram Creator Account'}
+                {connecting ? 'Redirecting to Instagram...' : 'Connect with Instagram Login'}
               </button>
             </div>
 
@@ -309,11 +341,11 @@ export default function Dashboard() {
                 <div className="h-9 w-9 rounded-xl bg-accent-secondary/10 border border-accent-secondary/20 text-accent-secondary flex items-center justify-center mb-4">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 </div>
-                <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Meta Brand Account</h3>
-                <p className="text-xs text-text-secondary leading-relaxed mb-6">Connect the Facebook Page linked to your brand’s Instagram business account to search and evaluate creators through Instagram Creator Marketplace.</p>
+                <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Facebook Login</h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-6">Business Discovery and Creator Marketplace access for {selectedWorkspace?.name || 'the selected workspace'}.</p>
               </div>
-              <button type="button" className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-secondary to-accent-primary hover:opacity-95 text-white text-xs font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all" onClick={handleMetaConnect} disabled={metaConnecting}>
-                {metaConnecting ? 'Redirecting to Meta...' : 'Connect Meta Brand Account'}
+              <button type="button" className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-secondary to-accent-primary hover:opacity-95 text-white text-xs font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all" onClick={handleMetaConnect} disabled={metaConnecting || workspacesLoading || !selectedWorkspaceId}>
+                {metaConnecting ? 'Redirecting to Facebook...' : 'Connect with Facebook Login'}
               </button>
             </div>
 
@@ -353,8 +385,8 @@ export default function Dashboard() {
         </main>
 
         <section className="p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6"><div><h2 className="text-xl font-bold">Meta Brand Connections</h2><p className="mt-1 text-sm text-text-secondary">Facebook Pages linked to brand Instagram business accounts.</p></div><Link to="/creator-marketplace" className="rounded-xl bg-accent-secondary/10 border border-accent-secondary/20 px-4 py-2 text-xs font-semibold text-accent-secondary hover:bg-accent-secondary/20">Open Creator Marketplace</Link></div>
-          {metaLoading ? <div className="py-10 text-center text-xs text-text-secondary">Loading Meta brand accounts...</div> : metaAccounts.length === 0 ? <div className="rounded-2xl border border-dashed border-panel-border bg-bg-deep/30 p-8 text-center"><h3 className="text-sm font-semibold">No Meta brand account connected</h3><p className="mt-1 text-xs text-text-secondary">Use the Meta Brand Account connection card above to get started.</p></div> : <div className="grid gap-4 md:grid-cols-2">{metaAccounts.map(account => <div key={account.igUserId} className="rounded-2xl border border-panel-border bg-bg-deep/40 p-5"><div className="flex items-start justify-between gap-3"><div><div className="font-bold">@{account.igUsername || account.igUserId}</div><div className="mt-1 text-xs text-text-secondary">{account.pageName || 'Facebook Page'}</div></div><span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-400">Connected</span></div>{account.tokenExpiresAt && <p className="mt-4 text-[10px] text-text-secondary">Token expires {new Date(account.tokenExpiresAt).toLocaleDateString()}</p>}<button type="button" onClick={() => handleMetaDisconnect(account.igUserId)} disabled={metaDisconnecting !== null} className="mt-4 rounded-lg border border-red-500/20 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-50">{metaDisconnecting === account.igUserId ? 'Disconnecting...' : 'Disconnect'}</button></div>)}</div>}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6"><div><h2 className="text-xl font-bold">Facebook Login Accounts</h2><p className="mt-1 text-sm text-text-secondary">Business Discovery connections belonging to {selectedWorkspace?.name || 'the selected workspace'}.</p></div><Link to="/creator-marketplace" className="rounded-xl bg-accent-secondary/10 border border-accent-secondary/20 px-4 py-2 text-xs font-semibold text-accent-secondary hover:bg-accent-secondary/20">Open Creator Marketplace</Link></div>
+          {metaLoading || connectionsWorkspaceId !== selectedWorkspaceId ? <div className="py-10 text-center text-xs text-text-secondary">Loading Facebook Login accounts...</div> : displayMetaAccounts.length === 0 ? <div className="rounded-2xl border border-dashed border-panel-border bg-bg-deep/30 p-8 text-center"><h3 className="text-sm font-semibold">No Facebook Login account connected</h3><p className="mt-1 text-xs text-text-secondary">Use the Facebook Login connection card above to get started.</p></div> : <div className="grid gap-4 md:grid-cols-2">{displayMetaAccounts.map(account => { const expired = account.tokenExpiresAt && new Date(account.tokenExpiresAt) <= new Date(); return <div key={account.igUserId} className="rounded-2xl border border-panel-border bg-bg-deep/40 p-5"><div className="flex items-start justify-between gap-3"><div><div className="font-bold">@{account.igUsername || account.igUserId}</div><div className="mt-1 text-xs text-text-secondary">{account.pageName || 'Facebook Page'}</div></div><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${expired ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{expired ? 'Expired' : 'Connected'}</span></div>{account.tokenExpiresAt && <p className={`mt-4 text-[10px] ${expired ? 'text-red-400' : 'text-text-secondary'}`}>{expired ? 'Expired ' : 'Token expires '}{new Date(account.tokenExpiresAt).toLocaleDateString()}</p>}<button type="button" onClick={() => handleMetaDisconnect(account.igUserId)} disabled={metaDisconnecting !== null} className="mt-4 rounded-lg border border-red-500/20 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-50">{metaDisconnecting === account.igUserId ? 'Disconnecting...' : 'Disconnect'}</button></div>})}</div>}
         </section>
       </div>
     </div>

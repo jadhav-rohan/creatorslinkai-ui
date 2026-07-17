@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
+import { useWorkspace } from "../context/WorkspaceContext";
+import { connectionService, markConnectionInProgress } from "../services/connectionService";
 
 const FOLLOWER_MIN = [0, 10000, 25000, 50000, 75000, 100000, 250000, 1000000];
 const FOLLOWER_MAX = [10000, 25000, 50000, 75000, 100000, 250000, 1000000];
@@ -136,6 +138,7 @@ function DetailSection({ title, value }) {
 export default function CreatorMarketplace() {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
+  const { selectedWorkspace, selectedWorkspaceId, loading: workspacesLoading, reloadWorkspaces } = useWorkspace();
   const [brands, setBrands] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [accountsLoading, setAccountsLoading] = useState(true);
@@ -148,31 +151,43 @@ export default function CreatorMarketplace() {
   const [permissionError, setPermissionError] = useState(false);
   const [selectedCreator, setSelectedCreator] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const brandRequestId = useRef(0);
+  const [brandsWorkspaceId, setBrandsWorkspaceId] = useState("");
 
   const loadBrands = useCallback(async () => {
+    const requestId = ++brandRequestId.current;
+    setBrands([]); setBrandsWorkspaceId(""); setSelectedBrand(""); setCreators([]); setAfter(null);
+    if (workspacesLoading) { setAccountsLoading(true); return; }
+    if (!selectedWorkspaceId) { setAccountsLoading(false); return; }
     setAccountsLoading(true);
     try {
-      const result = await api.listMetaBrandAccounts(token);
+      const result = await connectionService.listFacebook(selectedWorkspaceId, token);
+      if (requestId !== brandRequestId.current) return;
       const list = Array.isArray(result) ? result : [];
       setBrands(list);
-      setSelectedBrand((current) => current || list[0]?.igUserId || "");
+      setBrandsWorkspaceId(selectedWorkspaceId);
+      setSelectedBrand(list[0]?.igUserId || "");
     } catch (err) {
+      if (requestId !== brandRequestId.current) return;
       if (err.status === 401) { logout(); navigate("/login", { replace: true }); return; }
+      if (err.status === 403) { setError("You do not have access to this workspace."); reloadWorkspaces(); return; }
       setError(marketplaceError(err));
-    } finally { setAccountsLoading(false); }
-  }, [token, logout, navigate]);
+    } finally { if (requestId === brandRequestId.current) setAccountsLoading(false); }
+  }, [selectedWorkspaceId, workspacesLoading, token, logout, navigate, reloadWorkspaces]);
 
   useEffect(() => { loadBrands(); }, [loadBrands]);
 
   async function connectBrand() {
-    if (connecting) return;
+    if (connecting || workspacesLoading || !selectedWorkspaceId) return;
     setConnecting(true); setError(null);
     try {
-      const response = await api.startMetaBrandConnect(token);
+      const response = await connectionService.connectFacebook(selectedWorkspaceId, token);
       if (!response?.authorizationUrl) throw new Error("The server did not return a Meta authorization URL.");
+      markConnectionInProgress(selectedWorkspaceId, "FACEBOOK_LOGIN", brands.map((brand) => brand.igUserId));
       window.location.assign(response.authorizationUrl);
     } catch (err) {
       if (err.status === 401) { logout(); navigate("/login", { replace: true }); return; }
+      if (err.status === 403) { setError("You do not have access to this workspace."); reloadWorkspaces(); setConnecting(false); return; }
       setError(marketplaceError(err)); setConnecting(false);
     }
   }
@@ -180,7 +195,7 @@ export default function CreatorMarketplace() {
   function onChange(event) { setFilters((current) => ({ ...current, [event.target.name]: event.target.value })); }
 
   async function runSearch({ loadMore = false } = {}) {
-    if (searching || !selectedBrand) return;
+    if (searching || !selectedBrand || !selectedWorkspaceId || brandsWorkspaceId !== selectedWorkspaceId) return;
     const { payload, arrays } = buildPayload(filters, selectedBrand, loadMore ? after : null);
     const validationError = validate(filters, arrays);
     if (validationError) { setError(validationError); return; }
@@ -208,6 +223,7 @@ export default function CreatorMarketplace() {
   }
 
   const selectedBrandAccount = useMemo(() => brands.find((brand) => brand.igUserId === selectedBrand), [brands, selectedBrand]);
+  const visibleBrands = brandsWorkspaceId === selectedWorkspaceId ? brands : [];
 
   useEffect(() => {
     setCreators([]);
@@ -216,9 +232,9 @@ export default function CreatorMarketplace() {
   }, [selectedBrand]);
 
   return <div className="min-h-screen bg-bg-deep px-4 py-8 text-text-primary md:py-12"><div className="mx-auto max-w-7xl space-y-6">
-    <header className="flex flex-col gap-4 rounded-2xl border border-panel-border bg-panel/50 p-6 sm:flex-row sm:items-center sm:justify-between"><div><Link to="/dashboard" className="text-xs text-text-secondary hover:text-accent-primary">← Back to dashboard</Link><h1 className="mt-3 text-2xl font-extrabold">Creator Marketplace</h1><p className="mt-1 text-sm text-text-secondary">Search and evaluate creators as a connected Meta brand.</p></div>{brands.length > 1 && <SelectField label="Search as brand" name="brand" value={selectedBrand} onChange={(event) => setSelectedBrand(event.target.value)} options={brands.map((brand) => [brand.igUserId, `@${brand.igUsername || brand.igUserId} — ${brand.pageName || "Facebook Page"}`])} />}</header>
+    <header className="flex flex-col gap-4 rounded-2xl border border-panel-border bg-panel/50 p-6 sm:flex-row sm:items-center sm:justify-between"><div><Link to="/dashboard" className="text-xs text-text-secondary hover:text-accent-primary">← Back to dashboard</Link><h1 className="mt-3 text-2xl font-extrabold">Creator Marketplace</h1><p className="mt-1 text-sm text-text-secondary">Search and evaluate creators using Facebook Login connections in {selectedWorkspace?.name || "the selected workspace"}.</p></div>{visibleBrands.length > 1 && <SelectField label="Search as brand" name="brand" value={selectedBrand} onChange={(event) => setSelectedBrand(event.target.value)} options={visibleBrands.map((brand) => [brand.igUserId, `@${brand.igUsername || brand.igUserId} — ${brand.pageName || "Facebook Page"}`])} />}</header>
     {error && <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300"><p>{error}</p>{permissionError && <button type="button" onClick={connectBrand} disabled={connecting} className="mt-3 rounded-lg bg-red-500/15 px-3 py-2 text-xs font-semibold hover:bg-red-500/25 disabled:opacity-50">{connecting ? "Opening Meta…" : "Reconnect Meta Brand Account"}</button>}</div>}
-    {accountsLoading ? <div className="rounded-3xl border border-panel-border bg-panel/50 p-10 text-center text-sm text-text-secondary">Loading Meta brand connections…</div> : !brands.length ? <div className="rounded-3xl border border-dashed border-panel-border bg-panel/40 p-10 text-center"><h2 className="text-xl font-bold">Connect your Meta brand account</h2><p className="mx-auto mt-2 max-w-xl text-sm text-text-secondary">Creator Marketplace requires a Facebook Page linked to an eligible Instagram business account.</p><button type="button" onClick={connectBrand} disabled={connecting} className="mt-6 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary px-5 py-3 text-sm font-semibold disabled:opacity-50">{connecting ? "Opening Meta…" : "Connect Meta Brand Account"}</button></div> : <>
+    {accountsLoading || (selectedWorkspaceId && brandsWorkspaceId !== selectedWorkspaceId) ? <div className="rounded-3xl border border-panel-border bg-panel/50 p-10 text-center text-sm text-text-secondary">Loading Facebook Login connections…</div> : !selectedWorkspaceId ? <div className="rounded-3xl border border-dashed border-panel-border bg-panel/40 p-10 text-center"><h2 className="text-xl font-bold">Select a workspace first</h2><p className="mx-auto mt-2 max-w-xl text-sm text-text-secondary">Create or select a workspace on the dashboard before connecting Facebook Login.</p></div> : !visibleBrands.length ? <div className="rounded-3xl border border-dashed border-panel-border bg-panel/40 p-10 text-center"><h2 className="text-xl font-bold">Connect your Facebook Login account</h2><p className="mx-auto mt-2 max-w-xl text-sm text-text-secondary">Creator Marketplace requires a Facebook Page linked to an eligible Instagram business account in this workspace.</p><button type="button" onClick={connectBrand} disabled={connecting || workspacesLoading || !selectedWorkspaceId} className="mt-6 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary px-5 py-3 text-sm font-semibold disabled:opacity-50">{connecting ? "Opening Facebook…" : "Connect with Facebook Login"}</button></div> : <>
       <form onSubmit={(event) => { event.preventDefault(); runSearch(); }} className="rounded-3xl border border-panel-border bg-panel/50 p-6 md:p-8"><div className="mb-6"><h2 className="text-lg font-bold">Search creators</h2><p className="mt-1 text-xs text-text-secondary">Searching as @{selectedBrandAccount?.igUsername || selectedBrand}. Use exact API values separated by commas for country codes and interests.</p></div><div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <TextField label="Free-text query" name="query" value={filters.query} onChange={onChange} placeholder="travel" /><TextField label="Exact username" name="username" value={filters.username} onChange={onChange} placeholder="@creator" />
         <TextField label="Creator countries" name="creatorCountries" value={filters.creatorCountries} onChange={onChange} placeholder="IN, US" /><TextField label="Creator states" name="creatorStates" value={filters.creatorStates} onChange={onChange} placeholder="CA, NY (requires US)" />

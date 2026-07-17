@@ -10,7 +10,7 @@ export class ApiError extends Error {
 
 async function request(
   path,
-  { method = "GET", body, token, headers = {} } = {}
+  { method = "GET", body, token, headers = {}, signal } = {}
 ) {
   const finalHeaders = { ...headers };
   if (body !== undefined) finalHeaders["Content-Type"] = "application/json";
@@ -20,6 +20,7 @@ async function request(
     method,
     headers: finalHeaders,
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    signal,
   });
 
   if (res.status === 204) return null;
@@ -41,6 +42,15 @@ async function request(
   return data;
 }
 
+function withQuery(path, params) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") query.set(key, value);
+  });
+  const suffix = query.toString();
+  return suffix ? `${path}?${suffix}` : path;
+}
+
 export const api = {
   register: (email, password) =>
     request("/api/v1/auth/register", {
@@ -53,20 +63,21 @@ export const api = {
       body: { email, password },
     }),
 
-  startConnect: (token) =>
-    request("/api/v1/instagram-login/connect", { token }),
-  listAccounts: (token) =>
-    request("/api/v1/instagram-login/accounts", { token }),
-  disconnectAccount: (igUserId, token) =>
-    request(`/api/v1/instagram-login/${igUserId}`, { method: "DELETE", token }),
-  startMetaBrandConnect: (token) =>
-    request("/api/v1/instagram/auth/connect", { token }),
-  listMetaBrandAccounts: (token) =>
-    request("/api/v1/instagram/auth/accounts", { token }),
-  disconnectMetaBrandAccount: (igUserId, token) =>
-    request(`/api/v1/instagram/auth/${encodeURIComponent(igUserId)}`, {
+  startConnect: (workspaceId, token, options) =>
+    request(withQuery("/api/v1/instagram-login/connect", { workspaceId }), { token, ...options }),
+  listAccounts: (workspaceId, token, options) =>
+    request(withQuery("/api/v1/instagram-login/accounts", { workspaceId }), { token, ...options }),
+  disconnectAccount: (igUserId, workspaceId, token, options) =>
+    request(withQuery(`/api/v1/instagram-login/${encodeURIComponent(igUserId)}`, { workspaceId }), { method: "DELETE", token, ...options }),
+  startMetaBrandConnect: (workspaceId, token, options) =>
+    request(withQuery("/api/v1/instagram/auth/connect", { workspaceId }), { token, ...options }),
+  listMetaBrandAccounts: (workspaceId, token, options) =>
+    request(withQuery("/api/v1/instagram/auth/accounts", { workspaceId }), { token, ...options }),
+  disconnectMetaBrandAccount: (igUserId, workspaceId, token, options) =>
+    request(withQuery(`/api/v1/instagram/auth/${encodeURIComponent(igUserId)}`, { workspaceId }), {
       method: "DELETE",
       token,
+      ...options,
     }),
   getInsights: (igUserId, token, reelLimit = 10) =>
     request(`/api/v1/instagram/${igUserId}/insights?reelLimit=${reelLimit}`, {
@@ -82,12 +93,13 @@ export const api = {
       token,
     }),
 
-  discoverCreator: (username, token) =>
-    request(`/api/v1/instagram/discovery/${encodeURIComponent(username)}`, {
+  discoverCreator: (username, workspaceId, token, callerIgUserId, options) =>
+    request(withQuery(`/api/v1/instagram/discovery/${encodeURIComponent(username)}`, { workspaceId, callerIgUserId }), {
       token,
+      ...options,
     }),
-  searchCreatorCatalog: (query, token, limit = 25) =>
-    request(`/api/v1/instagram/discovery/catalog?query=${encodeURIComponent(query)}&limit=${limit}`, { token }),
+  searchCreatorCatalog: (query, token, limit = 25, options) =>
+    request(withQuery("/api/v1/instagram/discovery/catalog", { query, limit }), { token, ...options }),
 
   fetchRules: (igUserId, token) =>
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, { token }),
