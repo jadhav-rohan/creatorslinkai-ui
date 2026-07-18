@@ -67,6 +67,7 @@ export const api = {
   loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password } }),
   registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType } }),
   loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password } }),
+  getCreatorDashboard: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-dashboard`, { igUserId }), { token, ...options }),
 
   startConnect: (workspaceId, token, options) =>
     request(withQuery("/api/v1/instagram-login/connect", { workspaceId }), { token, ...options }),
