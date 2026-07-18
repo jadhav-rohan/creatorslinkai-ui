@@ -124,11 +124,12 @@ export const api = {
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules/${ruleId}/log`, {
       token,
     }),
-  getInsightHistory: (igUserId, token, days = 30) =>
-    request(`/api/v1/instagram/${igUserId}/history?days=${days}`, { token }),
-  getAudienceQuality: (igUserId, token, days = 30) =>
+  getInsightHistory: (igUserId, token, days = 30, options) =>
+    request(`/api/v1/instagram/${igUserId}/history?days=${days}`, { token, ...options }),
+  getAudienceQuality: (igUserId, token, days = 30, options) =>
     request(`/api/v1/instagram/${igUserId}/audience-quality?days=${days}`, {
       token,
+      ...options,
     }),
   searchCreatorMarketplace: (filters, token) =>
     request("/api/v1/creator-marketplace/search", {
