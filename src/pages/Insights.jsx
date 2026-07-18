@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
+import { useWorkspaceAuthorization } from "../context/WorkspaceAuthorizationContext";
 import { ChevronDown } from "lucide-react";
 import {
   Users,
@@ -26,6 +27,7 @@ import {
 export default function Insights() {
   const { igUserId } = useParams();
   const { token } = useAuth();
+  const {hasPermission}=useWorkspaceAuthorization();const canViewAutoDm=hasPermission("AUTO_DM_VIEW"),canEditAutoDm=hasPermission("AUTO_DM_EDIT");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -155,6 +157,7 @@ export default function Insights() {
 
   // Delete rule action
   async function handleDeleteRule(ruleId) {
+    if(!canEditAutoDm)return;
     if (
       !window.confirm("Are you sure you want to delete this automation rule?")
     )
@@ -171,6 +174,7 @@ export default function Insights() {
   // Create rule action
   async function handleCreateRule(e) {
     e.preventDefault();
+    if(!canEditAutoDm)return;
     setFormError(null);
 
     if (!selectedReelId) {
@@ -692,7 +696,7 @@ export default function Insights() {
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary rounded-full" />
                   )}
                 </button>
-                <button
+                {canViewAutoDm&&<button
                   onClick={() => setActiveTab("automations")}
                   className={`pb-4 text-sm font-semibold relative transition-colors cursor-pointer ${
                     activeTab === "automations"
@@ -704,7 +708,7 @@ export default function Insights() {
                   {activeTab === "automations" && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary rounded-full" />
                   )}
-                </button>
+                </button>}
               </div>
 
               {activeTab === "insights" ? (
@@ -1689,7 +1693,7 @@ export default function Insights() {
                         public comment replies on your reels.
                       </p>
                     </div>
-                    <button
+                    {canEditAutoDm&&<button
                       onClick={() => {
                         setFormError(null);
                         setIsCreateModalOpen(true);
@@ -1710,7 +1714,7 @@ export default function Insights() {
                         />
                       </svg>
                       Create Rule
-                    </button>
+                    </button>}
                   </div>
 
                   {loadingRules ? (
@@ -1880,7 +1884,7 @@ export default function Insights() {
                                   </svg>
                                   Logs
                                 </button>
-                                <button
+                                {canEditAutoDm&&<button
                                   onClick={() => handleDeleteRule(rule.id)}
                                   className="p-2 rounded-xl bg-panel-light hover:bg-red-500/10 text-text-secondary hover:text-red-400 border border-panel-border cursor-pointer transition-colors flex items-center justify-center"
                                   title="Delete Rule"
@@ -1898,7 +1902,7 @@ export default function Insights() {
                                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                     />
                                   </svg>
-                                </button>
+                                </button>}
                               </div>
                             </div>
                           </div>

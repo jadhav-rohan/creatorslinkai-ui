@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { clearConnectionMarker, connectionService, markConnectionInProgress, readConnectionMarker } from '../services/connectionService'
+import { useWorkspaceAuthorization } from '../context/WorkspaceAuthorizationContext'
 
 export default function Dashboard() {
   const { token, email, logout } = useAuth()
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [creatingWorkspace, setCreatingWorkspace] = useState(false)
   const [connectionNotice, setConnectionNotice] = useState(null)
   const [connectionsWorkspaceId, setConnectionsWorkspaceId] = useState('')
+  const { hasPermission, isLoading: permissionsLoading, refreshPermissions } = useWorkspaceAuthorization()
 
   useEffect(() => {
     setAccounts([])
@@ -29,8 +31,9 @@ export default function Dashboard() {
     setConnectionNotice(null)
     setConnectionsWorkspaceId('')
     setError(null)
-    if (workspacesLoading) { setLoading(true); setMetaLoading(true); return }
+    if (workspacesLoading || permissionsLoading) { setLoading(true); setMetaLoading(true); return }
     if (!selectedWorkspaceId) { setLoading(false); setMetaLoading(false); return }
+    if (!hasPermission('CONNECTION_VIEW')) { setConnectionsWorkspaceId(selectedWorkspaceId); setLoading(false); setMetaLoading(false); return }
     const controller = new AbortController()
     let loadedInstagram = []
     let loadedFacebook = []
@@ -38,7 +41,7 @@ export default function Dashboard() {
     const handleLoadError = (err) => {
       if (err.name === 'AbortError') return
       if (err.status === 401) logout()
-      else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }
+      else if (err.status === 403) { setError('Your connection permissions changed.'); refreshPermissions(); reloadWorkspaces() }
       else setError(err.status >= 500 ? 'Connections are temporarily unavailable. Please retry.' : err.message)
     }
     const instagramRequest = connectionService.listInstagram(selectedWorkspaceId, token, controller.signal)
@@ -58,10 +61,10 @@ export default function Dashboard() {
       clearConnectionMarker()
     })
     return () => controller.abort()
-  }, [selectedWorkspaceId, workspacesLoading, token, logout, reloadWorkspaces])
+  }, [selectedWorkspaceId, workspacesLoading, permissionsLoading, token, logout, reloadWorkspaces, hasPermission])
 
   async function handleConnect() {
-    if (!selectedWorkspaceId || workspacesLoading) return
+    if (!selectedWorkspaceId || workspacesLoading || !hasPermission('CONNECTION_MANAGE')) return
     setConnecting(true)
     setError(null)
     try {
@@ -77,6 +80,7 @@ export default function Dashboard() {
   }
 
   async function handleDisconnect(igUserId) {
+    if (!hasPermission('CONNECTION_MANAGE')) return
     if (!window.confirm('Disconnect this account? This revokes access and deletes the stored token.')) return
     try {
       await connectionService.disconnectInstagram(igUserId, selectedWorkspaceId, token)
@@ -93,7 +97,7 @@ export default function Dashboard() {
   }
 
   async function handleMetaConnect() {
-    if (metaConnecting || !selectedWorkspaceId || workspacesLoading) return
+    if (metaConnecting || !selectedWorkspaceId || workspacesLoading || !hasPermission('CONNECTION_MANAGE')) return
     setMetaConnecting(true)
     setError(null)
     try {
@@ -110,6 +114,7 @@ export default function Dashboard() {
   }
 
   async function handleMetaDisconnect(igUserId) {
+    if (!hasPermission('CONNECTION_MANAGE')) return
     if (!window.confirm('Disconnect this Meta brand account? This revokes access and removes the stored connection.')) return
     setMetaDisconnecting(igUserId)
     setError(null)
@@ -131,6 +136,7 @@ export default function Dashboard() {
 
   function handleQuickSearch(e) {
     e.preventDefault()
+    if (!hasPermission('CONNECTION_USE')) return
     if (!quickSearch.trim()) return
     navigate(`/discover?username=${encodeURIComponent(quickSearch.trim().replace(/^@/, ''))}`)
   }
@@ -175,17 +181,17 @@ export default function Dashboard() {
           </div>
           <nav aria-label="Workspace navigation" className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
             {[
-              ["Follow-ups", "/follow-ups"],
-              ["Outreach Templates", "/settings/outreach-templates"],
-              ["Campaigns", "/campaigns"],
-              ["Creator Lists", "/creator-lists"],
-              ["Creator Marketplace", "/creator-marketplace"],
-              ["Discover", "/discover"],
-              ["Profile", "/profile"],
-              ["Workspace settings", "/settings/workspace"],
-              ["Members", "/settings/members"],
-              ["Invitations", "/invitations"],
-            ].map(([label, to]) => (
+              ["Follow-ups", "/follow-ups", "OUTREACH_TASK_VIEW"],
+              ["Outreach Templates", "/settings/outreach-templates", "OUTREACH_TEMPLATE_VIEW"],
+              ["Campaigns", "/campaigns", "CAMPAIGN_VIEW"],
+              ["Creator Lists", "/creator-lists", "CREATOR_LIST_VIEW"],
+              ["Creator Marketplace", "/creator-marketplace", "CONNECTION_USE"],
+              ["Discover", "/discover", "CONNECTION_USE"],
+              ["Profile", "/profile", null],
+              ["Workspace settings", "/settings/workspace", "WORKSPACE_VIEW"],
+              ["Members", "/settings/members", "MEMBER_VIEW"],
+              ["Invitations", "/invitations", null],
+            ].filter(([, , permission])=>!permission||hasPermission(permission)).map(([label, to]) => (
               <Link key={to} className="flex min-h-11 items-center justify-center rounded-xl border border-panel-border bg-panel-light px-3 py-2 text-center text-xs font-medium leading-tight text-text-primary transition-all hover:border-accent-primary/40 hover:bg-panel-light/80 hover:text-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary" to={to}>{label}</Link>
             ))}
           </nav>
@@ -270,18 +276,18 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <Link 
+                        {hasPermission('ANALYTICS_VIEW')&&<Link
                           className="flex-1 sm:flex-initial py-2 px-4 rounded-xl bg-accent-primary hover:bg-accent-primary/90 text-white text-xs font-semibold text-center transition-all shadow-md shadow-accent-primary/10" 
                           to={`/insights/${acc.igUserId}`}
                         >
                           View Insights
-                        </Link>
-                        <button 
+                        </Link>}
+                        {hasPermission('CONNECTION_MANAGE')&&<button
                           className="py-2 px-3 rounded-xl bg-transparent hover:bg-red-500/10 text-red-400 text-xs font-semibold border border-red-500/10 cursor-pointer transition-all"
                           onClick={() => handleDisconnect(acc.igUserId)}
                         >
                           Disconnect
-                        </button>
+                        </button>}
                       </div>
                     </div>
                   ))}
@@ -318,13 +324,13 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              <button 
+              {hasPermission('CONNECTION_MANAGE')?<button
                 className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-95 text-white text-xs font-semibold shadow-lg shadow-accent-primary/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 onClick={handleConnect} 
                 disabled={connecting || workspacesLoading || !selectedWorkspaceId}
               >
                 {connecting ? 'Redirecting to Instagram...' : 'Connect with Instagram Login'}
-              </button>
+              </button>:<p className="text-xs text-text-secondary">Connection management is read-only for your workspace access.</p>}
             </div>
 
             <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-panel/75 to-accent-secondary/10 border border-panel-border shadow-xl hover:border-accent-secondary/30 transition-all duration-300 relative overflow-hidden flex-1 flex flex-col justify-between min-h-[240px]">
@@ -336,9 +342,9 @@ export default function Dashboard() {
                 <h3 className="text-base font-bold tracking-tight text-text-primary mb-2">Facebook Login</h3>
                 <p className="text-xs text-text-secondary leading-relaxed mb-6">Business Discovery and Creator Marketplace access for {selectedWorkspace?.name || 'the selected workspace'}.</p>
               </div>
-              <button type="button" className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-secondary to-accent-primary hover:opacity-95 text-white text-xs font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all" onClick={handleMetaConnect} disabled={metaConnecting || workspacesLoading || !selectedWorkspaceId}>
+              {hasPermission('CONNECTION_MANAGE')?<button type="button" className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-secondary to-accent-primary hover:opacity-95 text-white text-xs font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all" onClick={handleMetaConnect} disabled={metaConnecting || workspacesLoading || !selectedWorkspaceId}>
                 {metaConnecting ? 'Redirecting to Facebook...' : 'Connect with Facebook Login'}
-              </button>
+              </button>:<p className="text-xs text-text-secondary">Connection management is read-only for your workspace access.</p>}
             </div>
 
             {/* Quick Discover Look up Bento Card */}
@@ -355,7 +361,7 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              <form onSubmit={handleQuickSearch} className="flex gap-2">
+              {hasPermission('CONNECTION_USE')?<form onSubmit={handleQuickSearch} className="flex gap-2">
                 <input
                   type="text"
                   placeholder="username (e.g. nike)"
@@ -369,7 +375,7 @@ export default function Dashboard() {
                 >
                   Go
                 </button>
-              </form>
+              </form>:<p className="text-xs text-text-secondary">Discovery is not available for your workspace access.</p>}
             </div>
             
           </div>
@@ -377,7 +383,7 @@ export default function Dashboard() {
         </main>
 
         <section className="p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6"><div><h2 className="text-xl font-bold">Facebook Login Accounts</h2><p className="mt-1 text-sm text-text-secondary">Business Discovery connections belonging to {selectedWorkspace?.name || 'the selected workspace'}.</p></div><Link to="/creator-marketplace" className="rounded-xl bg-accent-secondary/10 border border-accent-secondary/20 px-4 py-2 text-xs font-semibold text-accent-secondary hover:bg-accent-secondary/20">Open Creator Marketplace</Link></div>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6"><div><h2 className="text-xl font-bold">Facebook Login Accounts</h2><p className="mt-1 text-sm text-text-secondary">Business Discovery connections belonging to {selectedWorkspace?.name || 'the selected workspace'}.</p></div>{hasPermission("CONNECTION_USE")&&<Link to="/creator-marketplace" className="rounded-xl bg-accent-secondary/10 border border-accent-secondary/20 px-4 py-2 text-xs font-semibold text-accent-secondary hover:bg-accent-secondary/20">Open Creator Marketplace</Link>}</div>
           {metaLoading || connectionsWorkspaceId !== selectedWorkspaceId ? <div className="py-10 text-center text-xs text-text-secondary">Loading Facebook Login accounts...</div> : displayMetaAccounts.length === 0 ? <div className="rounded-2xl border border-dashed border-panel-border bg-bg-deep/30 p-8 text-center"><h3 className="text-sm font-semibold">No Facebook Login account connected</h3><p className="mt-1 text-xs text-text-secondary">Use the Facebook Login connection card above to get started.</p></div> : <div className="grid gap-4 md:grid-cols-2">{displayMetaAccounts.map(account => { const expired = account.tokenExpiresAt && new Date(account.tokenExpiresAt) <= new Date(); return <div key={account.igUserId} className="rounded-2xl border border-panel-border bg-bg-deep/40 p-5"><div className="flex items-start justify-between gap-3"><div><div className="font-bold">@{account.igUsername || account.igUserId}</div><div className="mt-1 text-xs text-text-secondary">{account.pageName || 'Facebook Page'}</div></div><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${expired ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{expired ? 'Expired' : 'Connected'}</span></div>{account.tokenExpiresAt && <p className={`mt-4 text-[10px] ${expired ? 'text-red-400' : 'text-text-secondary'}`}>{expired ? 'Expired ' : 'Token expires '}{new Date(account.tokenExpiresAt).toLocaleDateString()}</p>}<button type="button" onClick={() => handleMetaDisconnect(account.igUserId)} disabled={metaDisconnecting !== null} className="mt-4 rounded-lg border border-red-500/20 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-50">{metaDisconnecting === account.igUserId ? 'Disconnecting...' : 'Disconnect'}</button></div>})}</div>}
         </section>
       </div>

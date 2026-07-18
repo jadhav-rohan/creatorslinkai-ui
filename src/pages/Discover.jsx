@@ -5,10 +5,12 @@ import { api } from '../api'
 import { useWorkspace } from '../context/WorkspaceContext'
 import AddToCreatorListDialog from '../components/AddToCreatorListDialog'
 import AddToCampaignDialog from '../components/AddToCampaignDialog'
+import { useWorkspaceAuthorization } from '../context/WorkspaceAuthorizationContext'
 
 export default function Discover() {
   const { token, logout } = useAuth()
   const { selectedWorkspace, selectedWorkspaceId, loading: workspacesLoading, reloadWorkspaces } = useWorkspace()
+  const {hasPermission}=useWorkspaceAuthorization()
   const [searchParams] = useSearchParams()
   const initialUsername = searchParams.get('username') || ''
 
@@ -214,7 +216,7 @@ export default function Discover() {
                   </div>
                 </div>
                 <p className="text-[10px] text-text-secondary/70 mt-4">Audience size of creator channel</p>
-                {catalogProfile?.id && selectedWorkspaceId && <div className="mt-4 grid gap-2"><button type="button" onClick={() => setAddDialogOpen(true)} className="w-full rounded-xl border border-accent-primary/30 bg-accent-primary/10 px-4 py-2.5 text-xs font-semibold text-accent-primary hover:bg-accent-primary/20">Add to list</button><button type="button" onClick={() => setCampaignDialogOpen(true)} className="w-full rounded-xl border border-accent-secondary/30 bg-accent-secondary/10 px-4 py-2.5 text-xs font-semibold text-accent-secondary">Add to campaign</button></div>}
+                {catalogProfile?.id && selectedWorkspaceId && (hasPermission('CREATOR_LIST_EDIT')||hasPermission('CAMPAIGN_EDIT')) && <div className="mt-4 grid gap-2">{hasPermission('CREATOR_LIST_EDIT')&&<button type="button" onClick={() => setAddDialogOpen(true)} className="w-full rounded-xl border border-accent-primary/30 bg-accent-primary/10 px-4 py-2.5 text-xs font-semibold text-accent-primary hover:bg-accent-primary/20">Add to list</button>}{hasPermission('CAMPAIGN_EDIT')&&<button type="button" onClick={() => setCampaignDialogOpen(true)} className="w-full rounded-xl border border-accent-secondary/30 bg-accent-secondary/10 px-4 py-2.5 text-xs font-semibold text-accent-secondary">Add to campaign</button>}</div>}
               </div>
 
               {/* Stat card: Total posts */}

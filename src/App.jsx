@@ -23,6 +23,8 @@ import WorkspaceSettings from "./pages/WorkspaceSettings";
 import Members from "./pages/Members";
 import Invitations from "./pages/Invitations";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import { WorkspaceAuthorizationProvider } from "./context/WorkspaceAuthorizationContext";
+import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
 
 export default function App() {
@@ -30,6 +32,7 @@ export default function App() {
     <AuthProvider>
       <HashRouter>
         <WorkspaceProvider>
+        <WorkspaceAuthorizationProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<Login />} />
@@ -47,7 +50,7 @@ export default function App() {
             path="/insights/:igUserId"
             element={
               <ProtectedRoute>
-                <Insights />
+                <WorkspacePermissionGuard permission="ANALYTICS_VIEW"><Insights /></WorkspacePermissionGuard>
               </ProtectedRoute>
             }
           />
@@ -63,7 +66,7 @@ export default function App() {
             path="/discover"
             element={
               <ProtectedRoute>
-                <Discover />
+                <WorkspacePermissionGuard permission="CONNECTION_USE"><Discover /></WorkspacePermissionGuard>
               </ProtectedRoute>
             }
           />
@@ -71,25 +74,26 @@ export default function App() {
             path="/creator-marketplace"
             element={
               <ProtectedRoute>
-                <CreatorMarketplace />
+                <WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>
               </ProtectedRoute>
             }
           />
-          <Route path="/creator-lists" element={<ProtectedRoute><CreatorLists /></ProtectedRoute>} />
-          <Route path="/creator-lists/:listId" element={<ProtectedRoute><CreatorListDetails /></ProtectedRoute>} />
-          <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
-          <Route path="/campaigns/:campaignId" element={<ProtectedRoute><CampaignDetails /></ProtectedRoute>} />
-          <Route path="/follow-ups" element={<ProtectedRoute><FollowUps /></ProtectedRoute>} />
-          <Route path="/settings/outreach-templates" element={<ProtectedRoute><OutreachTemplates /></ProtectedRoute>} />
+          <Route path="/creator-lists" element={<ProtectedRoute><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard></ProtectedRoute>} />
+          <Route path="/creator-lists/:listId" element={<ProtectedRoute><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorListDetails /></WorkspacePermissionGuard></ProtectedRoute>} />
+          <Route path="/campaigns" element={<ProtectedRoute><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard></ProtectedRoute>} />
+          <Route path="/campaigns/:campaignId" element={<ProtectedRoute><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard></ProtectedRoute>} />
+          <Route path="/follow-ups" element={<ProtectedRoute><WorkspacePermissionGuard permission="OUTREACH_TASK_VIEW"><FollowUps /></WorkspacePermissionGuard></ProtectedRoute>} />
+          <Route path="/settings/outreach-templates" element={<ProtectedRoute><WorkspacePermissionGuard permission="OUTREACH_TEMPLATE_VIEW"><OutreachTemplates /></WorkspacePermissionGuard></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/settings/workspace" element={<ProtectedRoute><WorkspaceSettings /></ProtectedRoute>} />
-          <Route path="/settings/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
+          <Route path="/settings/workspace" element={<ProtectedRoute><WorkspacePermissionGuard permission="WORKSPACE_VIEW"><WorkspaceSettings /></WorkspacePermissionGuard></ProtectedRoute>} />
+          <Route path="/settings/members" element={<ProtectedRoute><WorkspacePermissionGuard permission="MEMBER_VIEW"><Members /></WorkspacePermissionGuard></ProtectedRoute>} />
           <Route path="/invitations" element={<ProtectedRoute><Invitations /></ProtectedRoute>} />
           <Route path="/invitations/accept" element={<AcceptInvitation />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>
         <Footer />
+        </WorkspaceAuthorizationProvider>
         </WorkspaceProvider>
       </HashRouter>
     </AuthProvider>

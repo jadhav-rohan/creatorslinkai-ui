@@ -142,6 +142,7 @@ export const api = {
     request("/api/v1/workspaces", { method: "POST", body: { name, type }, token }),
   getWorkspace: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}`, { token, ...options }),
   updateWorkspace: (workspaceId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}`, { method: "PATCH", body: payload, token }),
+  getWorkspacePermissions: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/permissions`, { token, ...options }),
   getCurrentUser: (token, options) => request("/api/v1/users/me", { token, ...options }),
   updateCurrentUser: (payload, token) => request("/api/v1/users/me", { method: "PATCH", body: payload, token }),
   listWorkspaceMembers: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/members`, { token, ...options }),
