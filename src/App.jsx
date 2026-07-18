@@ -31,6 +31,7 @@ import CreatorDashboard from "./pages/CreatorDashboard";
 import CreatorAutoDm from "./pages/CreatorAutoDm";
 import ComingSoon from "./pages/ComingSoon";
 import BrandAnalytics from "./pages/BrandAnalytics";
+import CreatorMediaKit from "./pages/CreatorMediaKit";
 import { WorkspaceAuthorizationProvider } from "./context/WorkspaceAuthorizationContext";
 import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
@@ -52,7 +53,7 @@ export default function App() {
           <Route path="/brand/register" element={<PortalAuth persona="BRAND" mode="register" />} />
           <Route element={<PersonaRoute persona="CREATOR"><PortalShell persona="CREATOR" /></PersonaRoute>}>
             <Route path="/creator/dashboard" element={<CreatorDashboard />} />
-            <Route path="/creator/media-kit" element={<ComingSoon title="Media Kit" description="A polished creator media-kit editor is coming next. Your Instagram metrics will remain available from the dashboard." />} />
+            <Route path="/creator/media-kit" element={<CreatorMediaKit />} />
             <Route path="/creator/invoices" element={<ComingSoon title="Invoices" description="Invoice creation and tracking are upcoming backend features. No placeholder financial records are stored." />} />
             <Route path="/creator/auto-dm" element={<CreatorAutoDm />} />
           </Route>

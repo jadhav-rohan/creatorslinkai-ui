@@ -68,6 +68,13 @@ export const api = {
   registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType } }),
   loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password } }),
   getCreatorDashboard: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-dashboard`, { igUserId }), { token, ...options }),
+  getMediaKit: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { token, ...options }),
+  saveMediaKit: (workspaceId, igUserId, payload, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { method: "PUT", body: payload, token, ...options }),
+  downloadMediaKitPdf: async (workspaceId, igUserId, token, options = {}) => {
+    const response = await fetch(`${BASE_URL}${withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit/pdf`, { igUserId })}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
+    if (!response.ok) { let data = null; try { data = await response.json(); } catch { /* empty error */ } throw new ApiError(data?.message || data?.error || `Request failed (${response.status})`, response.status, response.headers.get("X-Request-ID")); }
+    return { blob: await response.blob(), disposition: response.headers.get("Content-Disposition") };
+  },
 
   startConnect: (workspaceId, token, options) =>
     request(withQuery("/api/v1/instagram-login/connect", { workspaceId }), { token, ...options }),
