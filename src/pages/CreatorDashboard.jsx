@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from "react";import {Link} from "react-router-dom";import {api} from "../api";import {useAuth} from "../context/AuthContext";import {useWorkspace} from "../context/WorkspaceContext";import {connectionService} from "../services/connectionService";import {useCreatorDashboard} from "../hooks/useCreatorDashboard";import {AudienceQualityPanel,HistoryPanel,ReelsPanel,AutoDmTab} from "../components/CreatorAnalyticsPanels";
+import {useEffect,useMemo,useState} from "react";import {Link} from "react-router-dom";import {api} from "../api";import {useAuth} from "../context/AuthContext";import {useWorkspace} from "../context/WorkspaceContext";import {connectionService} from "../services/connectionService";import {useCreatorDashboard} from "../hooks/useCreatorDashboard";import {AudienceQualityPanel,HistoryPanel,ReelsPanel} from "../components/CreatorAnalyticsPanels";
 const compact=new Intl.NumberFormat(undefined,{notation:"compact",maximumFractionDigits:1});const integer=new Intl.NumberFormat();const metric=value=>value==null?"—":compact.format(value);const percent=value=>value==null?"—":`${Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}%`;
 function MetricCard({label,value}){return <article aria-label={`${label}: ${value}`} className="brutal-card p-5">
 <p className="brutal-overline text-zinc-500">{label}</p>
@@ -41,11 +41,9 @@ export default function CreatorDashboard(){const {token,defaultWorkspaceId,activ
 </header>
 <div aria-live="polite">{notice&&<p role="status" className="mt-5 border-2 border-zinc-900 bg-emerald-200 p-3 font-bold">{notice}</p>}{actionError&&<p role="alert" className="mt-5 border-2 border-red-700 bg-red-50 p-3 text-red-800">{actionError}</p>}</div>
 <div role="tablist" aria-label="Creator dashboard sections" className="mt-7 flex gap-2 border-b-2 border-zinc-900 pb-3">
-<button role="tab" aria-selected={activeTab==="metrics"} onClick={()=>setActiveTab("metrics")} className={`border-2 border-zinc-900 px-5 py-3 font-black ${activeTab==="metrics"?"bg-yellow-300":"bg-white"}`}>Metrics Overview</button>
-<button role="tab" aria-selected={activeTab==="automations"} onClick={()=>setActiveTab("automations")} className={`border-2 border-zinc-900 px-5 py-3 font-black ${activeTab==="automations"?"bg-yellow-300":"bg-white"}`}>Auto-DM Automations</button>
-</div>{activeTab==="automations"?<div role="tabpanel" className="mt-7">
-<AutoDmTab igUserId={connection.igUserId} token={token} summary={data.autoDm} onUnauthorized={logout}/>
-</div>:<div role="tabpanel">{!connection.connected?<section className="brutal-card mt-7 bg-yellow-300 p-8">
+<button role="tab" aria-selected="true" className="border-2 border-zinc-900 bg-yellow-300 px-5 py-3 font-black">Metrics Overview</button>
+<Link to="/creator/auto-dm" className="inline-flex items-center border-2 border-zinc-900 bg-white px-5 py-3 font-black">Auto-DM Automations</Link>
+</div><div role="tabpanel">{!connection.connected?<section className="brutal-card mt-7 bg-yellow-300 p-8">
 <p className="brutal-overline">Get started</p>
 <h2 className="mt-3 text-3xl font-black">Connect your Instagram</h2>
 <p className="mt-3 max-w-xl">Connecting enables stored insights and Comment Auto-DM. CreatorLinksAI uses Instagram Login for creator accounts.</p>
@@ -106,5 +104,5 @@ export default function CreatorDashboard(){const {token,defaultWorkspaceId,activ
 <p className="mt-3 text-sm text-zinc-600">Private replies are sent when comments match configured keywords.</p>
 </Link>
 </section>
-</div>}</div>
+</div></div>
 </main>}
