@@ -67,7 +67,7 @@ export default function App() {
             <Route path="/brand/discovery" element={<WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>} />
             <Route path="/brand/lists" element={<WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard>} />
             <Route path="/brand/campaigns" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard>} />
-            <Route path="/brand/analytics" element={<WorkspacePermissionGuard permission="ANALYTICS_VIEW"><BrandAnalytics /></WorkspacePermissionGuard>} />
+            <Route path="/brand/analytics" element={<BrandAnalytics />} />
           </Route>
           <Route path="/connected" element={<Connected />} />
           <Route

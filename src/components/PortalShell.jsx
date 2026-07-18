@@ -11,9 +11,9 @@ const creatorLinks=[
 ];
 const brandLinks=[
   ["Discovery","/brand/discovery",Search],
-  ["Lists","/brand/lists",List],
-  ["Campaigns","/brand/campaigns",FileText],
-  ["Analytics","/brand/analytics",BarChart3],
+  ["List","/brand/lists",List],
+  ["Campaign","/brand/campaigns",FileText],
+  ["Analytics","/brand/analytics",BarChart3,true],
 ];
 
 export default function PortalShell({persona}){
@@ -30,7 +30,7 @@ export default function PortalShell({persona}){
         <button type="button" onClick={()=>setOpen(false)} aria-label="Close navigation" className="flex h-11 w-11 items-center justify-center lg:hidden"><X size={22}/></button>
       </div>
       <nav className="flex-1 space-y-2 overflow-y-auto p-4">
-        {links.map(([label,to,Icon])=><NavLink key={to} to={to} onClick={()=>setOpen(false)} className={({isActive})=>`flex min-h-12 items-center gap-3 border-2 px-4 py-3 font-black transition-transform ${isActive?"border-zinc-900 bg-yellow-300 shadow-[4px_4px_0_#18181b]":"border-transparent bg-white hover:border-zinc-900 hover:bg-zinc-100"}`}><Icon size={19} strokeWidth={2.2}/><span>{label}</span></NavLink>)}
+        {links.map(([label,to,Icon,comingSoon])=><NavLink key={to} to={to} onClick={()=>setOpen(false)} className={({isActive})=>`flex min-h-12 items-center gap-3 border-2 px-4 py-3 font-black transition-transform ${isActive?"border-zinc-900 bg-yellow-300 shadow-[4px_4px_0_#18181b]":"border-transparent bg-white hover:border-zinc-900 hover:bg-zinc-100"}`}><Icon size={19} strokeWidth={2.2}/><span>{label}</span>{comingSoon&&<span className="ml-auto rounded-full border border-zinc-900 bg-sky-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide">Soon</span>}</NavLink>)}
       </nav>
       <div className="border-t-2 border-zinc-900 p-5">
         <div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-zinc-900 bg-sky-200 font-black">{name.slice(0,1).toUpperCase()}</span><div className="min-w-0"><p className="truncate text-sm font-black">{name}</p><p className="truncate text-xs text-zinc-500">{email}</p></div></div>
