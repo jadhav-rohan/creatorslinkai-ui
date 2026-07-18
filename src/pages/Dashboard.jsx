@@ -18,6 +18,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const { workspaces, selectedWorkspace, selectedWorkspaceId, setSelectedWorkspaceId, loading: workspacesLoading, error: workspaceError, createWorkspace, reloadWorkspaces } = useWorkspace()
   const [workspaceName, setWorkspaceName] = useState('')
+  const [workspaceType, setWorkspaceType] = useState('BRAND')
   const [creatingWorkspace, setCreatingWorkspace] = useState(false)
   const [connectionNotice, setConnectionNotice] = useState(null)
   const [connectionsWorkspaceId, setConnectionsWorkspaceId] = useState('')
@@ -140,7 +141,7 @@ export default function Dashboard() {
     setCreatingWorkspace(true)
     setError(null)
     try {
-      await createWorkspace(workspaceName)
+      await createWorkspace(workspaceName, workspaceType)
       setWorkspaceName('')
     } catch (err) {
       setError(err.message)
@@ -172,7 +173,7 @@ export default function Dashboard() {
             </div>
             <button className="shrink-0 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500/20 sm:px-4" onClick={logout}>Log out</button>
           </div>
-          <nav aria-label="Workspace navigation" className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <nav aria-label="Workspace navigation" className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
             {[
               ["Follow-ups", "/follow-ups"],
               ["Outreach Templates", "/settings/outreach-templates"],
@@ -180,6 +181,10 @@ export default function Dashboard() {
               ["Creator Lists", "/creator-lists"],
               ["Creator Marketplace", "/creator-marketplace"],
               ["Discover", "/discover"],
+              ["Profile", "/profile"],
+              ["Workspace settings", "/settings/workspace"],
+              ["Members", "/settings/members"],
+              ["Invitations", "/invitations"],
             ].map(([label, to]) => (
               <Link key={to} className="flex min-h-11 items-center justify-center rounded-xl border border-panel-border bg-panel-light px-3 py-2 text-center text-xs font-medium leading-tight text-text-primary transition-all hover:border-accent-primary/40 hover:bg-panel-light/80 hover:text-accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary" to={to}>{label}</Link>
             ))}
@@ -193,7 +198,7 @@ export default function Dashboard() {
           </div>
           {workspacesLoading && <p className="mt-4 text-xs text-text-secondary">Loading workspaces...</p>}
           {workspaceError && <p role="alert" className="mt-4 text-xs text-red-400">{workspaceError}</p>}
-          {!workspacesLoading && workspaces.length === 0 && <form onSubmit={handleCreateWorkspace} className="mt-5 rounded-xl border border-dashed border-panel-border bg-bg-deep/30 p-4"><h3 className="text-sm font-semibold">Create your first workspace</h3><p className="mt-1 text-xs text-text-secondary">A workspace is required for creator lists.</p><div className="mt-3 flex flex-col gap-2 sm:flex-row"><label className="sr-only" htmlFor="workspace-name">Workspace name</label><input id="workspace-name" required maxLength={160} value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} placeholder="Agency workspace" className="flex-1 rounded-xl border border-panel-border bg-bg-deep px-3 py-2.5 text-sm text-text-primary" /><button disabled={creatingWorkspace} className="rounded-xl bg-accent-primary px-5 py-2.5 text-xs font-semibold disabled:opacity-50">{creatingWorkspace ? 'Creating...' : 'Create workspace'}</button></div></form>}
+          {!workspacesLoading && workspaces.length === 0 && <form onSubmit={handleCreateWorkspace} className="mt-5 rounded-xl border border-dashed border-panel-border bg-bg-deep/30 p-4"><h3 className="text-sm font-semibold">Create your first workspace</h3><p className="mt-1 text-xs text-text-secondary">Choose the organization type that matches how your team works.</p><div className="mt-3 grid gap-2 sm:grid-cols-[1fr_12rem_auto]"><label className="sr-only" htmlFor="workspace-name">Workspace name</label><input id="workspace-name" required maxLength={160} value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} placeholder="Organization name" className="rounded-xl border border-panel-border bg-bg-deep px-3 py-2.5 text-sm text-text-primary" /><label className="sr-only" htmlFor="workspace-type">Workspace type</label><select id="workspace-type" required value={workspaceType} onChange={event=>setWorkspaceType(event.target.value)} className="rounded-xl border border-panel-border bg-bg-deep px-3 py-2.5 text-sm text-text-primary"><option value="BRAND">Brand</option><option value="AGENCY">Agency</option><option value="CREATOR_TEAM">Creator team</option></select><button disabled={creatingWorkspace} className="rounded-xl bg-accent-primary px-5 py-2.5 text-xs font-semibold disabled:opacity-50">{creatingWorkspace ? 'Creating...' : 'Create workspace'}</button></div></form>}
         </section>
 
         {error && (

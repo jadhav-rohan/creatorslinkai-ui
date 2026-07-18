@@ -18,6 +18,11 @@ import Campaigns from "./pages/Campaigns";
 import CampaignDetails from "./pages/CampaignDetails";
 import FollowUps from "./pages/FollowUps";
 import OutreachTemplates from "./pages/OutreachTemplates";
+import Profile from "./pages/Profile";
+import WorkspaceSettings from "./pages/WorkspaceSettings";
+import Members from "./pages/Members";
+import Invitations from "./pages/Invitations";
+import AcceptInvitation from "./pages/AcceptInvitation";
 import Footer from "./pages/Footer";
 
 export default function App() {
@@ -76,6 +81,11 @@ export default function App() {
           <Route path="/campaigns/:campaignId" element={<ProtectedRoute><CampaignDetails /></ProtectedRoute>} />
           <Route path="/follow-ups" element={<ProtectedRoute><FollowUps /></ProtectedRoute>} />
           <Route path="/settings/outreach-templates" element={<ProtectedRoute><OutreachTemplates /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/settings/workspace" element={<ProtectedRoute><WorkspaceSettings /></ProtectedRoute>} />
+          <Route path="/settings/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
+          <Route path="/invitations" element={<ProtectedRoute><Invitations /></ProtectedRoute>} />
+          <Route path="/invitations/accept" element={<AcceptInvitation />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>

@@ -43,15 +43,21 @@ export function WorkspaceProvider({ children }) {
     setSelectedWorkspaceIdState(id); window.localStorage.setItem(STORAGE_KEY, id);
   }, [workspaces]);
 
-  const createWorkspace = useCallback(async (name) => {
-    const created = await workspaceService.create(name.trim(), token);
+  const createWorkspace = useCallback(async (name, type) => {
+    const created = await workspaceService.create(name.trim(), type, token);
     setWorkspaces((current) => [...current, created]);
     setSelectedWorkspaceIdState(created.id); window.localStorage.setItem(STORAGE_KEY, created.id);
     return created;
   }, [token]);
 
+  const updateWorkspace = useCallback(async (workspaceId, payload) => {
+    const updated = await workspaceService.update(workspaceId, payload, token);
+    setWorkspaces((current) => current.map((item) => item.id === updated.id ? updated : item));
+    return updated;
+  }, [token]);
+
   const selectedWorkspace = useMemo(() => workspaces.find((item) => item.id === selectedWorkspaceId) || null, [workspaces, selectedWorkspaceId]);
-  const value = { workspaces, selectedWorkspace, selectedWorkspaceId, setSelectedWorkspaceId, loading, error, reloadWorkspaces, createWorkspace };
+  const value = { workspaces, selectedWorkspace, selectedWorkspaceId, setSelectedWorkspaceId, loading, error, reloadWorkspaces, createWorkspace, updateWorkspace };
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }
 

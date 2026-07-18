@@ -138,8 +138,23 @@ export const api = {
       { token }
     ),
   listWorkspaces: (token) => request("/api/v1/workspaces", { token }),
-  createWorkspace: (name, token) =>
-    request("/api/v1/workspaces", { method: "POST", body: { name }, token }),
+  createWorkspace: (name, type, token) =>
+    request("/api/v1/workspaces", { method: "POST", body: { name, type }, token }),
+  getWorkspace: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}`, { token, ...options }),
+  updateWorkspace: (workspaceId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}`, { method: "PATCH", body: payload, token }),
+  getCurrentUser: (token, options) => request("/api/v1/users/me", { token, ...options }),
+  updateCurrentUser: (payload, token) => request("/api/v1/users/me", { method: "PATCH", body: payload, token }),
+  listWorkspaceMembers: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/members`, { token, ...options }),
+  updateWorkspaceMember: (workspaceId, userId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}`, { method: "PATCH", body: payload, token }),
+  removeWorkspaceMember: (workspaceId, userId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}`, { method: "DELETE", token }),
+  transferWorkspaceOwnership: (workspaceId, userId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}/transfer-ownership`, { method: "POST", token }),
+  listWorkspaceInvitations: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invitations`, { token, ...options }),
+  createWorkspaceInvitation: (workspaceId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invitations`, { method: "POST", body: payload, token }),
+  cancelWorkspaceInvitation: (workspaceId, invitationId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invitations/${encodeURIComponent(invitationId)}`, { method: "DELETE", token }),
+  resendWorkspaceInvitation: (workspaceId, invitationId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invitations/${encodeURIComponent(invitationId)}/resend`, { method: "POST", token }),
+  listMyWorkspaceInvitations: (token, options) => request("/api/v1/workspace-invitations", { token, ...options }),
+  acceptWorkspaceInvitation: (invitationToken, token) => request(`/api/v1/workspace-invitations/${encodeURIComponent(invitationToken)}/accept`, { method: "POST", token }),
+  declineWorkspaceInvitation: (invitationToken, token) => request(`/api/v1/workspace-invitations/${encodeURIComponent(invitationToken)}/decline`, { method: "POST", token }),
   listCreatorLists: (workspaceId, token) =>
     request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists`, { token }),
   getCreatorList: (workspaceId, listId, token) =>

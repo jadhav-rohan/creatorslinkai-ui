@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
@@ -9,6 +9,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -16,7 +17,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(email, password);
-      navigate("/dashboard");
+      navigate(location.state?.from || "/dashboard", { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -166,6 +167,7 @@ export default function Register() {
           Already have an account?{" "}
           <Link
             to="/login"
+            state={{ from: location.state?.from }}
             className="font-semibold text-accent-primary hover:text-accent-secondary transition-colors underline underline-offset-4"
           >
             Log in here
