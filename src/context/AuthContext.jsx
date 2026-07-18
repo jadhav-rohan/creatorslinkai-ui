@@ -8,7 +8,9 @@ const STORAGE_KEY = 'ig_auth'
 function loadStoredAuth() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
+    if (!raw) return null
+    const value = JSON.parse(raw)
+    return value?.token && value?.activePersona ? value : null
   } catch {
     return null
   }
@@ -44,11 +46,30 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => persist(null), [persist])
 
+  const authenticatePortal = useCallback(async (persona, mode, payload) => {
+    const result = persona === 'CREATOR'
+      ? await (mode === 'register' ? api.registerCreator(payload.email, payload.password) : api.loginCreator(payload.email, payload.password))
+      : await (mode === 'register' ? api.registerBrand(payload.email, payload.password, payload.workspaceName, payload.workspaceType) : api.loginBrand(payload.email, payload.password))
+    persist(result)
+    if (result.defaultWorkspaceId) window.localStorage.setItem('creatorlinksai_workspace_id', result.defaultWorkspaceId)
+    return result
+  }, [persist])
+
   const value = {
     token: auth?.token ?? null,
     email: auth?.email ?? null,
     userId: auth?.userId ?? null,
+    expiresInSeconds: auth?.expiresInSeconds ?? null,
+    activePersona: auth?.activePersona ?? null,
+    personas: Array.isArray(auth?.personas) ? auth.personas : [],
+    defaultWorkspaceId: auth?.defaultWorkspaceId ?? null,
+    workspaceType: auth?.workspaceType ?? null,
     isAuthenticated: !!auth?.token,
+    isCreatorPortal: auth?.activePersona === 'CREATOR',
+    isBrandPortal: auth?.activePersona === 'BRAND',
+    activeWorkspaceId: auth?.defaultWorkspaceId ?? null,
+    canAccessPersona: (persona) => Array.isArray(auth?.personas) && auth.personas.includes(persona),
+    authenticatePortal,
     register,
     login,
     logout

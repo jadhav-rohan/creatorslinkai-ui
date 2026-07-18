@@ -1,10 +1,11 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export class ApiError extends Error {
-  constructor(message, status) {
+  constructor(message, status, requestId) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.requestId = requestId || null;
   }
 }
 
@@ -36,7 +37,7 @@ async function request(
     const message =
       (data && (data.message || data.error)) ||
       `Request failed (${res.status})`;
-    throw new ApiError(message, res.status);
+    throw new ApiError(message, res.status, res.headers.get("X-Request-ID"));
   }
 
   return data;
@@ -62,6 +63,10 @@ export const api = {
       method: "POST",
       body: { email, password },
     }),
+  registerCreator: (email, password) => request("/api/v1/auth/creator/register", { method: "POST", body: { email, password } }),
+  loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password } }),
+  registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType } }),
+  loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password } }),
 
   startConnect: (workspaceId, token, options) =>
     request(withQuery("/api/v1/instagram-login/connect", { workspaceId }), { token, ...options }),

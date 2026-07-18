@@ -23,6 +23,14 @@ import WorkspaceSettings from "./pages/WorkspaceSettings";
 import Members from "./pages/Members";
 import Invitations from "./pages/Invitations";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import PortalSelect from "./pages/PortalSelect";
+import PortalAuth from "./pages/PortalAuth";
+import PersonaRoute from "./components/PersonaRoute";
+import PortalShell from "./components/PortalShell";
+import CreatorDashboard from "./pages/CreatorDashboard";
+import CreatorAutoDm from "./pages/CreatorAutoDm";
+import ComingSoon from "./pages/ComingSoon";
+import BrandAnalytics from "./pages/BrandAnalytics";
 import { WorkspaceAuthorizationProvider } from "./context/WorkspaceAuthorizationContext";
 import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
@@ -35,8 +43,25 @@ export default function App() {
         <WorkspaceAuthorizationProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<PortalSelect />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/legacy-login" element={<Login />} />
+          <Route path="/creator/login" element={<PortalAuth persona="CREATOR" mode="login" />} />
+          <Route path="/creator/register" element={<PortalAuth persona="CREATOR" mode="register" />} />
+          <Route path="/brand/login" element={<PortalAuth persona="BRAND" mode="login" />} />
+          <Route path="/brand/register" element={<PortalAuth persona="BRAND" mode="register" />} />
+          <Route element={<PersonaRoute persona="CREATOR"><PortalShell persona="CREATOR" /></PersonaRoute>}>
+            <Route path="/creator/dashboard" element={<CreatorDashboard />} />
+            <Route path="/creator/media-kit" element={<ComingSoon title="Media Kit" description="A polished creator media-kit editor is coming next. Your Instagram metrics will remain available from the dashboard." />} />
+            <Route path="/creator/invoices" element={<ComingSoon title="Invoices" description="Invoice creation and tracking are upcoming backend features. No placeholder financial records are stored." />} />
+            <Route path="/creator/auto-dm" element={<CreatorAutoDm />} />
+          </Route>
+          <Route element={<PersonaRoute persona="BRAND"><PortalShell persona="BRAND" /></PersonaRoute>}>
+            <Route path="/brand/discovery" element={<WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>} />
+            <Route path="/brand/lists" element={<WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard>} />
+            <Route path="/brand/campaigns" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard>} />
+            <Route path="/brand/analytics" element={<WorkspacePermissionGuard permission="ANALYTICS_VIEW"><BrandAnalytics /></WorkspacePermissionGuard>} />
+          </Route>
           <Route path="/connected" element={<Connected />} />
           <Route
             path="/dashboard"

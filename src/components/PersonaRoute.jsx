@@ -1,0 +1,2 @@
+import {Navigate,useLocation} from "react-router-dom";import {useAuth} from "../context/AuthContext";
+export default function PersonaRoute({persona,children}){const {isAuthenticated,activePersona}=useAuth(),location=useLocation();if(!isAuthenticated)return <Navigate to={persona==="CREATOR"?"/creator/login":"/brand/login"} replace state={{from:location.pathname+location.search}}/>;if(activePersona!==persona)return <Navigate to={activePersona==="CREATOR"?"/creator/dashboard":"/brand/discovery"} replace/>;return children}
