@@ -32,6 +32,9 @@ import CreatorAutoDm from "./pages/CreatorAutoDm";
 import ComingSoon from "./pages/ComingSoon";
 import BrandAnalytics from "./pages/BrandAnalytics";
 import CreatorMediaKit from "./pages/CreatorMediaKit";
+import CreatorInvoices from "./pages/CreatorInvoices";
+import CreatorInvoiceDetail from "./pages/CreatorInvoiceDetail";
+import CreatorInvoiceForm from "./pages/CreatorInvoiceForm";
 import { WorkspaceAuthorizationProvider } from "./context/WorkspaceAuthorizationContext";
 import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
@@ -54,7 +57,10 @@ export default function App() {
           <Route element={<PersonaRoute persona="CREATOR"><PortalShell persona="CREATOR" /></PersonaRoute>}>
             <Route path="/creator/dashboard" element={<CreatorDashboard />} />
             <Route path="/creator/media-kit" element={<CreatorMediaKit />} />
-            <Route path="/creator/invoices" element={<ComingSoon title="Invoices" description="Invoice creation and tracking are upcoming backend features. No placeholder financial records are stored." />} />
+            <Route path="/creator/invoices" element={<CreatorInvoices />} />
+            <Route path="/creator/invoices/new" element={<CreatorInvoiceForm />} />
+            <Route path="/creator/invoices/:invoiceId" element={<CreatorInvoiceDetail />} />
+            <Route path="/creator/invoices/:invoiceId/edit" element={<CreatorInvoiceForm />} />
             <Route path="/creator/auto-dm" element={<CreatorAutoDm />} />
           </Route>
           <Route element={<PersonaRoute persona="BRAND"><PortalShell persona="BRAND" /></PersonaRoute>}>

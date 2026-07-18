@@ -75,6 +75,19 @@ export const api = {
     if (!response.ok) { let data = null; try { data = await response.json(); } catch { /* empty error */ } throw new ApiError(data?.message || data?.error || `Request failed (${response.status})`, response.status, response.headers.get("X-Request-ID")); }
     return { blob: await response.blob(), disposition: response.headers.get("Content-Disposition") };
   },
+  listInvoices: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices`, { token, ...options }),
+  getInvoice: (workspaceId, invoiceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}`, { token, ...options }),
+  createInvoice: (workspaceId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices`, { method: "POST", body: payload, token }),
+  updateInvoice: (workspaceId, invoiceId, payload, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}`, { method: "PUT", body: payload, token }),
+  issueInvoice: (workspaceId, invoiceId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/issue`, { method: "POST", token }),
+  markInvoicePaid: (workspaceId, invoiceId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/mark-paid`, { method: "POST", token }),
+  voidInvoice: (workspaceId, invoiceId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/void`, { method: "POST", token }),
+  deleteInvoice: (workspaceId, invoiceId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}`, { method: "DELETE", token }),
+  downloadInvoicePdf: async (workspaceId, invoiceId, token, options = {}) => {
+    const response = await fetch(`${BASE_URL}/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/pdf`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
+    if (!response.ok) { let data=null; try { data=await response.json(); } catch { /* empty error */ } throw new ApiError(data?.message||data?.error||`Request failed (${response.status})`,response.status,response.headers.get("X-Request-ID")); }
+    return {blob:await response.blob(),disposition:response.headers.get("Content-Disposition")};
+  },
 
   startConnect: (workspaceId, token, options) =>
     request(withQuery("/api/v1/instagram-login/connect", { workspaceId }), { token, ...options }),

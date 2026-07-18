@@ -95,8 +95,9 @@ export default function CreatorDashboard(){const {token,defaultWorkspaceId,activ
 </Link>
 <Link to="/creator/invoices" className="brutal-card block p-6">
 <p className="brutal-overline">Invoices</p>
-<h2 className="mt-3 text-2xl font-black">Coming soon</h2>
-<p className="mt-3 text-zinc-600">Invoice tools are not yet available. Dashboard zeros are not presented as active data.</p>
+<h2 className="mt-3 text-2xl font-black">{data.invoices?.total?`${data.invoices.total} invoice${data.invoices.total===1?"":"s"}`:"Create invoice"}</h2>
+<p className="mt-3 text-zinc-600">{data.invoices?.total?`${data.invoices.draft} draft · ${data.invoices.unpaid} unpaid · ${data.invoices.paid} paid`:"Create your first brand invoice."}</p>
+<p className="mt-4 font-black underline">{data.invoices?.total?"View invoices":"Create invoice"}</p>
 </Link>
 <Link to="/creator/auto-dm" className="brutal-card block bg-sky-200 p-6">
 <p className="brutal-overline">Comment Auto-DM</p>
