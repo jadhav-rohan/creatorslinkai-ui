@@ -1,6 +1,6 @@
 import {useEffect,useState} from "react";
 import {NavLink,Outlet} from "react-router-dom";
-import {BarChart3,Camera,FileImage,FileText,LayoutDashboard,List,LogOut,Menu,MessageCircle,Search,Unplug,X} from "lucide-react";
+import {BarChart3,Camera,FileImage,FileText,LayoutDashboard,List,LogOut,Menu,MessageCircle,Search,ShieldCheck,Unplug,X} from "lucide-react";
 import {useAuth} from "../context/AuthContext";
 import {useWorkspace} from "../context/WorkspaceContext";
 import {connectionService} from "../services/connectionService";
@@ -10,6 +10,7 @@ const creatorLinks=[
   ["Media Kit","/creator/media-kit",FileImage],
   ["Invoices","/creator/invoices",FileText],
   ["Auto DM","/creator/auto-dm",MessageCircle],
+  ["Insight Requests","/creator/insight-requests",ShieldCheck],
 ];
 const brandLinks=[
   ["Discovery","/brand/discovery",Search],

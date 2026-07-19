@@ -35,9 +35,11 @@ import CreatorMediaKit from "./pages/CreatorMediaKit";
 import CreatorInvoices from "./pages/CreatorInvoices";
 import CreatorInvoiceDetail from "./pages/CreatorInvoiceDetail";
 import CreatorInvoiceForm from "./pages/CreatorInvoiceForm";
+import CreatorInsightRequests from "./pages/CreatorInsightRequests";
 import { WorkspaceAuthorizationProvider } from "./context/WorkspaceAuthorizationContext";
 import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
+import BrandCollaborationRoute from "./components/BrandCollaborationRoute";
 
 export default function App() {
   return (
@@ -62,11 +64,13 @@ export default function App() {
             <Route path="/creator/invoices/:invoiceId" element={<CreatorInvoiceDetail />} />
             <Route path="/creator/invoices/:invoiceId/edit" element={<CreatorInvoiceForm />} />
             <Route path="/creator/auto-dm" element={<CreatorAutoDm />} />
+            <Route path="/creator/insight-requests" element={<CreatorInsightRequests />} />
           </Route>
           <Route element={<PersonaRoute persona="BRAND"><PortalShell persona="BRAND" /></PersonaRoute>}>
             <Route path="/brand/discovery" element={<WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>} />
             <Route path="/brand/lists" element={<WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard>} />
             <Route path="/brand/campaigns" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard>} />
+            <Route path="/brand/campaigns/:campaignId" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard>} />
             <Route path="/brand/analytics" element={<BrandAnalytics />} />
           </Route>
           <Route path="/connected" element={<Connected />} />
@@ -74,7 +78,7 @@ export default function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <BrandCollaborationRoute><Dashboard /></BrandCollaborationRoute>
               </ProtectedRoute>
             }
           />
@@ -117,9 +121,9 @@ export default function App() {
           <Route path="/follow-ups" element={<ProtectedRoute><WorkspacePermissionGuard permission="OUTREACH_TASK_VIEW"><FollowUps /></WorkspacePermissionGuard></ProtectedRoute>} />
           <Route path="/settings/outreach-templates" element={<ProtectedRoute><WorkspacePermissionGuard permission="OUTREACH_TEMPLATE_VIEW"><OutreachTemplates /></WorkspacePermissionGuard></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/settings/workspace" element={<ProtectedRoute><WorkspacePermissionGuard permission="WORKSPACE_VIEW"><WorkspaceSettings /></WorkspacePermissionGuard></ProtectedRoute>} />
-          <Route path="/settings/members" element={<ProtectedRoute><WorkspacePermissionGuard permission="MEMBER_VIEW"><Members /></WorkspacePermissionGuard></ProtectedRoute>} />
-          <Route path="/invitations" element={<ProtectedRoute><Invitations /></ProtectedRoute>} />
+          <Route path="/settings/workspace" element={<ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="WORKSPACE_VIEW"><WorkspaceSettings /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute>} />
+          <Route path="/settings/members" element={<ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="MEMBER_VIEW"><Members /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute>} />
+          <Route path="/invitations" element={<ProtectedRoute><BrandCollaborationRoute><Invitations /></BrandCollaborationRoute></ProtectedRoute>} />
           <Route path="/invitations/accept" element={<AcceptInvitation />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />

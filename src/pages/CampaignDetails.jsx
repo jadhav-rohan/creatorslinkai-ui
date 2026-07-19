@@ -59,7 +59,7 @@ export default function CampaignDetails(){
  async function load(){setCampaign(null);setLoading(true);setError(null);setNotFound(false);if(!selectedWorkspaceId){setLoading(false);return}const controller=new AbortController();try{setCampaign(await campaignService.get(selectedWorkspaceId,campaignId,token,controller.signal))}catch(err){if(err.name==="AbortError")return;if(err.status===401)logout();else if(err.status===403){setError("You cannot access this workspace.");reloadWorkspaces()}else if(err.status===404)setNotFound(true);else setError(err.status>=500?"Campaign is temporarily unavailable. Please retry.":err.message)}finally{setLoading(false)}return()=>controller.abort()}
  useEffect(()=>{load()},[selectedWorkspaceId,campaignId,token]);
  async function saveCampaign(payload){if(!canEditCampaign)return;setBusy(true);try{const updated=await campaignService.update(selectedWorkspaceId,campaignId,payload,token);setCampaign(updated);setEditing(false);setNotice("Campaign updated.")}finally{setBusy(false)}}
- async function removeCampaign(){if(!canEditCampaign)return;if(!window.confirm(`Delete “${campaign.name}”?`))return;setBusy(true);try{await campaignService.delete(selectedWorkspaceId,campaignId,token);navigate("/campaigns",{replace:true,state:{campaignFilters:location.state?.campaignFilters,notice:"Campaign deleted."}})}catch(err){setError(err.message)}finally{setBusy(false)}}
+ async function removeCampaign(){if(!canEditCampaign)return;if(!window.confirm(`Delete “${campaign.name}”?`))return;setBusy(true);try{await campaignService.delete(selectedWorkspaceId,campaignId,token);navigate(location.pathname.startsWith("/brand/")?"/brand/campaigns":"/campaigns",{replace:true,state:{campaignFilters:location.state?.campaignFilters,notice:"Campaign deleted."}})}catch(err){setError(err.message)}finally{setBusy(false)}}
  async function openImport(){setImportOpen(true);setError(null);try{const result=await creatorListService.list(selectedWorkspaceId,token);setLists(Array.isArray(result)?result:[]);setImportList(result?.[0]?.id||"")}catch(err){setError(err.message)}}
  async function doImport(){if(!canEditCampaign)return;if(busy||!importList)return;setBusy(true);try{const result=await campaignService.importList(selectedWorkspaceId,campaignId,importList,token);setNotice(`${result.importedCount} creators imported. ${result.skippedDuplicateCount} existing creator${result.skippedDuplicateCount===1?"":"s"} skipped.`);setImportOpen(false);await load()}catch(err){setError(err.message)}finally{setBusy(false)}}
  async function searchCatalog(e){e.preventDefault();setBusy(true);try{const result=await api.searchCreatorCatalog(catalogQuery,token,25);setCatalog(Array.isArray(result)?result:[])}catch(err){setError(err.message)}finally{setBusy(false)}}
@@ -72,14 +72,14 @@ export default function CampaignDetails(){
 </div>;if(notFound)return <div className="min-h-screen bg-bg-deep p-8 text-text-primary">
 <div className="mx-auto max-w-xl rounded-3xl bg-panel p-10 text-center">
 <h1 className="text-xl font-bold">Campaign not found</h1>
-<button onClick={()=>navigate("/campaigns",{state:{campaignFilters:location.state?.campaignFilters}})} className="mt-5 rounded-xl bg-accent-primary px-5 py-3">Return to campaigns</button>
+<button onClick={()=>navigate(location.pathname.startsWith("/brand/")?"/brand/campaigns":"/campaigns",{state:{campaignFilters:location.state?.campaignFilters}})} className="mt-5 rounded-xl bg-accent-primary px-5 py-3">Return to campaigns</button>
 </div>
 </div>;
  if(!campaign)return <div className="min-h-screen bg-bg-deep p-8 text-text-primary">No campaign selected.</div>;
  return <div className="min-h-screen bg-bg-deep px-4 py-8 text-text-primary">
 <div className="mx-auto max-w-[1600px] space-y-6">
 <header className="border-b-2 border-zinc-900 pb-6">
-<Link to="/campaigns" state={{campaignFilters:location.state?.campaignFilters}} className="text-sm font-black">← Back to Campaigns</Link>
+<Link to={location.pathname.startsWith("/brand/")?"/brand/campaigns":"/campaigns"} state={{campaignFilters:location.state?.campaignFilters}} className="text-sm font-black">← Back to Campaigns</Link>
 <div className="mt-3 flex flex-wrap justify-between gap-4">
 <div>
 <h1 className="text-2xl font-bold">{campaign.name}</h1>

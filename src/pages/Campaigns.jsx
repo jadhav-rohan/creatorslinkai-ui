@@ -39,7 +39,7 @@ export default function Campaigns() {
 <option value="">All statuses</option>{["DRAFT","ACTIVE","PAUSED","COMPLETED","CANCELLED"].map(x=>
 <option key={x}>{x}</option>)}</select>
 </label>
-</div>{loading||campaignsWorkspaceId!==selectedWorkspaceId?<div className="grid gap-4 md:grid-cols-2">{[1,2,3,4].map(x=><div key={x} className="h-56 animate-pulse border-2 border-zinc-900 bg-zinc-200"/>)}</div>:<CampaignGrid campaigns={filtered} canEdit={canEdit} submitting={submitting} query={query} status={status} navigate={navigate} onEdit={campaign=>{setFormCampaign(campaign);setFormOpen(true)}} onDelete={remove}/>}</div>
+</div>{loading||campaignsWorkspaceId!==selectedWorkspaceId?<div className="grid gap-4 md:grid-cols-2">{[1,2,3,4].map(x=><div key={x} className="h-56 animate-pulse border-2 border-zinc-900 bg-zinc-200"/>)}</div>:<CampaignGrid campaigns={filtered} canEdit={canEdit} submitting={submitting} query={query} status={status} navigate={(path,options)=>navigate(location.pathname.startsWith("/brand/")?path.replace(/^\/campaigns/,"/brand/campaigns"):path,options)} onEdit={campaign=>{setFormCampaign(campaign);setFormOpen(true)}} onDelete={remove}/>}</div>
 </div>;
 }
 
