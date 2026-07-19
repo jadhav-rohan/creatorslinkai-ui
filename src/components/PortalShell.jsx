@@ -19,7 +19,7 @@ const brandLinks=[
 ];
 
 export default function PortalShell({persona}){
-  const {email,workspaceType,personas,logout,token}=useAuth();
+  const {email,workspaceType,personas,logout,loggingOut,token}=useAuth();
   const {selectedWorkspaceId}=useWorkspace();
   const [open,setOpen]=useState(false);
   const creator=persona==="CREATOR";
@@ -45,7 +45,7 @@ export default function PortalShell({persona}){
       <div className="border-t-2 border-zinc-900 p-5">
         <div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-zinc-900 bg-sky-200 font-black">{name.slice(0,1).toUpperCase()}</span><div className="min-w-0"><p className="truncate text-sm font-black">{name}</p><p className="truncate text-xs text-zinc-500">{email}</p></div></div>
         {personas.length>1&&<NavLink to={creator?"/brand/login":"/creator/login"} state={{switching:true}} className="mt-4 flex items-center text-xs font-bold underline">Switch portal</NavLink>}
-        <button onClick={logout} className="mt-4 flex min-h-11 items-center gap-2 font-black text-red-600"><LogOut size={17}/>Sign Out</button>
+        <button onClick={()=>logout()} disabled={loggingOut} className="mt-4 flex min-h-11 items-center gap-2 font-black text-red-600 disabled:cursor-not-allowed disabled:opacity-50"><LogOut size={17}/>{loggingOut?"Signing Out…":"Sign Out"}</button>
       </div>
     </aside>
     {open&&<button type="button" aria-label="Close navigation overlay" onClick={()=>setOpen(false)} className="fixed inset-0 z-40 min-h-0 bg-black/45 lg:hidden"/>}

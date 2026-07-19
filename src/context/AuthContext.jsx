@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react'
-import { api } from '../api'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { api, setAuthenticationFailureHandler } from '../api'
+import { clearAuthenticatedSession } from '../services/authenticatedSessionService'
 
 const AuthContext = createContext(null)
 
@@ -18,8 +19,12 @@ function loadStoredAuth() {
 
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(loadStoredAuth)
+  const [loggingOut, setLoggingOut] = useState(false)
+  const logoutPromise = useRef(null)
+  const sessionEnded = useRef(false)
 
   const persist = useCallback((value) => {
+    if (value) sessionEnded.current = false
     setAuth(value)
     if (value) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
@@ -44,7 +49,32 @@ export function AuthProvider({ children }) {
     return result
   }, [persist])
 
-  const logout = useCallback(() => persist(null), [persist])
+  const logout = useCallback(({ revoke = true } = {}) => {
+    if (logoutPromise.current) return logoutPromise.current
+    if (sessionEnded.current) return Promise.resolve()
+    const currentToken = auth?.token || window.localStorage.getItem('ig_jwt')
+    const operation = (async () => {
+      setLoggingOut(true)
+      try {
+        if (revoke && currentToken) await api.logout(currentToken)
+      } catch {
+        // Local logout must succeed even when revocation cannot be reached.
+      } finally {
+        sessionEnded.current = true
+        clearAuthenticatedSession()
+        setAuth(null)
+        setLoggingOut(false)
+      }
+    })()
+    logoutPromise.current = operation
+    operation.finally(() => { if (logoutPromise.current === operation) logoutPromise.current = null })
+    return operation
+  }, [auth?.token])
+
+  useEffect(() => {
+    setAuthenticationFailureHandler(() => logout({ revoke: false }))
+    return () => setAuthenticationFailureHandler(null)
+  }, [logout])
 
   const authenticatePortal = useCallback(async (persona, mode, payload) => {
     const result = persona === 'CREATOR'
@@ -73,6 +103,7 @@ export function AuthProvider({ children }) {
     register,
     login,
     logout
+    ,loggingOut
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

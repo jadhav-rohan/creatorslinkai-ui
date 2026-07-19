@@ -1,4 +1,6 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+let authenticationFailureHandler = null;
+export function setAuthenticationFailureHandler(handler) { authenticationFailureHandler = handler; }
 
 export class ApiError extends Error {
   constructor(message, status, requestId) {
@@ -11,7 +13,7 @@ export class ApiError extends Error {
 
 async function request(
   path,
-  { method = "GET", body, token, headers = {}, signal } = {}
+  { method = "GET", body, token, headers = {}, signal, skipAuthenticationFailure = false } = {}
 ) {
   const finalHeaders = { ...headers };
   if (body !== undefined) finalHeaders["Content-Type"] = "application/json";
@@ -37,7 +39,9 @@ async function request(
     const message =
       (data && (data.message || data.error)) ||
       `Request failed (${res.status})`;
-    throw new ApiError(message, res.status, res.headers.get("X-Request-ID"));
+    const error = new ApiError(message, res.status, res.headers.get("X-Request-ID"));
+    if (res.status === 401 && !skipAuthenticationFailure && authenticationFailureHandler) await authenticationFailureHandler();
+    throw error;
   }
 
   return data;
@@ -53,20 +57,23 @@ function withQuery(path, params) {
 }
 
 export const api = {
+  logout: (token) => request("/api/v1/auth/logout", { method: "POST", token, skipAuthenticationFailure: true }),
   register: (email, password) =>
     request("/api/v1/auth/register", {
       method: "POST",
       body: { email, password },
+      skipAuthenticationFailure: true,
     }),
   login: (email, password) =>
     request("/api/v1/auth/login", {
       method: "POST",
       body: { email, password },
+      skipAuthenticationFailure: true,
     }),
-  registerCreator: (email, password) => request("/api/v1/auth/creator/register", { method: "POST", body: { email, password } }),
-  loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password } }),
-  registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType } }),
-  loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password } }),
+  registerCreator: (email, password) => request("/api/v1/auth/creator/register", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
+  loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
+  registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType }, skipAuthenticationFailure: true }),
+  loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
   getCreatorDashboard: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-dashboard`, { igUserId }), { token, ...options }),
   getMediaKit: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { token, ...options }),
   saveMediaKit: (workspaceId, igUserId, payload, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { method: "PUT", body: payload, token, ...options }),

@@ -21,4 +21,5 @@ export const deliverableService = {
   delete: (workspaceId, campaignId, creatorProfileId, deliverableId, token) => api.deleteCampaignDeliverable(workspaceId, campaignId, creatorProfileId, deliverableId, token),
   set: (workspaceId, campaignId, creatorProfileId, value) => cache.set(key(workspaceId, campaignId, creatorProfileId), value),
   clearWorkspace: (workspaceId) => { for (const cacheKey of cache.keys()) if (cacheKey.includes(`\"${workspaceId}\"`)) cache.delete(cacheKey); },
+  clear: () => cache.clear(),
 };
