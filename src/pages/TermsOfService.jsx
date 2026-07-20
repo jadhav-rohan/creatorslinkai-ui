@@ -1,120 +1,35 @@
-import React from "react";
-export default function TermsOfService() {
-  return (
-    <div className="min-h-screen bg-bg-deep text-text-primary">
-      <div className="mx-auto max-w-4xl px-6 py-20">
-        <div className="rounded-3xl border border-panel-border bg-panel p-10 shadow-2xl">
-          <h1 className="text-4xl font-bold">Terms of Service</h1>
+import {Link} from "react-router-dom";
 
-          <p className="mt-3 text-text-secondary">Last Updated: July 2026</p>
+const Section=({title,children})=><section><h2 className="mb-3 text-2xl font-black">{title}</h2><div className="space-y-4 leading-7 text-zinc-700">{children}</div></section>;
+const List=({children})=><ul className="list-disc space-y-2 pl-6">{children}</ul>;
 
-          <div className="mt-10 space-y-10">
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">
-                Acceptance of Terms
-              </h2>
-
-              <p className="leading-8 text-text-secondary">
-                By using CreatorLinksAI, you agree to these Terms of Service. If
-                you do not agree, please discontinue use of the platform.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">Services</h2>
-
-              <p className="leading-8 text-text-secondary">
-                CreatorLinksAI provides Instagram analytics, engagement
-                automation, Auto-DM workflows, and creator management features
-                using Meta's official APIs.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">
-                User Responsibilities
-              </h2>
-
-              <ul className="list-disc pl-6 space-y-2 text-text-secondary leading-8">
-                <li>Provide accurate account information.</li>
-                <li>
-                  Use the platform in compliance with Meta Platform Policies.
-                </li>
-                <li>Do not misuse or abuse automation features.</li>
-                <li>Comply with all applicable laws and regulations.</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">
-                Third-Party Services
-              </h2>
-
-              <p className="leading-8 text-text-secondary">
-                CreatorLinksAI integrates with Meta Platforms including
-                Instagram and Facebook. Your use of those services is governed
-                by Meta's own Terms and Privacy Policy.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">Availability</h2>
-
-              <p className="leading-8 text-text-secondary">
-                We strive to maintain reliable service but do not guarantee
-                uninterrupted availability or error-free operation.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">
-                Limitation of Liability
-              </h2>
-
-              <p className="leading-8 text-text-secondary">
-                CreatorLinksAI shall not be liable for indirect, incidental, or
-                consequential damages resulting from the use or inability to use
-                the platform.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">
-                Account Termination
-              </h2>
-
-              <p className="leading-8 text-text-secondary">
-                Users may disconnect their Instagram account at any time.
-                CreatorLinksAI reserves the right to suspend or terminate access
-                in cases of abuse or violations of these Terms.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">
-                Changes to These Terms
-              </h2>
-
-              <p className="leading-8 text-text-secondary">
-                We may revise these Terms from time to time. Continued use of
-                CreatorLinksAI constitutes acceptance of the updated Terms.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">Contact</h2>
-
-              <p className="leading-8 text-text-secondary">
-                Questions regarding these Terms can be sent to:
-              </p>
-
-              <p className="mt-3 font-medium text-indigo-400">
-                creatorlinksai@gmail.com
-              </p>
-            </section>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+export default function TermsOfService(){
+ return <main className="brutal-page min-h-screen px-5 py-12 text-zinc-900 md:py-16"><article className="brutal-card mx-auto max-w-4xl p-6 md:p-10">
+  <Link to="/login" className="text-sm font-black underline">← Back to CreatorLinksAI</Link>
+  <p className="brutal-overline mt-8">Legal</p><h1 className="mt-2 text-4xl font-black md:text-5xl">Terms of Service</h1>
+  <p className="mt-3 text-sm text-zinc-600"><strong>Effective date:</strong> July 21, 2026</p>
+  <div className="mt-10 space-y-10">
+   <Section title="1. Acceptance"><p>By creating an account, selecting the acceptance checkbox, or using CreatorLinksAI, you agree to these Terms and acknowledge the Privacy Policy. If you use CreatorLinksAI for an organization, you represent that you are authorized to accept these Terms for that organization.</p></Section>
+   <Section title="2. Eligibility and accounts"><p>You must be at least 18 years old or the age of legal majority in your jurisdiction. You must provide accurate information, keep your credentials confidential, and promptly notify us of suspected unauthorized access. You are responsible for activity performed through your account unless prohibited by law.</p><p>Creator and Brand/Agency accounts use separate portal access. You may not attempt to bypass persona, workspace, or permission restrictions.</p></Section>
+   <Section title="3. The service"><p>CreatorLinksAI provides tools that may include creator analytics, Instagram connection management, Auto-DM configuration, media kits, invoices, business discovery, creator lists, campaigns, contact and outreach records, deliverables, and creator-consented campaign analytics. Features may change, be limited, or be discontinued.</p></Section>
+   <Section title="4. Workspaces and permissions"><p>Workspace owners and authorized administrators control membership, roles, permissions, connections, and workspace records. Users must access only workspaces and information they are authorized to use. Organizations are responsible for configuring appropriate access and removing access when it is no longer required.</p></Section>
+   <Section title="5. Meta and third-party services"><p>Instagram and Facebook functionality depends on Meta Platforms and its APIs. You must comply with applicable Meta terms, policies, permissions, and platform rules. CreatorLinksAI does not control third-party availability, review decisions, API limitations, rate limits, or changes.</p><p>Connecting or disconnecting a Meta account is separate from signing in to or signing out of CreatorLinksAI. You authorize us to use connected services only to provide requested and configured functionality.</p></Section>
+   <Section title="6. Acceptable use"><p>You may not:</p><List>
+    <li>Use CreatorLinksAI unlawfully, fraudulently, deceptively, or to harass or exploit another person.</li>
+    <li>Send spam, violate messaging or advertising rules, or use automation without all required notices and consent.</li>
+    <li>Scrape, probe, disrupt, overload, reverse engineer, or bypass security, rate limits, permissions, or access controls.</li>
+    <li>Upload malware or content that infringes privacy, publicity, intellectual-property, or other rights.</li>
+    <li>Use discovered, contact, campaign, or analytics information for unauthorized surveillance, discrimination, or resale.</li>
+   </List></Section>
+   <Section title="7. Outreach and automation"><p>Unless a feature explicitly states otherwise, recording outreach stores an interaction record and does not itself send an email, direct message, WhatsApp message, or other communication. You are responsible for the legality, accuracy, recipients, timing, and content of communications and automated replies you initiate or configure.</p></Section>
+   <Section title="8. Creator content and insight sharing"><p>You retain ownership of information and content you submit. You grant CreatorLinksAI a limited license to host, process, reproduce, and display that content as necessary to provide and secure the service.</p><p>Deliverable insight sharing is scoped to the selected campaign deliverable and requires creator approval. Brands and agencies must not attempt to infer, reconstruct, or obtain broader creator analytics from shared snapshots. Creators are responsible for selecting the correct content before approving a share.</p></Section>
+   <Section title="9. Campaigns, contacts, and invoices"><p>CreatorLinksAI provides organizational tools and is not a party to agreements between creators, brands, agencies, managers, or other users. Campaign status, agreed cost, deliverables, contacts, outreach records, and invoices do not constitute legal, tax, accounting, payment, or collection services. Users are responsible for verifying records and obtaining professional advice where appropriate.</p></Section>
+   <Section title="10. Intellectual property"><p>CreatorLinksAI and its software, design, branding, and service content are owned by us or our licensors. Except for rights expressly granted in these Terms, no license or ownership right is transferred to you. Feedback may be used to improve the service without obligation to you.</p></Section>
+   <Section title="11. Suspension and termination"><p>You may stop using the service and disconnect integrations at any time. We may restrict or terminate access when reasonably necessary to address violations, legal requirements, security threats, non-payment where applicable, or risks to users, third parties, or the service. Provisions that by their nature should survive termination will continue to apply.</p></Section>
+   <Section title="12. Availability and disclaimers"><p>CreatorLinksAI is provided on an “as is” and “as available” basis to the extent permitted by law. We do not guarantee uninterrupted service, particular business results, the accuracy or continued availability of third-party data, or that every error will be corrected. You remain responsible for decisions made using platform information.</p></Section>
+   <Section title="13. Limitation of liability"><p>To the fullest extent permitted by applicable law, CreatorLinksAI will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost profits, revenue, data, goodwill, campaigns, or business opportunities arising from use of or inability to use the service. Nothing in these Terms excludes liability that cannot legally be excluded.</p></Section>
+   <Section title="14. Changes"><p>We may update these Terms as the service or applicable requirements change. Revised Terms will be published with a new effective date. When required, we will provide additional notice or request renewed acceptance. Continued use after an update becomes effective constitutes acceptance where permitted by law.</p></Section>
+   <Section title="15. Contact"><p>Questions about these Terms may be sent to <a className="font-black underline" href="mailto:creatorlinksai@gmail.com">creatorlinksai@gmail.com</a>.</p></Section>
+  </div>
+ </article></main>;
 }
