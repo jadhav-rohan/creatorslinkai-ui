@@ -4,12 +4,14 @@ import { useAuth } from "../context/AuthContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { creatorListService } from "../services/creatorListService";
 import { useWorkspaceAuthorization } from "../context/WorkspaceAuthorizationContext";
+import { useThemedDialog } from "../context/ThemedDialogContext";
 
 export default function CreatorLists() {
   const { token, logout } = useAuth();
   const { selectedWorkspace, selectedWorkspaceId, reloadWorkspaces } = useWorkspace();
   const navigate = useNavigate();
   const { hasPermission } = useWorkspaceAuthorization();
+  const { confirm } = useThemedDialog();
   const canEdit = hasPermission("CREATOR_LIST_EDIT");
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +50,7 @@ export default function CreatorLists() {
     } catch (err) { setError(err.status >= 500 ? "The creator list could not be saved. Please retry." : err.message); } finally { setSubmitting(false); }
   }
   async function remove(list) {
-    if (!canEdit || !window.confirm(`Delete “${list.name}”? This cannot be undone.`)) return;
+    if (!canEdit || !await confirm(`Delete “${list.name}”? This cannot be undone.`, {title:"Delete creator list",confirmLabel:"Delete"})) return;
     setSubmitting(true); setError(null);
     try { await creatorListService.delete(selectedWorkspaceId, list.id, token); setLists((current) => current.filter((item) => item.id !== list.id)); }
     catch (err) { setError(err.status >= 500 ? "The creator list could not be deleted. Please retry." : err.message); } finally { setSubmitting(false); }

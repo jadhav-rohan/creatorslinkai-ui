@@ -5,11 +5,13 @@ import { useWorkspace } from "../context/WorkspaceContext";
 import { campaignService } from "../services/campaignService";
 import CampaignForm from "../components/CampaignForm";
 import { useWorkspaceAuthorization } from "../context/WorkspaceAuthorizationContext";
+import { useThemedDialog } from "../context/ThemedDialogContext";
 
 const STATUS_STYLE = { DRAFT:"bg-slate-500/10 text-slate-300", ACTIVE:"bg-emerald-500/10 text-emerald-300", PAUSED:"bg-amber-500/10 text-amber-300", COMPLETED:"bg-indigo-500/10 text-indigo-300", CANCELLED:"bg-red-500/10 text-red-300" };
 function money(campaign) { return campaign.budget != null && campaign.currency ? new Intl.NumberFormat(undefined,{style:"currency",currency:campaign.currency}).format(campaign.budget) : "No budget"; }
 
 export default function Campaigns() {
+  const {confirm}=useThemedDialog();
   const { token, logout } = useAuth(); const { selectedWorkspace, selectedWorkspaceId, reloadWorkspaces } = useWorkspace(); const navigate = useNavigate(); const location = useLocation();
   const { hasPermission } = useWorkspaceAuthorization(); const canEdit=hasPermission("CAMPAIGN_EDIT");
   const saved = location.state?.campaignFilters || {};
@@ -18,7 +20,7 @@ export default function Campaigns() {
   useEffect(()=>{setFormOpen(false);setFormCampaign(undefined);load()},[selectedWorkspaceId,token]);
   const filtered=useMemo(()=>(campaignsWorkspaceId===selectedWorkspaceId?campaigns:[]).filter(item=>(!query||item.name.toLowerCase().includes(query.toLowerCase()))&&(!status||item.status===status)),[campaigns,campaignsWorkspaceId,selectedWorkspaceId,query,status]);
   async function save(payload){if(submitting||!canEdit)return;setSubmitting(true);try{if(formCampaign){const updated=await campaignService.update(selectedWorkspaceId,formCampaign.id,payload,token);setCampaigns(c=>c.map(x=>x.id===updated.id?updated:x))}else{const created=await campaignService.create(selectedWorkspaceId,payload,token);setCampaigns(c=>[created,...c])}setFormOpen(false);setFormCampaign(undefined)}finally{setSubmitting(false)}}
-  async function remove(campaign){if(!canEdit||!window.confirm(`Delete “${campaign.name}”? This cannot be undone.`))return;setSubmitting(true);try{await campaignService.delete(selectedWorkspaceId,campaign.id,token);setCampaigns(c=>c.filter(x=>x.id!==campaign.id))}catch(err){setError(err.status>=500?"The campaign could not be deleted. Please retry.":err.message)}finally{setSubmitting(false)}}
+  async function remove(campaign){if(!canEdit||!await confirm(`Delete “${campaign.name}”? This cannot be undone.`,{title:"Delete campaign",confirmLabel:"Delete"}))return;setSubmitting(true);try{await campaignService.delete(selectedWorkspaceId,campaign.id,token);setCampaigns(c=>c.filter(x=>x.id!==campaign.id))}catch(err){setError(err.status>=500?"The campaign could not be deleted. Please retry.":err.message)}finally{setSubmitting(false)}}
   if(!selectedWorkspace)return <div className="min-h-screen bg-bg-deep p-8 text-text-primary">
 <div className="mx-auto max-w-xl rounded-3xl bg-panel p-10 text-center">
 <h1 className="text-xl font-bold">Select a workspace first</h1>

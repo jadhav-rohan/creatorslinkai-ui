@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { useWorkspace } from '../context/WorkspaceContext'
 import { clearConnectionMarker, connectionService, markConnectionInProgress, readConnectionMarker } from '../services/connectionService'
 import { useWorkspaceAuthorization } from '../context/WorkspaceAuthorizationContext'
+import { useThemedDialog } from '../context/ThemedDialogContext'
 
 export default function Dashboard() {
+  const { confirm } = useThemedDialog()
   const { token, email, logout } = useAuth()
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -81,7 +83,7 @@ export default function Dashboard() {
 
   async function handleDisconnect(igUserId) {
     if (!hasPermission('CONNECTION_MANAGE')) return
-    if (!window.confirm('Disconnect this account? This revokes access and deletes the stored token.')) return
+    if (!await confirm('Disconnect this account? This revokes access and deletes the stored token.', {title:'Disconnect Instagram',confirmLabel:'Disconnect'})) return
     try {
       await connectionService.disconnectInstagram(igUserId, selectedWorkspaceId, token)
       setAccounts(prev => prev.filter(a => a.igUserId !== igUserId))
@@ -115,7 +117,7 @@ export default function Dashboard() {
 
   async function handleMetaDisconnect(igUserId) {
     if (!hasPermission('CONNECTION_MANAGE')) return
-    if (!window.confirm('Disconnect this Meta brand account? This revokes access and removes the stored connection.')) return
+    if (!await confirm('Disconnect this Meta brand account? This revokes access and removes the stored connection.', {title:'Disconnect Facebook',confirmLabel:'Disconnect'})) return
     setMetaDisconnecting(igUserId)
     setError(null)
     try {

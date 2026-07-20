@@ -38,11 +38,13 @@ import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
 import BrandCollaborationRoute from "./components/BrandCollaborationRoute";
 import PortalHomeRedirect from "./components/PortalHomeRedirect";
+import { ThemedDialogProvider } from "./context/ThemedDialogContext";
 
 export default function App() {
   return (
     <AuthProvider>
       <HashRouter>
+        <ThemedDialogProvider>
         <WorkspaceProvider>
         <WorkspaceAuthorizationProvider>
         <Routes>
@@ -122,6 +124,7 @@ export default function App() {
         <Footer />
         </WorkspaceAuthorizationProvider>
         </WorkspaceProvider>
+        </ThemedDialogProvider>
       </HashRouter>
     </AuthProvider>
   );

@@ -5,6 +5,7 @@ import { useWorkspace } from "../context/WorkspaceContext";
 import { creatorListService } from "../services/creatorListService";
 import AddToCampaignDialog from "../components/AddToCampaignDialog";
 import { useWorkspaceAuthorization } from "../context/WorkspaceAuthorizationContext";
+import { useThemedDialog } from "../context/ThemedDialogContext";
 
 const STATUSES = ["CONSIDERING", "SHORTLISTED", "SELECTED", "REJECTED"];
 const STATUS_STYLES = { CONSIDERING: "bg-amber-500/10 text-amber-300", SHORTLISTED: "bg-indigo-500/10 text-indigo-300", SELECTED: "bg-emerald-500/10 text-emerald-300", REJECTED: "bg-red-500/10 text-red-300" };
@@ -31,6 +32,7 @@ export default function CreatorListDetails() {
   const { listId } = useParams(); const navigate = useNavigate();
   const { token, logout } = useAuth(); const { selectedWorkspaceId, reloadWorkspaces } = useWorkspace();
   const {hasPermission}=useWorkspaceAuthorization();const canEdit=hasPermission("CREATOR_LIST_EDIT"),canAddCampaign=hasPermission("CAMPAIGN_EDIT");
+  const {confirm}=useThemedDialog();
   const [list, setList] = useState(null); const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [error, setError] = useState(null); const [notFound, setNotFound] = useState(false);
   async function load() {
     if (!selectedWorkspaceId) { setLoading(false); return; }
@@ -52,7 +54,7 @@ export default function CreatorListDetails() {
   }
   async function removeMember(member) {
     if(!canEdit)return;
-    if (busy || !window.confirm(`Remove @${member.instagramUsername} from this list?`)) return; setBusy(true); setError(null);
+    if (busy || !await confirm(`Remove @${member.instagramUsername} from this list?`,{title:"Remove creator",confirmLabel:"Remove"})) return; setBusy(true); setError(null);
     try { await creatorListService.removeCreator(selectedWorkspaceId, listId, member.creatorProfileId, token); setList((current) => ({ ...current, creatorCount: Math.max(0, current.creatorCount - 1), creators: current.creators.filter((item) => item.creatorProfileId !== member.creatorProfileId) })); }
     catch (err) { setError(err.status >= 500 ? "The creator could not be removed. Please retry." : err.message); } finally { setBusy(false); }
   }

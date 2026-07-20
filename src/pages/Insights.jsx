@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api, instagramInsightsErrorMessage } from "../api";
 import { useWorkspaceAuthorization } from "../context/WorkspaceAuthorizationContext";
+import { useThemedDialog } from "../context/ThemedDialogContext";
 import { ChevronDown } from "lucide-react";
 import {
   Users,
@@ -25,6 +26,7 @@ import {
   Tooltip,
 } from "recharts";
 export default function Insights() {
+  const {confirm}=useThemedDialog();
   const { igUserId } = useParams();
   const { token } = useAuth();
   const {hasPermission}=useWorkspaceAuthorization();const canViewAutoDm=hasPermission("AUTO_DM_VIEW"),canEditAutoDm=hasPermission("AUTO_DM_EDIT");
@@ -159,7 +161,7 @@ export default function Insights() {
   async function handleDeleteRule(ruleId) {
     if(!canEditAutoDm)return;
     if (
-      !window.confirm("Are you sure you want to delete this automation rule?")
+      !await confirm("Are you sure you want to delete this automation rule?",{title:"Delete automation rule",confirmLabel:"Delete"})
     )
       return;
     try {
