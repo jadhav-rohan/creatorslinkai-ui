@@ -51,6 +51,15 @@ label[for="discovery-username"] + div > button.brutal-button { min-width:118px; 
 @media (max-width:639px) {
   label[for="discovery-username"] + div > button { width:100%; }
 }
+
+/* Outreach is a CRM log, not a sender; keep that warning unmistakable. */
+[role="dialog"][aria-labelledby="outreach-title"] > p {
+  background:#fef3c7!important;
+  color:#451a03!important;
+  border:2px solid #92400e;
+  font-weight:700;
+  line-height:1.45;
+}
 ::selection { background:#fde047; color:#09090b; }
 ::-webkit-scrollbar { width:10px; height:10px; }
 ::-webkit-scrollbar-track { background:#f4f4f5; }

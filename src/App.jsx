@@ -1,9 +1,8 @@
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 import Connected from "./pages/Connected";
 import SelectPage from "./pages/SelectPage";
@@ -40,6 +39,7 @@ import { WorkspaceAuthorizationProvider } from "./context/WorkspaceAuthorization
 import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
 import BrandCollaborationRoute from "./components/BrandCollaborationRoute";
+import PortalHomeRedirect from "./components/PortalHomeRedirect";
 
 export default function App() {
   return (
@@ -48,7 +48,7 @@ export default function App() {
         <WorkspaceProvider>
         <WorkspaceAuthorizationProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<PortalHomeRedirect />} />
           <Route path="/login" element={<PortalSelect />} />
           <Route path="/register" element={<Register />} />
           <Route path="/legacy-login" element={<Login />} />
@@ -74,14 +74,7 @@ export default function App() {
             <Route path="/brand/analytics" element={<BrandAnalytics />} />
           </Route>
           <Route path="/connected" element={<Connected />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <BrandCollaborationRoute><Dashboard /></BrandCollaborationRoute>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/dashboard" element={<PortalHomeRedirect />} />
           <Route
             path="/insights/:igUserId"
             element={
