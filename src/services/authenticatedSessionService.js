@@ -4,8 +4,8 @@ import {invoiceService} from "./invoiceService";
 import {mediaKitService} from "./mediaKitService";
 import {outreachService} from "./outreachService";
 
-const LOCAL_KEYS=["ig_auth","ig_jwt","creatorlinksai_workspace_id"];
-const SESSION_KEYS=["creatorlinksai_connection_in_progress"];
+const LOCAL_KEYS=["ig_auth","ig_jwt","creatorlinksai_workspace_id","creatorlinksai_workspace_id_CREATOR","creatorlinksai_workspace_id_BRAND"];
+const SESSION_KEYS=["creatorlinksai_connection_in_progress","creatorlinksai_auth_notice"];
 const SESSION_PREFIXES=["creatorDashboardAccount:","creatorAutoDmAccount:"];
 
 export function clearAuthenticatedSession(){

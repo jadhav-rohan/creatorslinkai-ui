@@ -1,8 +1,6 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Navigate, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
 import Insights from "./pages/Insights";
 import Connected from "./pages/Connected";
 import SelectPage from "./pages/SelectPage";
@@ -50,8 +48,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<PortalHomeRedirect />} />
           <Route path="/login" element={<PortalSelect />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/legacy-login" element={<Login />} />
+          <Route path="/register" element={<Navigate to="/login" replace />} />
+          <Route path="/legacy-login" element={<Navigate to="/login" replace />} />
           <Route path="/creator/login" element={<PortalAuth persona="CREATOR" mode="login" />} />
           <Route path="/creator/register" element={<PortalAuth persona="CREATOR" mode="register" />} />
           <Route path="/brand/login" element={<PortalAuth persona="BRAND" mode="login" />} />
@@ -78,41 +76,41 @@ export default function App() {
           <Route
             path="/insights/:igUserId"
             element={
-              <ProtectedRoute>
+              <PersonaRoute persona="CREATOR">
                 <WorkspacePermissionGuard permission="ANALYTICS_VIEW"><Insights /></WorkspacePermissionGuard>
-              </ProtectedRoute>
+              </PersonaRoute>
             }
           />
           <Route
             path="/select-page"
             element={
-              <ProtectedRoute>
+              <PersonaRoute persona="BRAND">
                 <SelectPage />
-              </ProtectedRoute>
+              </PersonaRoute>
             }
           />
           <Route
             path="/discover"
             element={
-              <ProtectedRoute>
+              <PersonaRoute persona="BRAND">
                 <WorkspacePermissionGuard permission="CONNECTION_USE"><Discover /></WorkspacePermissionGuard>
-              </ProtectedRoute>
+              </PersonaRoute>
             }
           />
           <Route
             path="/creator-marketplace"
             element={
-              <ProtectedRoute>
+              <PersonaRoute persona="BRAND">
                 <WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>
-              </ProtectedRoute>
+              </PersonaRoute>
             }
           />
-          <Route path="/creator-lists" element={<ProtectedRoute><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard></ProtectedRoute>} />
-          <Route path="/creator-lists/:listId" element={<ProtectedRoute><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorListDetails /></WorkspacePermissionGuard></ProtectedRoute>} />
-          <Route path="/campaigns" element={<ProtectedRoute><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard></ProtectedRoute>} />
-          <Route path="/campaigns/:campaignId" element={<ProtectedRoute><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard></ProtectedRoute>} />
-          <Route path="/follow-ups" element={<ProtectedRoute><WorkspacePermissionGuard permission="OUTREACH_TASK_VIEW"><FollowUps /></WorkspacePermissionGuard></ProtectedRoute>} />
-          <Route path="/settings/outreach-templates" element={<ProtectedRoute><WorkspacePermissionGuard permission="OUTREACH_TEMPLATE_VIEW"><OutreachTemplates /></WorkspacePermissionGuard></ProtectedRoute>} />
+          <Route path="/creator-lists" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard></PersonaRoute>} />
+          <Route path="/creator-lists/:listId" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorListDetails /></WorkspacePermissionGuard></PersonaRoute>} />
+          <Route path="/campaigns" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard></PersonaRoute>} />
+          <Route path="/campaigns/:campaignId" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard></PersonaRoute>} />
+          <Route path="/follow-ups" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="OUTREACH_TASK_VIEW"><FollowUps /></WorkspacePermissionGuard></PersonaRoute>} />
+          <Route path="/settings/outreach-templates" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="OUTREACH_TEMPLATE_VIEW"><OutreachTemplates /></WorkspacePermissionGuard></PersonaRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/settings/workspace" element={<ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="WORKSPACE_VIEW"><WorkspaceSettings /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute>} />
           <Route path="/settings/members" element={<ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="MEMBER_VIEW"><Members /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute>} />

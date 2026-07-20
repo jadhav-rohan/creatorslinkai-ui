@@ -1,18 +1,31 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
-import { api, setAuthenticationFailureHandler } from '../api'
+import { ApiError, api, setAuthenticationFailureHandler } from '../api'
 import { clearAuthenticatedSession } from '../services/authenticatedSessionService'
 
 const AuthContext = createContext(null)
 
 const STORAGE_KEY = 'ig_auth'
+const RECOGNIZED_PERSONAS = new Set(['CREATOR', 'BRAND'])
+const SESSION_NOTICE_KEY = 'creatorlinksai_auth_notice'
+const SESSION_EXPIRED_MESSAGE = 'Your session has expired or needs to be refreshed. Please sign in again.'
+
+function clearInvalidStoredAuth() {
+  clearAuthenticatedSession()
+  window.sessionStorage.setItem(SESSION_NOTICE_KEY, SESSION_EXPIRED_MESSAGE)
+}
 
 function loadStoredAuth() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const value = JSON.parse(raw)
-    return value?.token && value?.activePersona ? value : null
+    if (!value?.token || !RECOGNIZED_PERSONAS.has(value?.activePersona)) {
+      clearInvalidStoredAuth()
+      return null
+    }
+    return value
   } catch {
+    clearInvalidStoredAuth()
     return null
   }
 }
@@ -37,19 +50,7 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const register = useCallback(async (email, password) => {
-    const result = await api.register(email, password)
-    persist(result)
-    return result
-  }, [persist])
-
-  const login = useCallback(async (email, password) => {
-    const result = await api.login(email, password)
-    persist(result)
-    return result
-  }, [persist])
-
-  const logout = useCallback(({ revoke = true } = {}) => {
+  const logout = useCallback(({ revoke = true, reason = null } = {}) => {
     if (logoutPromise.current) return logoutPromise.current
     if (sessionEnded.current) return Promise.resolve()
     const currentToken = auth?.token || window.localStorage.getItem('ig_jwt')
@@ -62,8 +63,10 @@ export function AuthProvider({ children }) {
       } finally {
         sessionEnded.current = true
         clearAuthenticatedSession()
+        if (reason === 'expired') window.sessionStorage.setItem(SESSION_NOTICE_KEY, SESSION_EXPIRED_MESSAGE)
         setAuth(null)
         setLoggingOut(false)
+        if (window.location.hash !== '#/login') window.location.hash = '/login'
       }
     })()
     logoutPromise.current = operation
@@ -72,7 +75,7 @@ export function AuthProvider({ children }) {
   }, [auth?.token])
 
   useEffect(() => {
-    setAuthenticationFailureHandler(() => logout({ revoke: false }))
+    setAuthenticationFailureHandler(() => logout({ revoke: false, reason: 'expired' }))
     return () => setAuthenticationFailureHandler(null)
   }, [logout])
 
@@ -80,8 +83,12 @@ export function AuthProvider({ children }) {
     const result = persona === 'CREATOR'
       ? await (mode === 'register' ? api.registerCreator(payload.email, payload.password) : api.loginCreator(payload.email, payload.password))
       : await (mode === 'register' ? api.registerBrand(payload.email, payload.password, payload.workspaceName, payload.workspaceType) : api.loginBrand(payload.email, payload.password))
+    if (!RECOGNIZED_PERSONAS.has(result?.activePersona) || result.activePersona !== persona) {
+      throw new ApiError('The authenticated account does not match this portal.', 403, null)
+    }
     persist(result)
-    if (result.defaultWorkspaceId) window.localStorage.setItem('creatorlinksai_workspace_id', result.defaultWorkspaceId)
+    const workspaceId = result.workspaceId || result.defaultWorkspaceId
+    if (workspaceId) window.localStorage.setItem(`creatorlinksai_workspace_id_${result.activePersona}`, workspaceId)
     return result
   }, [persist])
 
@@ -92,16 +99,15 @@ export function AuthProvider({ children }) {
     expiresInSeconds: auth?.expiresInSeconds ?? null,
     activePersona: auth?.activePersona ?? null,
     personas: Array.isArray(auth?.personas) ? auth.personas : [],
-    defaultWorkspaceId: auth?.defaultWorkspaceId ?? null,
+    workspaceId: auth?.workspaceId ?? auth?.defaultWorkspaceId ?? null,
+    defaultWorkspaceId: auth?.workspaceId ?? auth?.defaultWorkspaceId ?? null,
     workspaceType: auth?.workspaceType ?? null,
     isAuthenticated: !!auth?.token,
     isCreatorPortal: auth?.activePersona === 'CREATOR',
     isBrandPortal: auth?.activePersona === 'BRAND',
-    activeWorkspaceId: auth?.defaultWorkspaceId ?? null,
+    activeWorkspaceId: auth?.workspaceId ?? auth?.defaultWorkspaceId ?? null,
     canAccessPersona: (persona) => Array.isArray(auth?.personas) && auth.personas.includes(persona),
     authenticatePortal,
-    register,
-    login,
     logout
     ,loggingOut
   }

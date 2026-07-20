@@ -44,9 +44,12 @@ async function request(
   }
 
   if (!res.ok) {
-    const message =
+    const responseMessage =
       (data && (data.message || data.error)) ||
       `Request failed (${res.status})`;
+    const message = res.status === 403
+      ? "This feature is not available for your account type."
+      : responseMessage;
     const error = new ApiError(
       message,
       res.status,
@@ -71,18 +74,6 @@ function withQuery(path, params) {
 
 export const api = {
   logout: (token) => request("/api/v1/auth/logout", { method: "POST", token, skipAuthenticationFailure: true }),
-  register: (email, password) =>
-    request("/api/v1/auth/register", {
-      method: "POST",
-      body: { email, password },
-      skipAuthenticationFailure: true,
-    }),
-  login: (email, password) =>
-    request("/api/v1/auth/login", {
-      method: "POST",
-      body: { email, password },
-      skipAuthenticationFailure: true,
-    }),
   registerCreator: (email, password) => request("/api/v1/auth/creator/register", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
   loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
   registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType }, skipAuthenticationFailure: true }),
@@ -92,7 +83,7 @@ export const api = {
   saveMediaKit: (workspaceId, igUserId, payload, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { method: "PUT", body: payload, token, ...options }),
   downloadMediaKitPdf: async (workspaceId, igUserId, token, options = {}) => {
     const response = await fetch(`${BASE_URL}${withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit/pdf`, { igUserId })}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
-    if (!response.ok) { let data = null; try { data = await response.json(); } catch { /* empty error */ } throw new ApiError(data?.message || data?.error || `Request failed (${response.status})`, response.status, response.headers.get("X-Request-ID")); }
+    if (!response.ok) { let data = null; try { data = await response.json(); } catch { /* empty error */ } if(response.status===401&&authenticationFailureHandler)await authenticationFailureHandler();throw new ApiError(response.status===403?"This feature is not available for your account type.":data?.message || data?.error || `Request failed (${response.status})`, response.status, response.headers.get("X-Request-ID"),response.headers.get("Retry-After")); }
     return { blob: await response.blob(), disposition: response.headers.get("Content-Disposition") };
   },
   listInvoices: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices`, { token, ...options }),
@@ -105,7 +96,7 @@ export const api = {
   deleteInvoice: (workspaceId, invoiceId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}`, { method: "DELETE", token }),
   downloadInvoicePdf: async (workspaceId, invoiceId, token, options = {}) => {
     const response = await fetch(`${BASE_URL}/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/pdf`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
-    if (!response.ok) { let data=null; try { data=await response.json(); } catch { /* empty error */ } throw new ApiError(data?.message||data?.error||`Request failed (${response.status})`,response.status,response.headers.get("X-Request-ID")); }
+    if (!response.ok) { let data=null; try { data=await response.json(); } catch { /* empty error */ } if(response.status===401&&authenticationFailureHandler)await authenticationFailureHandler();throw new ApiError(response.status===403?"This feature is not available for your account type.":data?.message||data?.error||`Request failed (${response.status})`,response.status,response.headers.get("X-Request-ID"),response.headers.get("Retry-After")); }
     return {blob:await response.blob(),disposition:response.headers.get("Content-Disposition")};
   },
 
