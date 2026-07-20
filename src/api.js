@@ -158,19 +158,6 @@ export const api = {
       token,
       ...options,
     }),
-  searchCreatorMarketplace: (filters, token) =>
-    request("/api/v1/creator-marketplace/search", {
-      method: "POST",
-      body: filters,
-      token,
-    }),
-  getMarketplaceCreator: (username, brandIgUserId, token) =>
-    request(
-      `/api/v1/creator-marketplace/creators/${encodeURIComponent(
-        username
-      )}?brandIgUserId=${encodeURIComponent(brandIgUserId)}`,
-      { token }
-    ),
   listWorkspaces: (token) => request("/api/v1/workspaces", { token }),
   createWorkspace: (name, type, token) =>
     request("/api/v1/workspaces", { method: "POST", body: { name, type }, token }),
