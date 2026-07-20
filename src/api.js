@@ -3,12 +3,20 @@ let authenticationFailureHandler = null;
 export function setAuthenticationFailureHandler(handler) { authenticationFailureHandler = handler; }
 
 export class ApiError extends Error {
-  constructor(message, status, requestId) {
+  constructor(message, status, requestId, retryAfter) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.requestId = requestId || null;
+    this.retryAfter = retryAfter || null;
   }
+}
+
+export function instagramInsightsErrorMessage(error) {
+  if (error?.status === 403) return "You do not have access to this Instagram account.";
+  if (error?.status === 404) return "Instagram account connection not found. Please connect your Instagram account.";
+  if (error?.status === 502) return "Instagram is currently unavailable. Please try again later.";
+  return error?.message || "Instagram insights could not be loaded. Please try again.";
 }
 
 async function request(
@@ -39,7 +47,12 @@ async function request(
     const message =
       (data && (data.message || data.error)) ||
       `Request failed (${res.status})`;
-    const error = new ApiError(message, res.status, res.headers.get("X-Request-ID"));
+    const error = new ApiError(
+      message,
+      res.status,
+      res.headers.get("X-Request-ID"),
+      res.headers.get("Retry-After")
+    );
     if (res.status === 401 && !skipAuthenticationFailure && authenticationFailureHandler) await authenticationFailureHandler();
     throw error;
   }
@@ -113,7 +126,7 @@ export const api = {
       ...options,
     }),
   getInsights: (igUserId, token, reelLimit = 10) =>
-    request(`/api/v1/instagram/${igUserId}/insights?reelLimit=${reelLimit}`, {
+    request(withQuery(`/api/v1/instagram/${encodeURIComponent(igUserId)}/insights`, { reelLimit }), {
       token,
     }),
 

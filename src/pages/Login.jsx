@@ -1,26 +1,37 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useRateLimitCountdown } from "../hooks/useRateLimitCountdown";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const requestInFlight = useRef(false);
+  const { isRateLimited, secondsRemaining, startRateLimit } = useRateLimitCountdown();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (requestInFlight.current || loading || isRateLimited) return;
+    requestInFlight.current = true;
     setError(null);
     setLoading(true);
     try {
       await login(email, password);
       navigate(location.state?.from || "/dashboard", { replace: true });
     } catch (err) {
-      setError(err.message);
+      if (err.status === 429) {
+        startRateLimit(err.retryAfter);
+        setError("Too many attempts. Please try again later.");
+      } else {
+        setError(err.message);
+      }
     } finally {
+      requestInFlight.current = false;
       setLoading(false);
     }
   }
@@ -65,7 +76,14 @@ export default function Login() {
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
-            <span>{error}</span>
+            <span>
+              {error}
+              {isRateLimited && (
+                <span className="mt-1 block">
+                  You can try again in {secondsRemaining} second{secondsRemaining === 1 ? "" : "s"}.
+                </span>
+              )}
+            </span>
           </div>
         )}
 
@@ -108,7 +126,7 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isRateLimited}
             className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary hover:from-accent-primary/95 hover:to-accent-secondary/95 text-white text-sm font-semibold shadow-lg shadow-accent-primary/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             {loading ? (

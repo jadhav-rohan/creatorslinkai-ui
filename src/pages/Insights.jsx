@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { api } from "../api";
+import { api, instagramInsightsErrorMessage } from "../api";
 import { useWorkspaceAuthorization } from "../context/WorkspaceAuthorizationContext";
 import { ChevronDown } from "lucide-react";
 import {
@@ -103,7 +103,7 @@ export default function Insights() {
         if (!cancelled) setData(result);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) setError(instagramInsightsErrorMessage(err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

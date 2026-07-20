@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../api";
+import { api, instagramInsightsErrorMessage } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { connectionService } from "../services/connectionService";
@@ -142,12 +142,7 @@ export default function CreatorDashboard() {
       );
     } catch (e) {
       if (e.status === 401) logout();
-      else
-        setActionError(
-          e.status >= 500
-            ? "Instagram insights could not be refreshed. Please retry."
-            : e.message
-        );
+      else setActionError(instagramInsightsErrorMessage(e));
     } finally {
       setRefreshing(false);
     }
