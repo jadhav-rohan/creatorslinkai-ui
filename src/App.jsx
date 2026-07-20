@@ -71,7 +71,7 @@ export default function App() {
             <Route path="/brand/lists" element={<WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard>} />
             <Route path="/brand/campaigns" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard>} />
             <Route path="/brand/campaigns/:campaignId" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard>} />
-            <Route path="/brand/analytics" element={<BrandAnalytics />} />
+            <Route path="/brand/analytics" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><BrandAnalytics /></WorkspacePermissionGuard>} />
           </Route>
           <Route path="/connected" element={<Connected />} />
           <Route path="/dashboard" element={<PortalHomeRedirect />} />

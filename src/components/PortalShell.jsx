@@ -7,7 +7,7 @@ import {useWorkspaceAuthorization} from "../context/WorkspaceAuthorizationContex
 import {connectionService,markConnectionInProgress} from "../services/connectionService";
 
 const creatorLinks=[["Dashboard","/creator/dashboard",LayoutDashboard],["Media Kit","/creator/media-kit",FileImage],["Invoices","/creator/invoices",FileText],["Auto DM","/creator/auto-dm",MessageCircle],["Insight Requests","/creator/insight-requests",ShieldCheck]];
-const brandLinks=[["Discovery","/brand/discovery",Search],["List","/brand/lists",List],["Campaign","/brand/campaigns",FileText],["Analytics","/brand/analytics",BarChart3,true]];
+const brandLinks=[["Discovery","/brand/discovery",Search],["List","/brand/lists",List],["Campaign","/brand/campaigns",FileText],["Analytics","/brand/analytics",BarChart3]];
 
 export default function PortalShell({persona}){
  const {email,workspaceType,personas,logout,loggingOut,token}=useAuth(),{selectedWorkspaceId}=useWorkspace(),{hasPermission}=useWorkspaceAuthorization();
