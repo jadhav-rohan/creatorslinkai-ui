@@ -118,6 +118,7 @@ export default function App() {
           <Route path="/settings/members" element={<ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="MEMBER_VIEW"><Members /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute>} />
           <Route path="/invitations" element={<ProtectedRoute><BrandCollaborationRoute><Invitations /></BrandCollaborationRoute></ProtectedRoute>} />
           <Route path="/invitations/accept" element={<AcceptInvitation />} />
+          <Route path="/invitations/respond" element={<AcceptInvitation />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>

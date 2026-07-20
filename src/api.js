@@ -21,7 +21,7 @@ export function instagramInsightsErrorMessage(error) {
 
 async function request(
   path,
-  { method = "GET", body, token, headers = {}, signal, skipAuthenticationFailure = false } = {}
+  { method = "GET", body, token, headers = {}, signal, skipAuthenticationFailure = false, authenticationRetried = false } = {}
 ) {
   const finalHeaders = { ...headers };
   if (body !== undefined) finalHeaders["Content-Type"] = "application/json";
@@ -29,6 +29,7 @@ async function request(
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
+    credentials: "include",
     headers: finalHeaders,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
@@ -56,7 +57,11 @@ async function request(
       res.headers.get("X-Request-ID"),
       res.headers.get("Retry-After")
     );
-    if (res.status === 401 && !skipAuthenticationFailure && authenticationFailureHandler) await authenticationFailureHandler();
+    if (res.status === 401 && !skipAuthenticationFailure && !authenticationRetried && authenticationFailureHandler) {
+      const refreshedToken = await authenticationFailureHandler(token);
+      if (refreshedToken) return request(path, {method,body,token:refreshedToken,headers,signal,skipAuthenticationFailure,authenticationRetried:true});
+    }
+    if (res.status === 401 && !skipAuthenticationFailure && authenticationRetried && authenticationFailureHandler) await authenticationFailureHandler(token,{canRefresh:false});
     throw error;
   }
 
@@ -73,6 +78,7 @@ function withQuery(path, params) {
 }
 
 export const api = {
+  refresh: () => request("/api/v1/auth/refresh", { method: "POST", skipAuthenticationFailure: true }),
   logout: (token) => request("/api/v1/auth/logout", { method: "POST", token, skipAuthenticationFailure: true }),
   registerCreator: (email, password) => request("/api/v1/auth/creator/register", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
   loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
@@ -82,8 +88,8 @@ export const api = {
   getMediaKit: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { token, ...options }),
   saveMediaKit: (workspaceId, igUserId, payload, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { method: "PUT", body: payload, token, ...options }),
   downloadMediaKitPdf: async (workspaceId, igUserId, token, options = {}) => {
-    const response = await fetch(`${BASE_URL}${withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit/pdf`, { igUserId })}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
-    if (!response.ok) { let data = null; try { data = await response.json(); } catch { /* empty error */ } if(response.status===401&&authenticationFailureHandler)await authenticationFailureHandler();throw new ApiError(response.status===403?"This feature is not available for your account type.":data?.message || data?.error || `Request failed (${response.status})`, response.status, response.headers.get("X-Request-ID"),response.headers.get("Retry-After")); }
+    const response = await fetch(`${BASE_URL}${withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit/pdf`, { igUserId })}`, { credentials:"include",headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
+    if (!response.ok) { let data = null; try { data = await response.json(); } catch { /* empty error */ } if(response.status===401&&!options.authenticationRetried&&authenticationFailureHandler){const refreshedToken=await authenticationFailureHandler(token);if(refreshedToken)return api.downloadMediaKitPdf(workspaceId,igUserId,refreshedToken,{...options,authenticationRetried:true})}if(response.status===401&&options.authenticationRetried&&authenticationFailureHandler)await authenticationFailureHandler(token,{canRefresh:false});throw new ApiError(response.status===403?"This feature is not available for your account type.":data?.message || data?.error || `Request failed (${response.status})`, response.status, response.headers.get("X-Request-ID"),response.headers.get("Retry-After")); }
     return { blob: await response.blob(), disposition: response.headers.get("Content-Disposition") };
   },
   listInvoices: (workspaceId, token, options) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices`, { token, ...options }),
@@ -95,8 +101,8 @@ export const api = {
   voidInvoice: (workspaceId, invoiceId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/void`, { method: "POST", token }),
   deleteInvoice: (workspaceId, invoiceId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}`, { method: "DELETE", token }),
   downloadInvoicePdf: async (workspaceId, invoiceId, token, options = {}) => {
-    const response = await fetch(`${BASE_URL}/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/pdf`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
-    if (!response.ok) { let data=null; try { data=await response.json(); } catch { /* empty error */ } if(response.status===401&&authenticationFailureHandler)await authenticationFailureHandler();throw new ApiError(response.status===403?"This feature is not available for your account type.":data?.message||data?.error||`Request failed (${response.status})`,response.status,response.headers.get("X-Request-ID"),response.headers.get("Retry-After")); }
+    const response = await fetch(`${BASE_URL}/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invoices/${encodeURIComponent(invoiceId)}/pdf`, { credentials:"include",headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, signal: options.signal });
+    if (!response.ok) { let data=null; try { data=await response.json(); } catch { /* empty error */ } if(response.status===401&&!options.authenticationRetried&&authenticationFailureHandler){const refreshedToken=await authenticationFailureHandler(token);if(refreshedToken)return api.downloadInvoicePdf(workspaceId,invoiceId,refreshedToken,{...options,authenticationRetried:true})}if(response.status===401&&options.authenticationRetried&&authenticationFailureHandler)await authenticationFailureHandler(token,{canRefresh:false});throw new ApiError(response.status===403?"This feature is not available for your account type.":data?.message||data?.error||`Request failed (${response.status})`,response.status,response.headers.get("X-Request-ID"),response.headers.get("Retry-After")); }
     return {blob:await response.blob(),disposition:response.headers.get("Content-Disposition")};
   },
 
@@ -179,8 +185,8 @@ export const api = {
   cancelWorkspaceInvitation: (workspaceId, invitationId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invitations/${encodeURIComponent(invitationId)}`, { method: "DELETE", token }),
   resendWorkspaceInvitation: (workspaceId, invitationId, token) => request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/invitations/${encodeURIComponent(invitationId)}/resend`, { method: "POST", token }),
   listMyWorkspaceInvitations: (token, options) => request("/api/v1/workspace-invitations", { token, ...options }),
-  acceptWorkspaceInvitation: (invitationToken, token) => request(`/api/v1/workspace-invitations/${encodeURIComponent(invitationToken)}/accept`, { method: "POST", token }),
-  declineWorkspaceInvitation: (invitationToken, token) => request(`/api/v1/workspace-invitations/${encodeURIComponent(invitationToken)}/decline`, { method: "POST", token }),
+  acceptWorkspaceInvitation: (invitationToken, token) => request("/api/v1/workspace-invitations/accept", { method: "POST", body: {token:invitationToken}, token }),
+  declineWorkspaceInvitation: (invitationToken, token) => request("/api/v1/workspace-invitations/decline", { method: "POST", body: {token:invitationToken}, token }),
   listCreatorLists: (workspaceId, token) =>
     request(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-lists`, { token }),
   getCreatorList: (workspaceId, listId, token) =>

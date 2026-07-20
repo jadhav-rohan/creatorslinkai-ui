@@ -3,6 +3,7 @@ import {deliverableService} from "./deliverableService";
 import {invoiceService} from "./invoiceService";
 import {mediaKitService} from "./mediaKitService";
 import {outreachService} from "./outreachService";
+import {clearInvitationToken} from "./invitationTokenMemory";
 
 const LOCAL_KEYS=["ig_auth","ig_jwt","creatorlinksai_workspace_id","creatorlinksai_workspace_id_CREATOR","creatorlinksai_workspace_id_BRAND"];
 const SESSION_KEYS=["creatorlinksai_connection_in_progress","creatorlinksai_auth_notice"];
@@ -17,4 +18,5 @@ export function clearAuthenticatedSession(){
   invoiceService.clear();
   deliverableService.clear();
   outreachService.clear();
+  clearInvitationToken();
 }
