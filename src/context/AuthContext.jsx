@@ -1,6 +1,7 @@
 import {createContext,useCallback,useContext,useEffect,useRef,useState} from "react";
 import {ApiError,api,setAuthenticationFailureHandler} from "../api";
 import {clearAuthenticatedSession} from "../services/authenticatedSessionService";
+import {clearPendingVerification} from "../services/pendingVerificationService";
 
 const AuthContext=createContext(null);
 const RECOGNIZED_PERSONAS=new Set(["CREATOR","BRAND"]);
@@ -61,7 +62,8 @@ export function AuthProvider({children}){
   const result=persona==="CREATOR"
    ?await(mode==="register"?api.registerCreator(payload.email,payload.password):api.loginCreator(payload.email,payload.password))
    :await(mode==="register"?api.registerBrand(payload.email,payload.password,payload.workspaceName,payload.workspaceType):api.loginBrand(payload.email,payload.password));
-  validateSession(result,persona);setAuth(result);return result;
+  if(mode==="register")return result;
+  validateSession(result,persona);clearPendingVerification();setAuth(result);return result;
  },[setAuth]);
 
  const logout=useCallback(()=>{

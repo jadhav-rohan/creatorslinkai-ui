@@ -39,6 +39,8 @@ import Footer from "./pages/Footer";
 import BrandCollaborationRoute from "./components/BrandCollaborationRoute";
 import PortalHomeRedirect from "./components/PortalHomeRedirect";
 import { ThemedDialogProvider } from "./context/ThemedDialogContext";
+import CheckEmail from "./pages/CheckEmail";
+import VerifyEmail from "./pages/VerifyEmail";
 
 export default function App() {
   return (
@@ -56,6 +58,8 @@ export default function App() {
           <Route path="/creator/register" element={<PortalAuth persona="CREATOR" mode="register" />} />
           <Route path="/brand/login" element={<PortalAuth persona="BRAND" mode="login" />} />
           <Route path="/brand/register" element={<PortalAuth persona="BRAND" mode="register" />} />
+          <Route path="/check-email" element={<CheckEmail />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route element={<PersonaRoute persona="CREATOR"><PortalShell persona="CREATOR" /></PersonaRoute>}>
             <Route path="/creator/dashboard" element={<CreatorDashboard />} />
             <Route path="/creator/media-kit" element={<CreatorMediaKit />} />

@@ -2,13 +2,19 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 let authenticationFailureHandler = null;
 export function setAuthenticationFailureHandler(handler) { authenticationFailureHandler = handler; }
 
+/**
+ * @typedef {{email:string, verificationRequired:true, message:string}} RegistrationPendingResponse
+ * Registration endpoints return this pending response without an authentication token.
+ */
+
 export class ApiError extends Error {
-  constructor(message, status, requestId, retryAfter) {
+  constructor(message, status, requestId, retryAfter, code) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.requestId = requestId || null;
     this.retryAfter = retryAfter || null;
+    this.code = code || null;
   }
 }
 
@@ -54,8 +60,9 @@ async function request(
     const error = new ApiError(
       message,
       res.status,
-      res.headers.get("X-Request-ID"),
-      res.headers.get("Retry-After")
+      res.headers.get("X-Request-ID") || data?.requestId,
+      res.headers.get("Retry-After"),
+      data?.error
     );
     if (res.status === 401 && !skipAuthenticationFailure && !authenticationRetried && authenticationFailureHandler) {
       const refreshedToken = await authenticationFailureHandler(token);
@@ -84,6 +91,8 @@ export const api = {
   loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
   registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType }, skipAuthenticationFailure: true }),
   loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
+  confirmEmailVerification: (verificationToken) => request("/api/v1/auth/email-verification/confirm", { method: "POST", body: { token: verificationToken }, skipAuthenticationFailure: true }),
+  resendEmailVerification: (email) => request("/api/v1/auth/email-verification/resend", { method: "POST", body: { email }, skipAuthenticationFailure: true }),
   getCreatorDashboard: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-dashboard`, { igUserId }), { token, ...options }),
   getMediaKit: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { token, ...options }),
   saveMediaKit: (workspaceId, igUserId, payload, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { method: "PUT", body: payload, token, ...options }),
