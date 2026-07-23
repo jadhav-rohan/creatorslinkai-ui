@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import { api, instagramInsightsErrorMessage } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { useWorkspace } from "../context/WorkspaceContext";
-import { connectionService } from "../services/connectionService";
+import {
+  connectionService,
+  INSTAGRAM_CONNECTION_CHANGED,
+} from "../services/connectionService";
 import { useCreatorDashboard } from "../hooks/useCreatorDashboard";
 import {
   AudienceQualityPanel,
@@ -81,6 +84,28 @@ export default function CreatorDashboard() {
         workspaceId === defaultWorkspaceId),
     onUnauthorized: logout,
   });
+  useEffect(() => {
+    function handleConnectionChanged(event) {
+      if (event.detail?.workspaceId !== workspaceId) return;
+      if (
+        !selectedAccount ||
+        event.detail?.igUserId === selectedAccount
+      ) {
+        sessionStorage.removeItem(`creatorDashboardAccount:${workspaceId}`);
+        setSelectedAccount("");
+      }
+      refetch({ clearData: true });
+    }
+    window.addEventListener(
+      INSTAGRAM_CONNECTION_CHANGED,
+      handleConnectionChanged
+    );
+    return () =>
+      window.removeEventListener(
+        INSTAGRAM_CONNECTION_CHANGED,
+        handleConnectionChanged
+      );
+  }, [workspaceId, selectedAccount, refetch]);
   useEffect(() => {
     if (error?.status === 400 && selectedAccount) {
       sessionStorage.removeItem(`creatorDashboardAccount:${workspaceId}`);

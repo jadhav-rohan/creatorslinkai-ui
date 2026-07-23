@@ -1,4 +1,14 @@
 import { api } from "../api";
+import { creatorDashboardService } from "./creatorDashboardService";
+
+export const INSTAGRAM_CONNECTION_CHANGED = "creatorlinksai:instagram-connection-changed";
+
+function notifyInstagramConnectionChanged(workspaceId, igUserId) {
+  creatorDashboardService.invalidate(workspaceId);
+  window.dispatchEvent(new CustomEvent(INSTAGRAM_CONNECTION_CHANGED, {
+    detail: { workspaceId, igUserId },
+  }));
+}
 
 export const connectionKeys = {
   instagram: (workspaceId) => ["instagram-login-accounts", workspaceId],
@@ -8,7 +18,11 @@ export const connectionKeys = {
 export const connectionService = {
   listInstagram: (workspaceId, token, signal) => api.listAccounts(workspaceId, token, { signal }),
   connectInstagram: (workspaceId, token) => api.startConnect(workspaceId, token),
-  disconnectInstagram: (igUserId, workspaceId, token) => api.disconnectAccount(igUserId, workspaceId, token),
+  disconnectInstagram: async (igUserId, workspaceId, token) => {
+    const result = await api.disconnectAccount(igUserId, workspaceId, token);
+    notifyInstagramConnectionChanged(workspaceId, igUserId);
+    return result;
+  },
   listFacebook: (workspaceId, token, signal) => api.listMetaBrandAccounts(workspaceId, token, { signal }),
   connectFacebook: (workspaceId, token) => api.startMetaBrandConnect(workspaceId, token),
   disconnectFacebook: (igUserId, workspaceId, token) => api.disconnectMetaBrandAccount(igUserId, workspaceId, token),
