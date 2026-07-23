@@ -58,11 +58,15 @@ export function AuthProvider({children}){
   return()=>window.clearTimeout(timer);
  },[auth?.token,auth?.expiresInSeconds,refreshSession]);
 
- const authenticatePortal=useCallback(async(persona,mode,payload)=>{
+ const registerPortal=useCallback((persona,payload)=>{
+  if(persona==="CREATOR")return api.registerCreator(payload.email,payload.password);
+  return api.registerBrand(payload.email,payload.password,payload.workspaceName,payload.workspaceType);
+ },[]);
+
+ const loginPortal=useCallback(async(persona,payload)=>{
   const result=persona==="CREATOR"
-   ?await(mode==="register"?api.registerCreator(payload.email,payload.password):api.loginCreator(payload.email,payload.password))
-   :await(mode==="register"?api.registerBrand(payload.email,payload.password,payload.workspaceName,payload.workspaceType):api.loginBrand(payload.email,payload.password));
-  if(mode==="register")return result;
+   ?await api.loginCreator(payload.email,payload.password)
+   :await api.loginBrand(payload.email,payload.password);
   validateSession(result,persona);clearPendingVerification();setAuth(result);return result;
  },[setAuth]);
 
@@ -80,7 +84,7 @@ export function AuthProvider({children}){
   return operation;
  },[clearSession]);
 
- const value={token:auth?.token??null,email:auth?.email??null,userId:auth?.userId??null,expiresInSeconds:auth?.expiresInSeconds??null,activePersona:auth?.activePersona??null,personas:Array.isArray(auth?.personas)?auth.personas:[],workspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,defaultWorkspaceId:auth?.defaultWorkspaceId??auth?.workspaceId??null,workspaceType:auth?.workspaceType??null,isAuthenticated:Boolean(auth?.token),isCreatorPortal:auth?.activePersona==="CREATOR",isBrandPortal:auth?.activePersona==="BRAND",activeWorkspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,canAccessPersona:persona=>Array.isArray(auth?.personas)&&auth.personas.includes(persona),authenticatePortal,refreshSession,logout,loggingOut,restoringSession};
+ const value={token:auth?.token??null,email:auth?.email??null,userId:auth?.userId??null,expiresInSeconds:auth?.expiresInSeconds??null,activePersona:auth?.activePersona??null,personas:Array.isArray(auth?.personas)?auth.personas:[],workspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,defaultWorkspaceId:auth?.defaultWorkspaceId??auth?.workspaceId??null,workspaceType:auth?.workspaceType??null,isAuthenticated:Boolean(auth?.token),isCreatorPortal:auth?.activePersona==="CREATOR",isBrandPortal:auth?.activePersona==="BRAND",activeWorkspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,canAccessPersona:persona=>Array.isArray(auth?.personas)&&auth.personas.includes(persona),registerPortal,loginPortal,refreshSession,logout,loggingOut,restoringSession};
  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
