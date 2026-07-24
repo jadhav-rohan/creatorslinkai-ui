@@ -4,9 +4,9 @@ import {api} from "../api";
 
 const support=error=>error?.requestId?` Support ID: ${error.requestId}`:"";
 const deliveryLabels={
-  PENDING:"Sending initial reply",
-  AWAITING_RESPONSE:"Waiting for recipient response",
-  TEMPLATE_PENDING:"Sending template",
+  PENDING:"Sending",
+  AWAITING_RESPONSE:"Processing",
+  TEMPLATE_PENDING:"Processing",
   SENT:"Delivered",
   FAILED:"Failed",
 };
