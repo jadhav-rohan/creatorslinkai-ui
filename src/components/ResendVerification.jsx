@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from "react";
 import {api} from "../api";
 import {useRateLimitCountdown} from "../hooks/useRateLimitCountdown";
 import {setPendingVerification} from "../services/pendingVerificationService";
+import {featureFlags} from "../config/featureFlags";
 
 const GENERIC_SUCCESS="If this email belongs to an unverified account, a new verification link has been sent.";
 
@@ -28,6 +29,7 @@ export default function ResendVerification({initialEmail="",persona,initialCoold
    else setError("We could not request another verification email. Please try again.");
   }finally{requestInFlight.current=false;setSending(false)}
  }
+ if(persona==="BRAND"&&!featureFlags.brandPortalEnabled)return null;
  return <div className="mt-6 border-t-2 border-zinc-900 pt-6">
   <label className="block text-sm font-black">Email address<input type="email" required autoComplete="email" value={email} onChange={event=>{setEmail(event.target.value);setMessage("");setError("")}} onKeyDown={event=>{if(event.key==="Enter"){event.preventDefault();resend()}}} className="brutal-field mt-2 w-full"/></label>
   {message&&<p role="status" className="mt-3 border-2 border-emerald-700 bg-emerald-50 p-3 text-sm font-bold text-emerald-900">{message}</p>}

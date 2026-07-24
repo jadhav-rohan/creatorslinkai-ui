@@ -1,6 +1,8 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 let authenticationFailureHandler = null;
+let brandPortalDisabledHandler = null;
 export function setAuthenticationFailureHandler(handler) { authenticationFailureHandler = handler; }
+export function setBrandPortalDisabledHandler(handler) { brandPortalDisabledHandler = handler; }
 
 /**
  * @typedef {{email:string, verificationRequired:true, message:string}} RegistrationPendingResponse
@@ -27,7 +29,7 @@ export function instagramInsightsErrorMessage(error) {
 
 async function request(
   path,
-  { method = "GET", body, token, headers = {}, signal, skipAuthenticationFailure = false, authenticationRetried = false } = {}
+  { method = "GET", body, token, headers = {}, signal, skipAuthenticationFailure = false, skipBrandPortalDisabled = false, authenticationRetried = false } = {}
 ) {
   const finalHeaders = { ...headers };
   if (body !== undefined) finalHeaders["Content-Type"] = "application/json";
@@ -62,11 +64,14 @@ async function request(
       res.status,
       res.headers.get("X-Request-ID") || data?.requestId,
       res.headers.get("Retry-After"),
-      data?.error
+      data?.code || data?.error
     );
+    if (error.code === "BRAND_PORTAL_DISABLED" && !skipBrandPortalDisabled && brandPortalDisabledHandler) {
+      await brandPortalDisabledHandler(error);
+    }
     if (res.status === 401 && !skipAuthenticationFailure && !authenticationRetried && authenticationFailureHandler) {
       const refreshedToken = await authenticationFailureHandler(token);
-      if (refreshedToken) return request(path, {method,body,token:refreshedToken,headers,signal,skipAuthenticationFailure,authenticationRetried:true});
+      if (refreshedToken) return request(path, {method,body,token:refreshedToken,headers,signal,skipAuthenticationFailure,skipBrandPortalDisabled,authenticationRetried:true});
     }
     if (res.status === 401 && !skipAuthenticationFailure && authenticationRetried && authenticationFailureHandler) await authenticationFailureHandler(token,{canRefresh:false});
     throw error;
@@ -91,7 +96,7 @@ export const api = {
   loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
   registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType }, skipAuthenticationFailure: true }),
   loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
-  confirmEmailVerification: (verificationToken) => request("/api/v1/auth/email-verification/confirm", { method: "POST", body: { token: verificationToken }, skipAuthenticationFailure: true }),
+  confirmEmailVerification: (verificationToken) => request("/api/v1/auth/email-verification/confirm", { method: "POST", body: { token: verificationToken }, skipAuthenticationFailure: true, skipBrandPortalDisabled: true }),
   resendEmailVerification: (email) => request("/api/v1/auth/email-verification/resend", { method: "POST", body: { email }, skipAuthenticationFailure: true }),
   getCreatorDashboard: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/creator-dashboard`, { igUserId }), { token, ...options }),
   getMediaKit: (workspaceId, igUserId, token, options) => request(withQuery(`/api/v1/workspaces/${encodeURIComponent(workspaceId)}/media-kit`, { igUserId }), { token, ...options }),

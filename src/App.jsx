@@ -41,6 +41,8 @@ import PortalHomeRedirect from "./components/PortalHomeRedirect";
 import { ThemedDialogProvider } from "./context/ThemedDialogContext";
 import CheckEmail from "./pages/CheckEmail";
 import VerifyEmail from "./pages/VerifyEmail";
+import BrandPortalRouteGuard from "./components/BrandPortalRouteGuard";
+import BrandComingSoon from "./pages/BrandComingSoon";
 
 export default function App() {
   return (
@@ -56,8 +58,9 @@ export default function App() {
           <Route path="/legacy-login" element={<Navigate to="/login" replace />} />
           <Route path="/creator/login" element={<PortalAuth persona="CREATOR" mode="login" />} />
           <Route path="/creator/register" element={<PortalAuth persona="CREATOR" mode="register" />} />
-          <Route path="/brand/login" element={<PortalAuth persona="BRAND" mode="login" />} />
-          <Route path="/brand/register" element={<PortalAuth persona="BRAND" mode="register" />} />
+          <Route path="/brand/coming-soon" element={<BrandComingSoon />} />
+          <Route path="/brand/login" element={<BrandPortalRouteGuard><PortalAuth persona="BRAND" mode="login" /></BrandPortalRouteGuard>} />
+          <Route path="/brand/register" element={<BrandPortalRouteGuard><PortalAuth persona="BRAND" mode="register" /></BrandPortalRouteGuard>} />
           <Route path="/check-email" element={<CheckEmail />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route element={<PersonaRoute persona="CREATOR"><PortalShell persona="CREATOR" /></PersonaRoute>}>
@@ -70,7 +73,7 @@ export default function App() {
             <Route path="/creator/auto-dm" element={<CreatorAutoDm />} />
             <Route path="/creator/insight-requests" element={<CreatorInsightRequests />} />
           </Route>
-          <Route element={<PersonaRoute persona="BRAND"><PortalShell persona="BRAND" /></PersonaRoute>}>
+          <Route element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><PortalShell persona="BRAND" /></PersonaRoute></BrandPortalRouteGuard>}>
             <Route path="/brand/discovery" element={<WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>} />
             <Route path="/brand/lists" element={<WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard>} />
             <Route path="/brand/campaigns" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard>} />
@@ -90,39 +93,39 @@ export default function App() {
           <Route
             path="/select-page"
             element={
-              <PersonaRoute persona="BRAND">
+              <BrandPortalRouteGuard><PersonaRoute persona="BRAND">
                 <SelectPage />
-              </PersonaRoute>
+              </PersonaRoute></BrandPortalRouteGuard>
             }
           />
           <Route
             path="/discover"
             element={
-              <PersonaRoute persona="BRAND">
+              <BrandPortalRouteGuard><PersonaRoute persona="BRAND">
                 <WorkspacePermissionGuard permission="CONNECTION_USE"><Discover /></WorkspacePermissionGuard>
-              </PersonaRoute>
+              </PersonaRoute></BrandPortalRouteGuard>
             }
           />
           <Route
             path="/creator-marketplace"
             element={
-              <PersonaRoute persona="BRAND">
+              <BrandPortalRouteGuard><PersonaRoute persona="BRAND">
                 <WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>
-              </PersonaRoute>
+              </PersonaRoute></BrandPortalRouteGuard>
             }
           />
-          <Route path="/creator-lists" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard></PersonaRoute>} />
-          <Route path="/creator-lists/:listId" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorListDetails /></WorkspacePermissionGuard></PersonaRoute>} />
-          <Route path="/campaigns" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard></PersonaRoute>} />
-          <Route path="/campaigns/:campaignId" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard></PersonaRoute>} />
-          <Route path="/follow-ups" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="OUTREACH_TASK_VIEW"><FollowUps /></WorkspacePermissionGuard></PersonaRoute>} />
-          <Route path="/settings/outreach-templates" element={<PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="OUTREACH_TEMPLATE_VIEW"><OutreachTemplates /></WorkspacePermissionGuard></PersonaRoute>} />
+          <Route path="/creator-lists" element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorLists /></WorkspacePermissionGuard></PersonaRoute></BrandPortalRouteGuard>} />
+          <Route path="/creator-lists/:listId" element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CREATOR_LIST_VIEW"><CreatorListDetails /></WorkspacePermissionGuard></PersonaRoute></BrandPortalRouteGuard>} />
+          <Route path="/campaigns" element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard></PersonaRoute></BrandPortalRouteGuard>} />
+          <Route path="/campaigns/:campaignId" element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard></PersonaRoute></BrandPortalRouteGuard>} />
+          <Route path="/follow-ups" element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="OUTREACH_TASK_VIEW"><FollowUps /></WorkspacePermissionGuard></PersonaRoute></BrandPortalRouteGuard>} />
+          <Route path="/settings/outreach-templates" element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><WorkspacePermissionGuard permission="OUTREACH_TEMPLATE_VIEW"><OutreachTemplates /></WorkspacePermissionGuard></PersonaRoute></BrandPortalRouteGuard>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/settings/workspace" element={<ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="WORKSPACE_VIEW"><WorkspaceSettings /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute>} />
-          <Route path="/settings/members" element={<ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="MEMBER_VIEW"><Members /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute>} />
-          <Route path="/invitations" element={<ProtectedRoute><BrandCollaborationRoute><Invitations /></BrandCollaborationRoute></ProtectedRoute>} />
-          <Route path="/invitations/accept" element={<AcceptInvitation />} />
-          <Route path="/invitations/respond" element={<AcceptInvitation />} />
+          <Route path="/settings/workspace" element={<BrandPortalRouteGuard><ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="WORKSPACE_VIEW"><WorkspaceSettings /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute></BrandPortalRouteGuard>} />
+          <Route path="/settings/members" element={<BrandPortalRouteGuard><ProtectedRoute><BrandCollaborationRoute><WorkspacePermissionGuard permission="MEMBER_VIEW"><Members /></WorkspacePermissionGuard></BrandCollaborationRoute></ProtectedRoute></BrandPortalRouteGuard>} />
+          <Route path="/invitations" element={<BrandPortalRouteGuard><ProtectedRoute><BrandCollaborationRoute><Invitations /></BrandCollaborationRoute></ProtectedRoute></BrandPortalRouteGuard>} />
+          <Route path="/invitations/accept" element={<BrandPortalRouteGuard><AcceptInvitation /></BrandPortalRouteGuard>} />
+          <Route path="/invitations/respond" element={<BrandPortalRouteGuard><AcceptInvitation /></BrandPortalRouteGuard>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>

@@ -1,8 +1,20 @@
-import { useSearchParams, Link } from 'react-router-dom'
+import { useSearchParams, Link, Navigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { featureFlags } from '../config/featureFlags'
+import { readConnectionMarker } from '../services/connectionService'
 
 export default function Connected() {
   const [params] = useSearchParams()
   const igUserId = params.get('igUserId')
+  const { hasDisabledBrandSession, restoringSession } = useAuth()
+  const connectionMarker = readConnectionMarker()
+
+  if (restoringSession) {
+    return <main className="brutal-page flex min-h-screen items-center justify-center p-6"><p className="brutal-card p-8 font-black">Restoring your session…</p></main>
+  }
+  if (!featureFlags.brandPortalEnabled && (hasDisabledBrandSession || connectionMarker?.connectionType === 'FACEBOOK_LOGIN')) {
+    return <Navigate to="/brand/coming-soon" replace />
+  }
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-bg-deep px-4 py-12">
