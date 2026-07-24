@@ -1,13 +1,13 @@
 import {useEffect,useState} from "react";
 import {NavLink,Outlet} from "react-router-dom";
-import {BarChart3,Camera,FileImage,FileText,LayoutDashboard,List,LogOut,Menu,MessageCircle,Search,Share2,ShieldCheck,Unplug,X} from "lucide-react";
+import {BarChart3,Camera,FileImage,FilePenLine,FileText,LayoutDashboard,List,LogOut,Menu,MessageCircle,Search,Share2,ShieldCheck,Unplug,X} from "lucide-react";
 import {useAuth} from "../context/AuthContext";
 import {useWorkspace} from "../context/WorkspaceContext";
 import {useWorkspaceAuthorization} from "../context/WorkspaceAuthorizationContext";
 import {connectionService,markConnectionInProgress} from "../services/connectionService";
 import {useThemedDialog} from "../context/ThemedDialogContext";
 
-const creatorLinks=[["Dashboard","/creator/dashboard",LayoutDashboard],["Media Kit","/creator/media-kit",FileImage],["Invoices","/creator/invoices",FileText],["Auto DM","/creator/auto-dm",MessageCircle],["Insight Requests","/creator/insight-requests",ShieldCheck]];
+const creatorLinks=[["Dashboard","/creator/dashboard",LayoutDashboard],["AI Script Writer","/creator/scripts",FilePenLine],["Media Kit","/creator/media-kit",FileImage],["Invoices","/creator/invoices",FileText],["Auto DM","/creator/auto-dm",MessageCircle],["Insight Requests","/creator/insight-requests",ShieldCheck]];
 const brandLinks=[["Discovery","/brand/discovery",Search],["List","/brand/lists",List],["Campaign","/brand/campaigns",FileText],["Analytics","/brand/analytics",BarChart3]];
 
 export default function PortalShell({persona}){

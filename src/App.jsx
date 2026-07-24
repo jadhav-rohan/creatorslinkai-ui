@@ -33,6 +33,9 @@ import CreatorInvoices from "./pages/CreatorInvoices";
 import CreatorInvoiceDetail from "./pages/CreatorInvoiceDetail";
 import CreatorInvoiceForm from "./pages/CreatorInvoiceForm";
 import CreatorInsightRequests from "./pages/CreatorInsightRequests";
+import CreatorScripts from "./pages/CreatorScripts";
+import CreatorScriptNew from "./pages/CreatorScriptNew";
+import CreatorScriptDetail from "./pages/CreatorScriptDetail";
 import { WorkspaceAuthorizationProvider } from "./context/WorkspaceAuthorizationContext";
 import WorkspacePermissionGuard from "./components/WorkspacePermissionGuard";
 import Footer from "./pages/Footer";
@@ -72,6 +75,9 @@ export default function App() {
             <Route path="/creator/invoices/:invoiceId/edit" element={<CreatorInvoiceForm />} />
             <Route path="/creator/auto-dm" element={<CreatorAutoDm />} />
             <Route path="/creator/insight-requests" element={<CreatorInsightRequests />} />
+            <Route path="/creator/scripts" element={<CreatorScripts />} />
+            <Route path="/creator/scripts/new" element={<CreatorScriptNew />} />
+            <Route path="/creator/scripts/:projectId" element={<CreatorScriptDetail />} />
           </Route>
           <Route element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><PortalShell persona="BRAND" /></PersonaRoute></BrandPortalRouteGuard>}>
             <Route path="/brand/discovery" element={<WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>} />
