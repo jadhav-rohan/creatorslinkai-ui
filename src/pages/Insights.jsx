@@ -199,6 +199,7 @@ export default function Insights() {
         {
           mediaId: selectedReelId,
           keyword: keyword.trim(),
+          responseType: "TEXT",
           dmMessage: dmMessage.trim(),
           publicReplyMessage: publicReplyMessage.trim() || undefined,
         },
