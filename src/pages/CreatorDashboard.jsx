@@ -8,7 +8,7 @@ import {
   INSTAGRAM_CONNECTION_CHANGED,
 } from "../services/connectionService";
 import { useCreatorDashboard } from "../hooks/useCreatorDashboard";
-import { ReelsPanel } from "../components/CreatorAnalyticsPanels";
+import ReelsPanel from "../components/CreatorReelsPanel";
 import AudienceDemographicsPanel from "../components/AudienceDemographicsPanel";
 const compact = new Intl.NumberFormat(undefined, {
   notation: "compact",

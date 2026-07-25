@@ -1,4 +1,4 @@
-/** @typedef {{mediaId:string,caption:?string,timestamp:?string,viewCount:number,likeCount:number,commentCount:number,savedCount:number,shareCount:number,reach:number,totalInteractions:number,follows:number,profileVisits:number,averageWatchTime:number,totalWatchTime:number}} ReelInsight */
+/** @typedef {{mediaId:string,caption:?string,timestamp:?string,thumbnailUrl:?string,viewCount:number,likeCount:number,commentCount:number,savedCount:number,shareCount:number,reach:number,totalInteractions:number,follows:number,profileVisits:number,averageWatchTime:number,totalWatchTime:number}} ReelInsight */
 /** @typedef {{value:string,count:number}} DemographicEntry */
 /** @typedef {{available:boolean,timeframe:?string,unavailableReason:?string,age:DemographicEntry[],gender:DemographicEntry[],countries:DemographicEntry[],cities:DemographicEntry[]}} AudienceDemographicBreakdown */
 /** @typedef {{followers?:AudienceDemographicBreakdown,reached?:AudienceDemographicBreakdown,engaged?:AudienceDemographicBreakdown}} AudienceDemographics */
