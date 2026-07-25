@@ -10,6 +10,7 @@ const deliveryLabels={
   TEMPLATE_PENDING:"Processing",
   SENT:"Delivered",
   FAILED:"Failed",
+  SKIPPED_HOURLY_LIMIT:"Skipped — hourly limit reached",
 };
 
 export default function AutoDmActivityModal({igUserId,rule,token,logout}){
@@ -58,10 +59,11 @@ export default function AutoDmActivityModal({igUserId,rule,token,logout}){
                 <dl className="grid gap-4 text-sm sm:grid-cols-2">
                   <div><dt className="font-bold text-zinc-500">Comment ID</dt><dd className="break-all font-mono">{log.commentId||"—"}</dd></div>
                   <div><dt className="font-bold text-zinc-500">Commenter scoped ID</dt><dd className="break-all font-mono">{log.commenterScopedId||log.commenterId||"—"}</dd></div>
-                  <div><dt className="font-bold text-zinc-500">Delivery status</dt><dd className={`font-black ${status==="FAILED"?"text-red-700":status==="SENT"?"text-emerald-700":""}`}>{deliveryLabels[status]||status||"—"}</dd></div>
+                  <div><dt className="font-bold text-zinc-500">Delivery status</dt><dd className={`font-black ${status==="FAILED"?"text-red-700":status==="SENT"?"text-emerald-700":status==="SKIPPED_HOURLY_LIMIT"?"text-amber-700":""}`}>{deliveryLabels[status]||status||"—"}</dd></div>
                   <div><dt className="font-bold text-zinc-500">Sent / attempted</dt><dd>{log.sentAt||log.attemptedAt||log.createdAt?new Date(log.sentAt||log.attemptedAt||log.createdAt).toLocaleString():"—"}</dd></div>
                 </dl>
                 {status==="FAILED"&&log.errorMessage&&<p className="mt-3 border-t border-zinc-300 pt-3 text-sm text-red-700">{log.errorMessage}</p>}
+                {status==="SKIPPED_HOURLY_LIMIT"&&<p className="mt-3 border-t border-zinc-300 pt-3 text-sm text-amber-800">This message was not sent because the account reached its configured hourly Auto-DM limit.</p>}
               </article>;
             })}</div>}
         </div>

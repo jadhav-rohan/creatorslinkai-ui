@@ -180,6 +180,12 @@ export const api = {
       body: rule,
       token,
     }),
+  updateRule: (igUserId, ruleId, rule, token) =>
+    request(`/api/v1/instagram/${igUserId}/auto-dm-rules/${ruleId}`, {
+      method: "PUT",
+      body: rule,
+      token,
+    }),
   deleteRule: (igUserId, ruleId, token) =>
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules/${ruleId}`, {
       method: "DELETE",
