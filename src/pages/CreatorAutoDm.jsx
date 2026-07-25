@@ -14,6 +14,7 @@ import AutoDmTemplatePreview from "../components/AutoDmTemplatePreview";
 import AutoDmMediaPicker from "../components/AutoDmMediaPicker";
 import AutoDmRuleCard from "../components/AutoDmRuleCard";
 import { useThemedDialog } from "../context/ThemedDialogContext";
+import { DEFAULT_FOLLOW_REMINDER_MESSAGE } from "../autoDmFollowerGate";
 
 const accountName = (account) =>
   account?.username ||
@@ -31,12 +32,14 @@ const newRuleForm = () => ({
   dmMessage: "",
   publicReplyMessage: "",
   requireFollower: false,
+  followReminderMessage: "",
   elements: [createTemplateElement()],
 });
 const ruleDate = (rule) =>
   new Date(rule.updatedAt || rule.createdAt || 0).getTime();
 
 function formFromRule(rule) {
+  const requireFollower = rule.requireFollower === true;
   const elements =
     Array.isArray(rule.elements) && rule.elements.length
       ? rule.elements.map((element) => createTemplateElement(element))
@@ -47,7 +50,11 @@ function formFromRule(rule) {
     responseType: rule.responseType || "TEXT",
     dmMessage: rule.dmMessage || "",
     publicReplyMessage: rule.publicReplyMessage || "",
-    requireFollower: rule.requireFollower === true,
+    requireFollower,
+    followReminderMessage: requireFollower
+      ? rule.followReminderMessage?.trim() ||
+        DEFAULT_FOLLOW_REMINDER_MESSAGE
+      : "",
     elements,
   };
 }
@@ -234,6 +241,7 @@ export default function CreatorAutoDm() {
     const keyword = form.keyword.trim();
     const dmMessage = form.dmMessage.trim();
     const publicReplyMessage = form.publicReplyMessage.trim();
+    const followReminderMessage = form.followReminderMessage.trim();
     if (!mediaId) {
       setFormError("Select a Reel or post for this Auto-DM rule.");
       return;
@@ -252,6 +260,18 @@ export default function CreatorAutoDm() {
       );
       return;
     }
+    if (form.requireFollower && !followReminderMessage) {
+      setFormError(
+        "Follow verification reminder is required when follower verification is enabled.",
+      );
+      return;
+    }
+    if (followReminderMessage.length > 1000) {
+      setFormError(
+        "Follow verification reminder must be 1,000 characters or fewer.",
+      );
+      return;
+    }
     if (form.responseType === "GENERIC_TEMPLATE") {
       const validationError = validateTemplate(form.elements);
       if (validationError) {
@@ -264,6 +284,9 @@ export default function CreatorAutoDm() {
       keyword,
       responseType: form.responseType,
       requireFollower: Boolean(form.requireFollower),
+      followReminderMessage: form.requireFollower
+        ? followReminderMessage
+        : null,
       publicReplyMessage,
       ...(form.responseType === "GENERIC_TEMPLATE"
         ? {
@@ -578,10 +601,17 @@ export default function CreatorAutoDm() {
                       role="switch"
                       aria-checked={form.requireFollower}
                       onClick={() =>
-                        setForm((current) => ({
-                          ...current,
-                          requireFollower: !current.requireFollower,
-                        }))
+                        setForm((current) => {
+                          const requireFollower = !current.requireFollower;
+                          return {
+                            ...current,
+                            requireFollower,
+                            followReminderMessage: requireFollower
+                              ? current.followReminderMessage ||
+                                DEFAULT_FOLLOW_REMINDER_MESSAGE
+                              : "",
+                          };
+                        })
                       }
                       className={`flex w-full items-center gap-4 border-2 border-zinc-900 p-4 text-left transition-colors ${
                         form.requireFollower ? "bg-yellow-100" : "bg-zinc-50"
@@ -612,12 +642,60 @@ export default function CreatorAutoDm() {
                       </span>
                     </button>
                     {form.requireFollower && (
-                      <p className="mt-3 border-l-4 border-zinc-900 bg-sky-100 p-4 text-sm font-bold">
-                        The commenter will first receive a message asking them
-                        to follow your account. After following, they must tap
-                        ‘I've followed’. CreatorLinksAI will verify the follow
-                        before sending your configured reply.
-                      </p>
+                      <div className="mt-3 space-y-4">
+                        <p className="border-l-4 border-zinc-900 bg-sky-100 p-4 text-sm font-bold">
+                          The commenter will first receive a message asking them
+                          to follow your account. After following, they must tap
+                          ‘I've followed’. CreatorLinksAI will verify the follow
+                          before sending your configured reply.
+                        </p>
+                        <div className="border-2 border-zinc-900 bg-zinc-50 p-4">
+                          <p className="font-black">
+                            Follow me to receive this content
+                          </p>
+                          <p className="mt-1 text-sm text-zinc-600">
+                            {`Follow @${accountName(
+                              accounts.find(
+                                (account) =>
+                                  account.igUserId === selectedId,
+                              ),
+                            ).replace(/^@/, "")}, then tap “I've followed”.`}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span className="border border-zinc-900 bg-white px-3 py-2 text-xs font-black">
+                              Follow on Instagram
+                            </span>
+                            <span className="border border-zinc-900 bg-yellow-300 px-3 py-2 text-xs font-black">
+                              I've followed
+                            </span>
+                          </div>
+                        </div>
+                        <label className="block font-bold">
+                          Follow verification reminder *
+                          <textarea
+                            value={form.followReminderMessage}
+                            onChange={(event) =>
+                              setForm((current) => ({
+                                ...current,
+                                followReminderMessage: event.target.value,
+                              }))
+                            }
+                            required
+                            maxLength={1000}
+                            rows={4}
+                            className="brutal-field mt-2 w-full resize-y"
+                          />
+                          <span className="mt-2 flex items-start justify-between gap-4 text-xs font-normal text-zinc-600">
+                            <span>
+                              Sent when someone taps ‘I've followed’ but their
+                              follow cannot be confirmed.
+                            </span>
+                            <span className="shrink-0">
+                              {form.followReminderMessage.length}/1,000
+                            </span>
+                          </span>
+                        </label>
+                      </div>
                     )}
                   </div>
                   {form.responseType === "TEXT" ? (
@@ -697,7 +775,12 @@ export default function CreatorAutoDm() {
                   </button>
                   <button
                     type="submit"
-                    disabled={saving}
+                    disabled={
+                      saving ||
+                      (form.requireFollower &&
+                        (!form.followReminderMessage.trim() ||
+                          form.followReminderMessage.trim().length > 1000))
+                    }
                     className="brutal-button min-w-40"
                   >
                     {saving

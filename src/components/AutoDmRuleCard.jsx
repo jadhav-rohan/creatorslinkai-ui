@@ -6,6 +6,7 @@ import {
   AutoDmMediaPlaceholder,
   autoDmContentLabels,
 } from "./AutoDmMediaPicker";
+import { DEFAULT_FOLLOW_REMINDER_MESSAGE } from "../autoDmFollowerGate";
 
 function RuleThumbnail({ rule, media }) {
   const [failed, setFailed] = useState(false);
@@ -70,7 +71,7 @@ export default function AutoDmRuleCard({
                 </span>
                 {rule.requireFollower === true && (
                   <span className="border border-zinc-900 bg-amber-200 px-2 py-1 text-[10px] font-black">
-                    Follow required
+                    Follower required
                   </span>
                 )}
                 <span
@@ -125,6 +126,17 @@ export default function AutoDmRuleCard({
             <strong className="text-zinc-500">Public reply:</strong>{" "}
             {rule.publicReplyMessage || "Not configured"}
           </div>
+          {rule.requireFollower === true && (
+            <details className="mt-4 border-t-2 border-zinc-900 pt-3 text-sm">
+              <summary className="cursor-pointer font-black">
+                Follow reminder:
+              </summary>
+              <p className="mt-2 whitespace-pre-wrap text-zinc-600">
+                {rule.followReminderMessage?.trim() ||
+                  DEFAULT_FOLLOW_REMINDER_MESSAGE}
+              </p>
+            </details>
+          )}
         </div>
       </div>
 
