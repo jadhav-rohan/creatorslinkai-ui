@@ -104,6 +104,12 @@ export function AuthProvider({children}){
   }:null);
  },[]);
 
+ const clearLocalAuthentication=useCallback(()=>{
+  setBlockedBrandSession(null);
+  setBrandPortalMessage("");
+  clearSession();
+ },[clearSession,setBlockedBrandSession]);
+
  const logout=useCallback(()=>{
   if(logoutPromise.current)return logoutPromise.current;
   const token=authRef.current?.token||blockedBrandRef.current?.token;
@@ -119,7 +125,7 @@ export function AuthProvider({children}){
   return operation;
  },[clearSession,setBlockedBrandSession]);
 
- const value={token:auth?.token??null,email:auth?.email??null,userId:auth?.userId??null,expiresInSeconds:auth?.expiresInSeconds??null,activePersona:auth?.activePersona??null,personas:Array.isArray(auth?.personas)?auth.personas:[],workspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,defaultWorkspaceId:auth?.defaultWorkspaceId??auth?.workspaceId??null,workspaceType:auth?.workspaceType??null,isAuthenticated:Boolean(auth?.token),isCreatorPortal:auth?.activePersona==="CREATOR",isBrandPortal:auth?.activePersona==="BRAND",activeWorkspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,canAccessPersona:persona=>Array.isArray(auth?.personas)&&auth.personas.includes(persona),profile,updateProfileSummary,hasDisabledBrandSession:Boolean(blockedBrandSession),brandPortalMessage,registerPortal,loginPortal,refreshSession,logout,loggingOut,restoringSession};
+ const value={token:auth?.token??null,email:auth?.email??null,userId:auth?.userId??null,expiresInSeconds:auth?.expiresInSeconds??null,activePersona:auth?.activePersona??null,personas:Array.isArray(auth?.personas)?auth.personas:[],workspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,defaultWorkspaceId:auth?.defaultWorkspaceId??auth?.workspaceId??null,workspaceType:auth?.workspaceType??null,isAuthenticated:Boolean(auth?.token),isCreatorPortal:auth?.activePersona==="CREATOR",isBrandPortal:auth?.activePersona==="BRAND",activeWorkspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,canAccessPersona:persona=>Array.isArray(auth?.personas)&&auth.personas.includes(persona),profile,updateProfileSummary,clearLocalAuthentication,hasDisabledBrandSession:Boolean(blockedBrandSession),brandPortalMessage,registerPortal,loginPortal,refreshSession,logout,loggingOut,restoringSession};
  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

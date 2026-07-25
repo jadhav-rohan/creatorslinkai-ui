@@ -46,6 +46,8 @@ import CheckEmail from "./pages/CheckEmail";
 import VerifyEmail from "./pages/VerifyEmail";
 import BrandPortalRouteGuard from "./components/BrandPortalRouteGuard";
 import BrandComingSoon from "./pages/BrandComingSoon";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
   return (
@@ -66,6 +68,8 @@ export default function App() {
           <Route path="/brand/register" element={<BrandPortalRouteGuard><PortalAuth persona="BRAND" mode="register" /></BrandPortalRouteGuard>} />
           <Route path="/check-email" element={<CheckEmail />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<PersonaRoute persona="CREATOR"><PortalShell persona="CREATOR" /></PersonaRoute>}>
             <Route path="/creator/dashboard" element={<CreatorDashboard />} />
             <Route path="/creator/media-kit" element={<CreatorMediaKit />} />
