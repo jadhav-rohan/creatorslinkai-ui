@@ -8,11 +8,7 @@ import {
   INSTAGRAM_CONNECTION_CHANGED,
 } from "../services/connectionService";
 import { useCreatorDashboard } from "../hooks/useCreatorDashboard";
-import {
-  AudienceQualityPanel,
-  HistoryPanel,
-  ReelsPanel,
-} from "../components/CreatorAnalyticsPanels";
+import { ReelsPanel } from "../components/CreatorAnalyticsPanels";
 import AudienceDemographicsPanel from "../components/AudienceDemographicsPanel";
 const compact = new Intl.NumberFormat(undefined, {
   notation: "compact",
@@ -491,24 +487,10 @@ export default function CreatorDashboard() {
             </>
           )}
           {connection.connected && (
-            <>
-              <AudienceQualityPanel
-                igUserId={connection.igUserId}
-                token={token}
-                enabled={Boolean(connection.igUserId)}
-                onUnauthorized={logout}
-              />
-              <AudienceDemographicsPanel
-                demographics={data.insights?.audienceDemographics}
-                refreshing={refreshing}
-              />
-              <HistoryPanel
-                igUserId={connection.igUserId}
-                token={token}
-                enabled={Boolean(connection.igUserId)}
-                onUnauthorized={logout}
-              />
-            </>
+            <AudienceDemographicsPanel
+              demographics={data.insights?.audienceDemographics}
+              refreshing={refreshing}
+            />
           )}
         </div>
       </div>
