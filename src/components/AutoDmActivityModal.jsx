@@ -5,6 +5,7 @@ import {api} from "../api";
 const support=error=>error?.requestId?` Support ID: ${error.requestId}`:"";
 const deliveryLabels={
   PENDING:"Sending",
+  AWAITING_FOLLOW:"Waiting for follow confirmation",
   AWAITING_RESPONSE:"Processing",
   TEMPLATE_PENDING:"Processing",
   SENT:"Delivered",
