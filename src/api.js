@@ -170,6 +170,8 @@ export const api = {
 
   fetchRules: (igUserId, token) =>
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, { token }),
+  getEligibleAutoDmMedia: (igUserId, token, limit = 50, options) =>
+    request(withQuery(`/api/v1/instagram/${encodeURIComponent(igUserId)}/auto-dm-rules/eligible-media`, { limit }), { token, ...options }),
   createRule: (igUserId, rule, token) =>
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, {
       method: "POST",
