@@ -701,9 +701,11 @@ export default function CreatorAutoDm() {
                     className="brutal-button min-w-40"
                   >
                     {saving
-                      ? editingRule
-                        ? "Saving changes…"
-                        : "Creating rule…"
+                      ? form.responseType === "GENERIC_TEMPLATE"
+                        ? "Fetching product details and saving…"
+                        : editingRule
+                          ? "Saving changes…"
+                          : "Creating rule…"
                       : editingRule
                         ? "Save changes"
                         : "Create Rule"}

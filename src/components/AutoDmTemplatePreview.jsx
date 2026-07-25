@@ -81,7 +81,7 @@ export default function AutoDmTemplatePreview({
                       Product {index + 1}
                     </p>
                     <h5 className="mt-1 break-words text-lg font-black">
-                      {element.title || "Product title"}
+                      {element.title || "Product title will be fetched"}
                     </h5>
                     {element.subtitle && (
                       <p className="mt-2 break-words text-sm text-zinc-600">

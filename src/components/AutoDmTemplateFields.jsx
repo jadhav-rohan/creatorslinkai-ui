@@ -52,7 +52,6 @@ export function validateTemplate(elements) {
   for (let index = 0; index < elements.length; index += 1) {
     const element = elements[index];
     const label = `Product ${index + 1}`;
-    if (!element.title.trim()) return `${label} title is required.`;
     if (element.title.trim().length > 80)
       return `${label} title must be 80 characters or fewer.`;
     if (element.subtitle.trim().length > 80)
@@ -67,7 +66,7 @@ export function validateTemplate(elements) {
 
 export function serializeTemplate(elements) {
   return elements.map((element) => ({
-    title: element.title.trim(),
+    ...(element.title.trim() ? { title: element.title.trim() } : {}),
     ...(element.subtitle.trim()
       ? { subtitle: element.subtitle.trim() }
       : {}),
@@ -156,7 +155,7 @@ export default function AutoDmTemplateFields({ elements, onChange }) {
             </header>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className="font-bold">
-                Carousel title *{" "}
+                Carousel title (optional){" "}
                 <span className="font-normal text-zinc-500">
                   ({element.title.length}/80)
                 </span>
@@ -168,6 +167,9 @@ export default function AutoDmTemplateFields({ elements, onChange }) {
                   }
                   className="brutal-field mt-2 w-full"
                 />
+                <span className="mt-1 block text-xs font-normal text-zinc-500">
+                  Leave blank to automatically fetch the product title.
+                </span>
               </label>
               <label className="font-bold">
                 Subtitle{" "}
