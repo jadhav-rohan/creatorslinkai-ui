@@ -22,9 +22,11 @@ const accountName = (account) =>
   account?.handle ||
   "Instagram account";
 const support = (error) =>
-  `${[403, 404, 502].includes(error?.status) ? ` ${instagramInsightsErrorMessage(error)}` : ""}${
-    error?.requestId ? ` Support ID: ${error.requestId}` : ""
-  }`;
+  `${
+    [403, 404, 502].includes(error?.status)
+      ? ` ${instagramInsightsErrorMessage(error)}`
+      : ""
+  }${error?.requestId ? ` Support ID: ${error.requestId}` : ""}`;
 const newRuleForm = () => ({
   mediaId: "",
   keyword: "",
@@ -52,8 +54,7 @@ function formFromRule(rule) {
     publicReplyMessage: rule.publicReplyMessage || "",
     requireFollower,
     followReminderMessage: requireFollower
-      ? rule.followReminderMessage?.trim() ||
-        DEFAULT_FOLLOW_REMINDER_MESSAGE
+      ? rule.followReminderMessage?.trim() || DEFAULT_FOLLOW_REMINDER_MESSAGE
       : "",
     elements,
   };
@@ -70,7 +71,7 @@ export default function CreatorAutoDm() {
   } = useWorkspaceAuthorization();
   const workspaceId = selectedWorkspace?.id || "";
   const workspaceAllowed = ["CREATOR", "PERSONAL"].includes(
-    selectedWorkspace?.type,
+    selectedWorkspace?.type
   );
   const canView = hasPermission("AUTO_DM_VIEW");
   const canEdit = hasPermission("AUTO_DM_EDIT");
@@ -101,7 +102,7 @@ export default function CreatorAutoDm() {
         const result = await connectionService.listInstagram(
           workspaceId,
           token,
-          signal,
+          signal
         );
         const items = Array.isArray(result) ? result : [];
         setAccounts(items);
@@ -121,7 +122,7 @@ export default function CreatorAutoDm() {
         if (!signal?.aborted) setAccountsLoading(false);
       }
     },
-    [workspaceId, workspaceAllowed, canView, token, logout],
+    [workspaceId, workspaceAllowed, canView, token, logout]
   );
 
   useEffect(() => {
@@ -153,10 +154,7 @@ export default function CreatorAutoDm() {
     setEligibleMedia([]);
     closeEditor();
     if (selectedId) {
-      sessionStorage.setItem(
-        `creatorAutoDmAccount:${workspaceId}`,
-        selectedId,
-      );
+      sessionStorage.setItem(`creatorAutoDmAccount:${workspaceId}`, selectedId);
       loadRules();
     }
   }, [selectedId, workspaceId, loadRules]);
@@ -173,7 +171,7 @@ export default function CreatorAutoDm() {
   }, [rules]);
   const mediaById = useMemo(
     () => new Map(eligibleMedia.map((media) => [media.mediaId, media])),
-    [eligibleMedia],
+    [eligibleMedia]
   );
   const orderedRules = useMemo(
     () =>
@@ -182,7 +180,7 @@ export default function CreatorAutoDm() {
           return left.active === false ? 1 : -1;
         return ruleDate(right) - ruleDate(left);
       }),
-    [rules],
+    [rules]
   );
 
   function closeEditor() {
@@ -213,7 +211,7 @@ export default function CreatorAutoDm() {
       document.getElementById("auto-dm-rule-editor")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
-      }),
+      })
     );
   }
 
@@ -224,7 +222,7 @@ export default function CreatorAutoDm() {
     try {
       const result = await connectionService.connectInstagram(
         workspaceId,
-        token,
+        token
       );
       window.location.assign(result.authorizationUrl);
     } catch (error) {
@@ -250,25 +248,27 @@ export default function CreatorAutoDm() {
     if (configuredRule && configuredRule.id !== editingRule?.id) {
       setConflictRule(configuredRule);
       setFormError(
-        "This Reel or post already has an Auto-DM rule. Edit the existing rule instead.",
+        "This Reel or post already has an Auto-DM rule. Edit the existing rule instead."
       );
       return;
     }
     if (!keyword || (form.responseType === "TEXT" && !dmMessage)) {
       setFormError(
-        `Keyword${form.responseType === "TEXT" ? " and private DM message" : ""} are required.`,
+        `Keyword${
+          form.responseType === "TEXT" ? " and private DM message" : ""
+        } are required.`
       );
       return;
     }
     if (form.requireFollower && !followReminderMessage) {
       setFormError(
-        "Follow verification reminder is required when follower verification is enabled.",
+        "Follow verification reminder is required when follower verification is enabled."
       );
       return;
     }
     if (followReminderMessage.length > 1000) {
       setFormError(
-        "Follow verification reminder must be 1,000 characters or fewer.",
+        "Follow verification reminder must be 1,000 characters or fewer."
       );
       return;
     }
@@ -307,7 +307,7 @@ export default function CreatorAutoDm() {
         setRules((current) =>
           editingRule
             ? current.map((rule) => (rule.id === result.id ? result : rule))
-            : [result, ...current],
+            : [result, ...current]
         );
       } else {
         await loadRules();
@@ -317,7 +317,7 @@ export default function CreatorAutoDm() {
       setNotice(
         editingRule
           ? "Auto-DM rule updated."
-          : "Comment Auto-DM rule created successfully.",
+          : "Comment Auto-DM rule created successfully."
       );
     } catch (error) {
       if (error.status === 401) logout();
@@ -330,7 +330,7 @@ export default function CreatorAutoDm() {
             setRules(latestRules);
             existing = latestRules
               .filter(
-                (rule) => rule.active !== false && rule.mediaId === mediaId,
+                (rule) => rule.active !== false && rule.mediaId === mediaId
               )
               .sort((left, right) => ruleDate(right) - ruleDate(left))[0];
           } catch {
@@ -339,15 +339,15 @@ export default function CreatorAutoDm() {
         }
         setConflictRule(existing || null);
         setFormError(
-          "This Reel or post already has an Auto-DM rule. Edit the existing rule instead.",
+          "This Reel or post already has an Auto-DM rule. Edit the existing rule instead."
         );
       } else if (
         error.message?.includes(
-          "Selected Instagram media does not belong to this creator account",
+          "Selected Instagram media does not belong to this creator account"
         )
       ) {
         setFormError(
-          "This post is no longer available for the connected Instagram account. Refresh your media and select another post.",
+          "This post is no longer available for the connected Instagram account. Refresh your media and select another post."
         );
       } else setFormError(`${error.message}${support(error)}`);
     } finally {
@@ -521,9 +521,7 @@ export default function CreatorAutoDm() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-black">
-                      {editingRule
-                        ? "Edit Auto-DM rule"
-                        : "New keyword rule"}
+                      {editingRule ? "Edit Auto-DM rule" : "New keyword rule"}
                     </h2>
                     <p className="mt-2 text-sm text-zinc-600">
                       The keyword is matched against comments on the target
@@ -564,20 +562,6 @@ export default function CreatorAutoDm() {
                     </h3>
                   </div>
                   <label className="block font-bold">
-                    Keyword *
-                    <input
-                      value={form.keyword}
-                      onChange={(event) =>
-                        setForm((current) => ({
-                          ...current,
-                          keyword: event.target.value,
-                        }))
-                      }
-                      required
-                      className="brutal-field mt-2 w-full"
-                    />
-                  </label>
-                  <label className="block font-bold">
                     Response type
                     <select
                       value={form.responseType}
@@ -590,10 +574,22 @@ export default function CreatorAutoDm() {
                       className="brutal-field mt-2 w-full"
                     >
                       <option value="TEXT">Text message</option>
-                      <option value="GENERIC_TEMPLATE">
-                        Product carousel
-                      </option>
+                      <option value="GENERIC_TEMPLATE">Product carousel</option>
                     </select>
+                  </label>
+                  <label className="block font-bold">
+                    Keyword *
+                    <input
+                      value={form.keyword}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          keyword: event.target.value,
+                        }))
+                      }
+                      required
+                      className="brutal-field mt-2 w-full"
+                    />
                   </label>
                   <div className="sm:col-span-2">
                     <button
@@ -656,9 +652,8 @@ export default function CreatorAutoDm() {
                           <p className="mt-1 text-sm text-zinc-600">
                             {`Follow @${accountName(
                               accounts.find(
-                                (account) =>
-                                  account.igUserId === selectedId,
-                              ),
+                                (account) => account.igUserId === selectedId
+                              )
                             ).replace(/^@/, "")}, then tap “I've followed”.`}
                           </p>
                           <div className="mt-3 flex flex-wrap gap-2">
@@ -787,11 +782,11 @@ export default function CreatorAutoDm() {
                       ? form.responseType === "GENERIC_TEMPLATE"
                         ? "Fetching product details and saving…"
                         : editingRule
-                          ? "Saving changes…"
-                          : "Creating rule…"
+                        ? "Saving changes…"
+                        : "Creating rule…"
                       : editingRule
-                        ? "Save changes"
-                        : "Create Rule"}
+                      ? "Save changes"
+                      : "Create Rule"}
                   </button>
                 </div>
               </form>
@@ -805,8 +800,8 @@ export default function CreatorAutoDm() {
                     Rules for @
                     {accountName(
                       accounts.find(
-                        (account) => account.igUserId === selectedId,
-                      ),
+                        (account) => account.igUserId === selectedId
+                      )
                     )}
                   </h2>
                 </div>
