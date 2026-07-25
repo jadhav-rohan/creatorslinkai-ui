@@ -21,6 +21,7 @@ const collaborationsFrom=value=>{
   return (value.brandsWorkedWith||[]).map(brandName=>({brandName:String(brandName),evidenceUrl:""}));
 };
 const draftFrom=value=>({
+  displayName:value.preview?.displayName||"",
   about:value.about||"",
   currency:value.currency||"INR",
   pricing:Object.fromEntries(priceFields.map(([key])=>[key,value.pricing?.[key]==null?"":String(value.pricing[key])])),
@@ -34,6 +35,7 @@ const serialize=draft=>{
     evidenceUrl:item.evidenceUrl.trim()||null,
   }));
   return {
+    displayName:draft.displayName.trim()||null,
     about:draft.about||null,
     currency:draft.currency||null,
     pricing:Object.fromEntries(priceFields.map(([key])=>[key,draft.pricing[key]===""?null:Number(draft.pricing[key])])),
@@ -60,7 +62,7 @@ function ProfileAvatar({primaryUrl,fallbackUrl,display}){
 }
 
 function Preview({server,draft,userProfile}){
-  const preview=server.preview||{},display=preview.displayName||userProfile?.displayName||"Creator",handle=preview.handle||"@creator";
+  const preview=server.preview||{},display=draft.displayName||preview.displayName||userProfile?.displayName||"Creator",handle=preview.handle||"@creator";
   return <aside className="brutal-card lg:sticky lg:top-28 lg:self-start">
     <div className="border-b-2 border-zinc-900 bg-yellow-300 p-5"><p className="brutal-overline">Live preview</p><p className="mt-1 text-sm font-bold">Stored metrics + your current draft</p></div>
     <div className="p-6">
@@ -121,6 +123,8 @@ export default function CreatorMediaKit(){
   function removeBrand(index){setDraft(current=>({...current,brandCollaborations:current.brandCollaborations.filter((_,itemIndex)=>itemIndex!==index)}));setErrors({})}
   function validate(){
     const next={};
+    if(!draft.displayName.trim())next.displayName="Media Kit name is required.";
+    else if(draft.displayName.trim().length>160)next.displayName="Media Kit name must be 160 characters or fewer.";
     if(draft.about.length>4000)next.about="About must be 4,000 characters or fewer.";
     if(draft.currency&&!/^[A-Za-z]{3}$/.test(draft.currency))next.currency="Use a three-letter currency code.";
     for(const [key,label] of priceFields){const value=draft.pricing[key];if(value!==""&&(Number(value)<0||!Number.isFinite(Number(value))))next[key]=`${label} must be zero or greater.`}
@@ -169,7 +173,10 @@ export default function CreatorMediaKit(){
     {!canEdit&&<p className="mt-6 border-2 border-zinc-900 bg-sky-100 p-4 font-bold">Read-only: you can view this Media Kit, but you do not have permission to edit it.</p>}
     <div className="mt-7 grid min-w-0 gap-7 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)]">
       <form onSubmit={event=>{event.preventDefault();save()}} className="brutal-card min-w-0 space-y-8 p-5 sm:p-7">
-        <Section title="About You"><label className="block font-bold">About<textarea value={draft.about} onChange={event=>update("about",event.target.value)} disabled={!canEdit} maxLength={4000} rows={8} className="brutal-field mt-2 w-full resize-y"/></label><div className="mt-1 flex justify-between gap-3 text-sm"><FieldError>{errors.about}</FieldError><span className="ml-auto text-zinc-500">{4000-draft.about.length} characters remaining</span></div></Section>
+        <Section title="About You">
+          <label className="block font-bold">Media Kit name *<input value={draft.displayName} onChange={event=>update("displayName",event.target.value)} disabled={!canEdit} maxLength={160} required className="brutal-field mt-2 w-full"/><span className="mt-1 block text-xs font-normal text-zinc-500">This name is used only in your Media Kit and exported PDF. It does not change your account profile.</span><FieldError>{errors.displayName}</FieldError></label>
+          <label className="mt-5 block font-bold">About<textarea value={draft.about} onChange={event=>update("about",event.target.value)} disabled={!canEdit} maxLength={4000} rows={8} className="brutal-field mt-2 w-full resize-y"/></label><div className="mt-1 flex justify-between gap-3 text-sm"><FieldError>{errors.about}</FieldError><span className="ml-auto text-zinc-500">{4000-draft.about.length} characters remaining</span></div>
+        </Section>
         <Section title="Pricing"><div className="grid gap-4 sm:grid-cols-[1fr_160px]"><p className="text-sm text-zinc-600">Set optional rates. Blank prices stay blank.</p><label className="font-bold">Currency<input value={draft.currency} onChange={event=>update("currency",event.target.value.toUpperCase().replace(/[^A-Z]/g,"").slice(0,3))} disabled={!canEdit} list="media-kit-currencies" maxLength={3} className="brutal-field mt-2 w-full uppercase"/><datalist id="media-kit-currencies"><option value="INR"/><option value="USD"/><option value="EUR"/><option value="GBP"/></datalist><FieldError>{errors.currency}</FieldError></label></div><div className="mt-5 grid gap-4 sm:grid-cols-2">{priceFields.map(([key,label])=><label key={key} className="font-bold">{label}<div className="mt-2 flex"><span className="flex items-center border-2 border-r-0 border-zinc-900 bg-zinc-100 px-3 font-mono text-sm">{draft.currency||"—"}</span><input type="number" inputMode="decimal" min="0" step="0.01" value={draft.pricing[key]} onChange={event=>updatePrice(key,event.target.value)} disabled={!canEdit} className="brutal-field min-w-0 flex-1"/></div><FieldError>{errors[key]}</FieldError></label>)}</div></Section>
         <Section title="Brands Worked With">
           <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-zinc-600">Add up to 20 collaborations and optional proof of work.</p>{canEdit&&<button type="button" onClick={addBrand} disabled={draft.brandCollaborations.length>=20} className="border-2 border-zinc-900 bg-yellow-300 px-4 py-2 font-black disabled:opacity-50">Add brand</button>}</div>
