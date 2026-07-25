@@ -5,6 +5,13 @@ const compact=new Intl.NumberFormat(undefined,{notation:"compact",maximumFractio
 const full=new Intl.NumberFormat();
 const format=value=>value==null?"—":compact.format(value);
 const pct=value=>value==null?"—":`${Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}%`;
+function durationFromMilliseconds(value){
+  if(value==null||!Number.isFinite(Number(value)))return "—";
+  const seconds=Math.max(0,Number(value))/1000;
+  if(seconds<60)return `${seconds.toLocaleString(undefined,{maximumFractionDigits:1})} sec`;
+  const whole=Math.round(seconds),days=Math.floor(whole/86400),hours=Math.floor(whole%86400/3600),minutes=Math.floor(whole%3600/60),remaining=whole%60;
+  return [[days,"d"],[hours,"h"],[minutes,"m"],[remaining,"s"]].filter(([amount])=>amount>0).map(([amount,unit])=>`${amount}${unit}`).join(" ");
+}
 
 function ReelThumbnail({reel,index}){
   const [failed,setFailed]=useState(false);
@@ -37,7 +44,7 @@ export default function CreatorReelsPanel({reels,onRefresh,refreshing}){
             </div>
           </summary>
           <dl className="mt-5 grid grid-cols-2 gap-4 border-t-2 border-zinc-900 pt-5 sm:grid-cols-3 lg:grid-cols-5">
-            {[["Views",reel.viewCount],["Likes",reel.likeCount],["Comments",reel.commentCount],["Saves",reel.savedCount],["Shares",reel.shareCount],["Reach",reel.reach],["Total interactions",reel.totalInteractions],["Follows",reel.follows],["Profile visits",reel.profileVisits],["Average watch time",reel.averageWatchTime==null?"—":`${reel.averageWatchTime}s`],["Total watch time",reel.totalWatchTime==null?"—":`${reel.totalWatchTime}s`]].map(([label,value])=><div key={label}><dt className="text-xs uppercase tracking-wider text-zinc-500">{label}</dt><dd className="mt-1 font-mono font-bold">{typeof value==="number"?full.format(value):value}</dd></div>)}
+            {[["Views",reel.viewCount],["Likes",reel.likeCount],["Comments",reel.commentCount],["Saves",reel.savedCount],["Shares",reel.shareCount],["Reach",reel.reach],["Total interactions",reel.totalInteractions],["Follows",reel.follows],["Profile visits",reel.profileVisits],["Average watch time",durationFromMilliseconds(reel.averageWatchTime)],["Total watch time",durationFromMilliseconds(reel.totalWatchTime)]].map(([label,value])=><div key={label}><dt className="text-xs uppercase tracking-wider text-zinc-500">{label}</dt><dd className="mt-1 font-mono font-bold">{typeof value==="number"?full.format(value):value}</dd></div>)}
           </dl>
         </details>;
       })}
