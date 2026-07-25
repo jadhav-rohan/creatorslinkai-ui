@@ -245,12 +245,14 @@ export default function AutoDmMediaPicker({
                 <button
                   type="button"
                   disabled={Boolean(configuredByOther)}
-                  onClick={() => onChange(item.mediaId)}
+                  onClick={() => onChange(selected ? "" : item.mediaId)}
                   aria-pressed={selected}
                   aria-label={
                     configuredByOther
                       ? `${caption}. Auto-DM configured`
-                      : `Select ${caption}`
+                      : selected
+                        ? `Unselect ${caption}`
+                        : `Select ${caption}`
                   }
                   className="block w-full text-left disabled:cursor-not-allowed"
                 >
