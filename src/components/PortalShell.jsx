@@ -83,7 +83,7 @@ export default function PortalShell({ persona }) {
   const ConnectionIcon = creator ? Camera : Share2;
 
   async function loadConnections() {
-    if (!selectedWorkspaceId) return;
+    if (creator || !selectedWorkspaceId) return;
     setConnectionLoading(true);
     setConnectionError("");
     try {
@@ -108,7 +108,7 @@ export default function PortalShell({ persona }) {
   useEffect(() => {
     setAccounts([]);
     setSelectedAccount("");
-    loadConnections();
+    if (!creator) loadConnections();
   }, [creator, selectedWorkspaceId, token]);
 
   async function connect() {
@@ -233,10 +233,11 @@ export default function PortalShell({ persona }) {
           ))}
         </nav>
 
-        <section
-          aria-label={`${connectionName} connection`}
-          className="border-t-2 border-zinc-900 p-4 lg:p-3"
-        >
+        {!creator && (
+          <section
+            aria-label={`${connectionName} connection`}
+            className="border-t-2 border-zinc-900 p-4 lg:p-3"
+          >
           <div className="flex items-center gap-2">
             <ConnectionIcon size={16} />
             <p className="text-xs font-black uppercase tracking-wide lg:text-[10px]">
@@ -303,7 +304,8 @@ export default function PortalShell({ persona }) {
               {connectionError}
             </p>
           )}
-        </section>
+          </section>
+        )}
 
         <div className="border-t-2 border-zinc-900 p-5 lg:p-3">
           <div className="flex min-w-0 items-center gap-3">

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, RefreshCw, UserRound } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { accountService } from "../services/accountService";
+import InstagramConnectionSettings from "../components/InstagramConnectionSettings";
 
 const TEXT_FIELDS = [
   ["firstName", "First name", 120],
@@ -142,7 +143,12 @@ function ProfileSkeleton() {
 }
 
 export default function Profile() {
-  const { token, email: sessionEmail, updateProfileSummary } = useAuth();
+  const {
+    token,
+    email: sessionEmail,
+    activePersona,
+    updateProfileSummary,
+  } = useAuth();
   const [profile, setProfile] = useState(null);
   const [initial, setInitial] = useState(null);
   const [form, setForm] = useState(EMPTY);
@@ -412,6 +418,8 @@ export default function Profile() {
               </Field>
             </div>
           </section>
+
+          {activePersona === "CREATOR" && <InstagramConnectionSettings />}
 
           <section className="brutal-card p-5 sm:p-7">
             <div className="flex items-center gap-2">
