@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
-import AutoDmActivityModal from "./AutoDmActivityModal";
+import AutoDmDeliveredCount from "./AutoDmDeliveredCount";
 import AutoDmTemplatePreview from "./AutoDmTemplatePreview";
 import {
   AutoDmMediaPlaceholder,
@@ -137,9 +137,9 @@ export default function AutoDmRuleCard({
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3 border-t-2 border-zinc-900 p-4">
-        <AutoDmActivityModal
+        <AutoDmDeliveredCount
           igUserId={igUserId}
-          rule={rule}
+          ruleId={rule.id}
           token={token}
           logout={logout}
         />
