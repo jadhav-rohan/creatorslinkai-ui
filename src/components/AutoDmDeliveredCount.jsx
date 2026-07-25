@@ -1,4 +1,5 @@
 import {useEffect,useState} from "react";
+import {Check} from "lucide-react";
 import {api} from "../api";
 
 export default function AutoDmDeliveredCount({igUserId,ruleId,token,logout}){
@@ -23,8 +24,9 @@ export default function AutoDmDeliveredCount({igUserId,ruleId,token,logout}){
     return()=>{active=false};
   },[igUserId,logout,ruleId,token]);
 
-  return <div className="border-2 border-zinc-900 bg-emerald-100 px-4 py-2 text-sm" aria-live="polite">
-    <span className="font-bold text-zinc-600">Delivered Auto-DMs</span>
-    <strong className="ml-2 font-mono text-base text-zinc-900">{error?"—":count==null?"…":count.toLocaleString()}</strong>
+  return <div className="inline-flex items-center gap-1.5 text-sm font-black text-emerald-700" aria-live="polite">
+    <span>Delivered</span>
+    <Check size={16} strokeWidth={3} aria-hidden="true"/>
+    <strong className="font-mono text-zinc-900">{error?"—":count==null?"…":count.toLocaleString()}</strong>
   </div>;
 }
