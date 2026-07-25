@@ -13,6 +13,7 @@ import {
   HistoryPanel,
   ReelsPanel,
 } from "../components/CreatorAnalyticsPanels";
+import AudienceDemographicsPanel from "../components/AudienceDemographicsPanel";
 const compact = new Intl.NumberFormat(undefined, {
   notation: "compact",
   maximumFractionDigits: 1,
@@ -488,6 +489,10 @@ export default function CreatorDashboard() {
                 token={token}
                 enabled={Boolean(connection.igUserId)}
                 onUnauthorized={logout}
+              />
+              <AudienceDemographicsPanel
+                demographics={data.insights?.audienceDemographics}
+                refreshing={refreshing}
               />
               <HistoryPanel
                 igUserId={connection.igUserId}

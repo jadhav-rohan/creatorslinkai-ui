@@ -25,6 +25,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import AudienceDemographicsPanel from "../components/AudienceDemographicsPanel";
 export default function Insights() {
   const {confirm}=useThemedDialog();
   const { igUserId } = useParams();
@@ -1200,6 +1201,12 @@ export default function Insights() {
                         </>
                       )
                     )}
+                  </div>
+
+                  <div className="md:col-span-4">
+                    <AudienceDemographicsPanel
+                      demographics={data.audienceDemographics}
+                    />
                   </div>
 
                   {/* Historical Growth Panel */}
