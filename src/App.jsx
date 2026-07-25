@@ -78,6 +78,7 @@ export default function App() {
             <Route path="/creator/scripts" element={<CreatorScripts />} />
             <Route path="/creator/scripts/new" element={<CreatorScriptNew />} />
             <Route path="/creator/scripts/:projectId" element={<CreatorScriptDetail />} />
+            <Route path="/creator/profile" element={<Profile />} />
           </Route>
           <Route element={<BrandPortalRouteGuard><PersonaRoute persona="BRAND"><PortalShell persona="BRAND" /></PersonaRoute></BrandPortalRouteGuard>}>
             <Route path="/brand/discovery" element={<WorkspacePermissionGuard permission="CONNECTION_USE"><CreatorMarketplace /></WorkspacePermissionGuard>} />
@@ -85,6 +86,7 @@ export default function App() {
             <Route path="/brand/campaigns" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><Campaigns /></WorkspacePermissionGuard>} />
             <Route path="/brand/campaigns/:campaignId" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><CampaignDetails /></WorkspacePermissionGuard>} />
             <Route path="/brand/analytics" element={<WorkspacePermissionGuard permission="CAMPAIGN_VIEW"><BrandAnalytics /></WorkspacePermissionGuard>} />
+            <Route path="/brand/profile" element={<Profile />} />
           </Route>
           <Route path="/connected" element={<Connected />} />
           <Route path="/dashboard" element={<PortalHomeRedirect />} />

@@ -22,7 +22,7 @@ function validateSession(value,expectedPersona){
 }
 
 export function AuthProvider({children}){
- const [auth,setAuthState]=useState(null),[restoringSession,setRestoringSession]=useState(true),[loggingOut,setLoggingOut]=useState(false),[blockedBrandSession,setBlockedBrandSessionState]=useState(null),[brandPortalMessage,setBrandPortalMessage]=useState("");
+ const [auth,setAuthState]=useState(null),[profile,setProfileState]=useState(null),[restoringSession,setRestoringSession]=useState(true),[loggingOut,setLoggingOut]=useState(false),[blockedBrandSession,setBlockedBrandSessionState]=useState(null),[brandPortalMessage,setBrandPortalMessage]=useState("");
  const authRef=useRef(null),blockedBrandRef=useRef(null),refreshPromise=useRef(null),refreshBlockedUntil=useRef(0),logoutPromise=useRef(null),mounted=useRef(true);
  const setAuth=useCallback(value=>{authRef.current=value;if(mounted.current)setAuthState(value)},[]);
  const setBlockedBrandSession=useCallback(value=>{blockedBrandRef.current=value;if(mounted.current)setBlockedBrandSessionState(value)},[]);
@@ -30,11 +30,13 @@ export function AuthProvider({children}){
  const clearSession=useCallback((reason=null)=>{
   clearAuthenticatedSession();
   if(reason==="expired")window.sessionStorage.setItem(SESSION_NOTICE_KEY,SESSION_EXPIRED_MESSAGE);
+  setProfileState(null);
   setAuth(null);
  },[setAuth]);
 
  const blockBrandSession=useCallback((session,message="The Brand and Agency portal is coming soon.")=>{
   clearAuthenticatedSession();
+  setProfileState(null);
   setAuth(null);
   setBlockedBrandSession(session||{token:null});
   if(mounted.current)setBrandPortalMessage(message);
@@ -90,8 +92,17 @@ export function AuthProvider({children}){
   const result=persona==="CREATOR"
    ?await api.loginCreator(payload.email,payload.password)
    :await api.loginBrand(payload.email,payload.password);
-  validateSession(result,persona);clearPendingVerification();setBlockedBrandSession(null);setBrandPortalMessage("");setAuth(result);return result;
+  validateSession(result,persona);clearPendingVerification();setBlockedBrandSession(null);setBrandPortalMessage("");setProfileState(null);setAuth(result);return result;
  },[setAuth,setBlockedBrandSession]);
+
+ const updateProfileSummary=useCallback(value=>{
+  setProfileState(value?{
+   displayName:value.displayName||"",
+   firstName:value.firstName||"",
+   lastName:value.lastName||"",
+   profilePictureUrl:value.profilePictureUrl||"",
+  }:null);
+ },[]);
 
  const logout=useCallback(()=>{
   if(logoutPromise.current)return logoutPromise.current;
@@ -108,7 +119,7 @@ export function AuthProvider({children}){
   return operation;
  },[clearSession,setBlockedBrandSession]);
 
- const value={token:auth?.token??null,email:auth?.email??null,userId:auth?.userId??null,expiresInSeconds:auth?.expiresInSeconds??null,activePersona:auth?.activePersona??null,personas:Array.isArray(auth?.personas)?auth.personas:[],workspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,defaultWorkspaceId:auth?.defaultWorkspaceId??auth?.workspaceId??null,workspaceType:auth?.workspaceType??null,isAuthenticated:Boolean(auth?.token),isCreatorPortal:auth?.activePersona==="CREATOR",isBrandPortal:auth?.activePersona==="BRAND",activeWorkspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,canAccessPersona:persona=>Array.isArray(auth?.personas)&&auth.personas.includes(persona),hasDisabledBrandSession:Boolean(blockedBrandSession),brandPortalMessage,registerPortal,loginPortal,refreshSession,logout,loggingOut,restoringSession};
+ const value={token:auth?.token??null,email:auth?.email??null,userId:auth?.userId??null,expiresInSeconds:auth?.expiresInSeconds??null,activePersona:auth?.activePersona??null,personas:Array.isArray(auth?.personas)?auth.personas:[],workspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,defaultWorkspaceId:auth?.defaultWorkspaceId??auth?.workspaceId??null,workspaceType:auth?.workspaceType??null,isAuthenticated:Boolean(auth?.token),isCreatorPortal:auth?.activePersona==="CREATOR",isBrandPortal:auth?.activePersona==="BRAND",activeWorkspaceId:auth?.workspaceId??auth?.defaultWorkspaceId??null,canAccessPersona:persona=>Array.isArray(auth?.personas)&&auth.personas.includes(persona),profile,updateProfileSummary,hasDisabledBrandSession:Boolean(blockedBrandSession),brandPortalMessage,registerPortal,loginPortal,refreshSession,logout,loggingOut,restoringSession};
  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

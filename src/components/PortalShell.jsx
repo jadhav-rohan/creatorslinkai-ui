@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import {
   BarChart3,
   Camera,
@@ -15,6 +15,7 @@ import {
   Share2,
   ShieldCheck,
   Unplug,
+  UserRound,
   X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -41,14 +42,37 @@ const brandLinks = [
   ["Analytics", "/brand/analytics", BarChart3],
 ];
 
+function AccountAvatar({ url, name }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [url]);
+  return (
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-sky-200 font-black lg:h-9 lg:w-9 lg:text-xs">
+      {url && !failed ? (
+        <img
+          src={url}
+          alt=""
+          onError={() => setFailed(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        name.slice(0, 1).toUpperCase()
+      )}
+    </span>
+  );
+}
+
 export default function PortalShell({ persona }) {
   const { confirm } = useThemedDialog();
-  const { email, workspaceType, logout, loggingOut, token } = useAuth();
+  const { email, workspaceType, logout, loggingOut, token, profile } = useAuth();
   const { selectedWorkspaceId } = useWorkspace();
   const { hasPermission } = useWorkspaceAuthorization();
   const creator = persona === "CREATOR";
   const links = creator ? creatorLinks : brandLinks;
-  const name = email?.split("@")[0] || "Creator";
+  const name =
+    profile?.displayName ||
+    [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") ||
+    email?.split("@")[0] ||
+    "Creator";
   const canManageConnection = hasPermission("CONNECTION_MANAGE");
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState([]);
@@ -283,14 +307,20 @@ export default function PortalShell({ persona }) {
 
         <div className="border-t-2 border-zinc-900 p-5 lg:p-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-zinc-900 bg-sky-200 font-black lg:h-9 lg:w-9 lg:text-xs">
-              {name.slice(0, 1).toUpperCase()}
-            </span>
+            <AccountAvatar url={profile?.profilePictureUrl} name={name} />
             <div className="min-w-0">
               <p className="truncate text-sm font-black lg:text-xs">{name}</p>
               <p className="truncate text-xs text-zinc-500">{email}</p>
             </div>
           </div>
+          <Link
+            to={creator ? "/creator/profile" : "/brand/profile"}
+            onClick={() => setOpen(false)}
+            className="mt-3 flex min-h-10 items-center gap-2 border-2 border-zinc-900 bg-white px-3 py-2 text-sm font-black lg:min-h-9 lg:text-xs"
+          >
+            <UserRound size={16} />
+            Account settings
+          </Link>
           <button
             onClick={() => logout()}
             disabled={loggingOut}

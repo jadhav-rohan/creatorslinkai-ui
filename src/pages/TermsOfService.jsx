@@ -39,12 +39,11 @@ export default function TermsOfService() {
           <Section title="2. MVP-1 service scope">
             <p>
               CreatorLinksAI MVP-1 provides a Creator portal. Available features
-              may include creator registration and email verification,
-              Instagram connection management, insights, Auto-DM, AI-assisted
-              script writing, media kits, invoices, and creator-controlled
-              insight sharing. Brand and Agency functionality marked “Coming
-              Soon” is unavailable in MVP-1 and is not promised by any
-              particular date.
+              may include creator registration and email verification, Instagram
+              connection management, insights, Auto-DM, AI-assisted script
+              writing, media kits, invoices, and creator-controlled insight
+              sharing. Brand and Agency functionality marked “Coming Soon” is
+              unavailable in MVP-1 and is not promised by any particular date.
             </p>
             <p>
               Features may be changed, limited, suspended, or discontinued as
@@ -80,9 +79,9 @@ export default function TermsOfService() {
             </p>
             <p>
               CreatorLinksAI does not control Meta’s availability, app review,
-              permissions, delivery decisions, interface rendering, rate
-              limits, or API changes. Connecting or disconnecting Instagram is
-              separate from signing in to or signing out of CreatorLinksAI.
+              permissions, delivery decisions, interface rendering, rate limits,
+              or API changes. Connecting or disconnecting Instagram is separate
+              from signing in to or signing out of CreatorLinksAI.
             </p>
           </Section>
 
@@ -92,8 +91,8 @@ export default function TermsOfService() {
               messages, links, carousel elements, public replies, and
               follow-confirmation behavior you configure. You must use
               automation only for lawful purposes and provide any notices,
-              disclosures, consent, opt-out methods, and advertising
-              disclosures required by law or platform policy.
+              disclosures, consent, opt-out methods, and advertising disclosures
+              required by law or platform policy.
             </p>
             <p>
               Automation depends on eligible Instagram events and Meta delivery.
@@ -130,10 +129,10 @@ export default function TermsOfService() {
               you before use.
             </p>
             <p>
-              You are responsible for accurate identity, tax, billing,
-              currency, pricing, payment, and recipient information; for keeping
-              required business records; and for obtaining professional advice
-              where appropriate. Do not enter payment-card data, bank-login
+              You are responsible for accurate identity, tax, billing, currency,
+              pricing, payment, and recipient information; for keeping required
+              business records; and for obtaining professional advice where
+              appropriate. Do not enter payment-card data, bank-login
               credentials, passwords, or unnecessary sensitive information.
             </p>
           </Section>
@@ -162,8 +161,8 @@ export default function TermsOfService() {
               improve the service.
             </p>
             <p>
-              You represent that you have the rights and permissions required
-              to submit and use your content, including images, music, captions,
+              You represent that you have the rights and permissions required to
+              submit and use your content, including images, music, captions,
               trademarks, links, contact information, and information about
               other people.
             </p>
