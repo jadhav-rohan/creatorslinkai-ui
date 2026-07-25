@@ -1,13 +1,37 @@
+import { useEffect } from 'react'
 import { useSearchParams, Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { featureFlags } from '../config/featureFlags'
 import { readConnectionMarker } from '../services/connectionService'
+import { accountService } from '../services/accountService'
+import { creatorDashboardService } from '../services/creatorDashboardService'
+import { mediaKitService } from '../services/mediaKitService'
 
 export default function Connected() {
   const [params] = useSearchParams()
   const igUserId = params.get('igUserId')
-  const { hasDisabledBrandSession, restoringSession } = useAuth()
+  const { token, activePersona, defaultWorkspaceId, updateProfileSummary, hasDisabledBrandSession, restoringSession } = useAuth()
   const connectionMarker = readConnectionMarker()
+  const workspaceId = connectionMarker?.workspaceId || defaultWorkspaceId
+
+  useEffect(() => {
+    if (!token || activePersona !== 'CREATOR' || connectionMarker?.connectionType === 'FACEBOOK_LOGIN') return
+    const controller = new AbortController()
+    accountService.getProfile(token, controller.signal)
+      .then(updateProfileSummary)
+      .catch(error => {
+        if (error.name !== 'AbortError') console.warn('Creator profile refresh after Instagram connection failed.')
+      })
+    if (workspaceId) {
+      creatorDashboardService.invalidate(workspaceId)
+      mediaKitService.invalidate(workspaceId)
+      creatorDashboardService.get(workspaceId, igUserId || null, token, controller.signal)
+        .catch(error => {
+          if (error.name !== 'AbortError') console.warn('Creator dashboard refresh after Instagram connection failed.')
+        })
+    }
+    return () => controller.abort()
+  }, [activePersona, connectionMarker?.connectionType, igUserId, token, updateProfileSummary, workspaceId])
 
   if (restoringSession) {
     return <main className="brutal-page flex min-h-screen items-center justify-center p-6"><p className="brutal-card p-8 font-black">Restoring your session…</p></main>
@@ -34,7 +58,7 @@ export default function Connected() {
 
         <Link 
           className="block w-full py-3 px-4 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-95 text-white text-sm font-semibold shadow-lg shadow-accent-primary/25 transition-all text-center" 
-          to="/dashboard"
+          to="/creator/dashboard"
         >
           Go to dashboard
         </Link>

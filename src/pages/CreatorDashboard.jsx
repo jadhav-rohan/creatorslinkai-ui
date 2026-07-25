@@ -51,8 +51,26 @@ function Skeleton() {
     </div>
   );
 }
+function CreatorAvatar({ primaryUrl, fallbackUrl, username }) {
+  const [failedUrls, setFailedUrls] = useState([]);
+  const pictureUrl = [primaryUrl, fallbackUrl].find(url => url && !failedUrls.includes(url));
+  return (
+    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-yellow-300 text-xl font-black">
+      {pictureUrl ? (
+        <img
+          src={pictureUrl}
+          alt={`${username || "Creator"} profile`}
+          className="h-full w-full object-cover"
+          onError={() => setFailedUrls(current => [...current, pictureUrl])}
+        />
+      ) : (
+        (username || "CR").slice(0, 2).toUpperCase()
+      )}
+    </div>
+  );
+}
 export default function CreatorDashboard() {
-  const { token, defaultWorkspaceId, activePersona, logout } = useAuth(),
+  const { token, defaultWorkspaceId, activePersona, profile, logout } = useAuth(),
     { selectedWorkspace } = useWorkspace(),
     allowed = ["CREATOR", "PERSONAL"].includes(selectedWorkspace?.type),
     workspaceId = allowed ? selectedWorkspace.id : defaultWorkspaceId,
@@ -218,17 +236,7 @@ export default function CreatorDashboard() {
         <header className="brutal-card p-6 md:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-yellow-300 text-xl font-black">
-                {connection.profilePictureUrl ? (
-                  <img
-                    src={connection.profilePictureUrl}
-                    alt={`${connection.username || "Creator"} profile`}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  (connection.username || "CR").slice(0, 2).toUpperCase()
-                )}
-              </div>
+              <CreatorAvatar primaryUrl={profile?.profilePictureUrl} fallbackUrl={connection.profilePictureUrl} username={connection.username}/>
               <div>
                 <p className="brutal-overline">Creator workspace</p>
                 <h1 className="mt-1 text-3xl font-black">

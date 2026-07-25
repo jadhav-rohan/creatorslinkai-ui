@@ -82,9 +82,9 @@ export function AuthProvider({children}){
  },[auth?.token,auth?.expiresInSeconds,refreshSession]);
 
  const registerPortal=useCallback((persona,payload)=>{
-  if(persona==="CREATOR")return api.registerCreator(payload.email,payload.password);
+  if(persona==="CREATOR")return api.registerCreator(payload.email,payload.password,payload.mobileNumber.trim());
   if(!featureFlags.brandPortalEnabled)return Promise.reject(new ApiError("The Brand and Agency portal is coming soon.",503,null,null,"BRAND_PORTAL_DISABLED"));
-  return api.registerBrand(payload.email,payload.password,payload.workspaceName,payload.workspaceType);
+  return api.registerBrand(payload.email,payload.password,payload.mobileNumber.trim(),payload.workspaceName,payload.workspaceType);
  },[]);
 
  const loginPortal=useCallback(async(persona,payload)=>{

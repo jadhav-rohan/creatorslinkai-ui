@@ -92,9 +92,9 @@ function withQuery(path, params) {
 export const api = {
   refresh: () => request("/api/v1/auth/refresh", { method: "POST", skipAuthenticationFailure: true }),
   logout: (token) => request("/api/v1/auth/logout", { method: "POST", token, skipAuthenticationFailure: true }),
-  registerCreator: (email, password) => request("/api/v1/auth/creator/register", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
+  registerCreator: (email, password, mobileNumber) => request("/api/v1/auth/creator/register", { method: "POST", body: { email, password, mobileNumber }, skipAuthenticationFailure: true }),
   loginCreator: (email, password) => request("/api/v1/auth/creator/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
-  registerBrand: (email, password, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, workspaceName, workspaceType }, skipAuthenticationFailure: true }),
+  registerBrand: (email, password, mobileNumber, workspaceName, workspaceType) => request("/api/v1/auth/brand/register", { method: "POST", body: { email, password, mobileNumber, workspaceName, workspaceType }, skipAuthenticationFailure: true }),
   loginBrand: (email, password) => request("/api/v1/auth/brand/login", { method: "POST", body: { email, password }, skipAuthenticationFailure: true }),
   forgotPassword: (email) => request("/api/v1/auth/forgot-password", { method: "POST", body: { email }, skipAuthenticationFailure: true }),
   resetPassword: (resetToken, newPassword) => request("/api/v1/auth/reset-password", { method: "POST", body: { token: resetToken, newPassword }, skipAuthenticationFailure: true }),
