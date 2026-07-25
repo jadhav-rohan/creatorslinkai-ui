@@ -33,7 +33,7 @@ const creatorLinks = [
   ["Media Kit", "/creator/media-kit", FileImage],
   ["Invoices", "/creator/invoices", FileText],
   ["Auto DM", "/creator/auto-dm", MessageCircle],
-  ["Insight Requests", "/creator/insight-requests", ShieldCheck],
+  // ["Insight Requests", "/creator/insight-requests", ShieldCheck],
 ];
 const brandLinks = [
   ["Discovery", "/brand/discovery", Search],
@@ -63,7 +63,8 @@ function AccountAvatar({ url, name }) {
 
 export default function PortalShell({ persona }) {
   const { confirm } = useThemedDialog();
-  const { email, workspaceType, logout, loggingOut, token, profile } = useAuth();
+  const { email, workspaceType, logout, loggingOut, token, profile } =
+    useAuth();
   const { selectedWorkspaceId } = useWorkspace();
   const { hasPermission } = useWorkspaceAuthorization();
   const creator = persona === "CREATOR";
@@ -95,7 +96,7 @@ export default function PortalShell({ persona }) {
       setSelectedAccount((current) =>
         items.some((item) => item.igUserId === current)
           ? current
-          : items[0]?.igUserId || "",
+          : items[0]?.igUserId || ""
       );
     } catch (error) {
       if (error.status === 401) logout();
@@ -122,7 +123,7 @@ export default function PortalShell({ persona }) {
       markConnectionInProgress(
         selectedWorkspaceId,
         creator ? "INSTAGRAM_LOGIN" : "FACEBOOK_LOGIN",
-        accounts.map((item) => item.igUserId),
+        accounts.map((item) => item.igUserId)
       );
       window.location.assign(result.authorizationUrl);
     } catch (error) {
@@ -133,9 +134,7 @@ export default function PortalShell({ persona }) {
   }
 
   async function disconnect() {
-    const account = accounts.find(
-      (item) => item.igUserId === selectedAccount,
-    );
+    const account = accounts.find((item) => item.igUserId === selectedAccount);
     const handle =
       account?.username ||
       account?.igUsername ||
@@ -146,11 +145,13 @@ export default function PortalShell({ persona }) {
       connectionLoading ||
       !canManageConnection ||
       !(await confirm(
-        `Disconnect ${handle.startsWith("@") ? handle : `@${handle}`}? This removes the ${connectionName} connection from this workspace.`,
+        `Disconnect ${
+          handle.startsWith("@") ? handle : `@${handle}`
+        }? This removes the ${connectionName} connection from this workspace.`,
         {
           title: `Disconnect ${connectionName}`,
           confirmLabel: "Disconnect",
-        },
+        }
       ))
     )
       return;
@@ -161,13 +162,13 @@ export default function PortalShell({ persona }) {
         await connectionService.disconnectInstagram(
           account.igUserId,
           selectedWorkspaceId,
-          token,
+          token
         );
       else
         await connectionService.disconnectFacebook(
           account.igUserId,
           selectedWorkspaceId,
-          token,
+          token
         );
       await loadConnections();
     } catch (error) {
@@ -194,8 +195,8 @@ export default function PortalShell({ persona }) {
               {creator
                 ? "CREATOR"
                 : workspaceType === "AGENCY"
-                  ? "AGENCY"
-                  : "BRAND"}
+                ? "AGENCY"
+                : "BRAND"}
             </span>
           </div>
           <button
@@ -238,72 +239,70 @@ export default function PortalShell({ persona }) {
             aria-label={`${connectionName} connection`}
             className="border-t-2 border-zinc-900 p-4 lg:p-3"
           >
-          <div className="flex items-center gap-2">
-            <ConnectionIcon size={16} />
-            <p className="text-xs font-black uppercase tracking-wide lg:text-[10px]">
-              {connectionName}
-            </p>
-          </div>
-          {connectionLoading && !accounts.length ? (
-            <p className="mt-3 text-xs text-zinc-500">
-              Checking connection…
-            </p>
-          ) : accounts.length ? (
-            <>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
-                <span className="text-xs font-bold">
-                  {accounts.length} connected
-                </span>
-              </div>
-              <select
-                value={selectedAccount}
-                onChange={(event) => setSelectedAccount(event.target.value)}
-                aria-label={`Connected ${connectionName} account`}
-                className="brutal-field mt-2 w-full min-w-0 py-2 text-xs lg:text-[11px]"
-              >
-                {accounts.map((account) => (
-                  <option key={account.igUserId} value={account.igUserId}>
-                    @
-                    {account.username ||
-                      account.igUsername ||
-                      account.pageName ||
-                      `${connectionName} account`}
-                  </option>
-                ))}
-              </select>
-              {canManageConnection && (
-                <button
-                  type="button"
-                  onClick={disconnect}
-                  disabled={connectionLoading}
-                  className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 border-2 border-red-600 bg-white px-3 py-2 text-xs font-black text-red-700 disabled:opacity-50 lg:min-h-9 lg:py-1.5 lg:text-[11px]"
-                >
-                  <Unplug size={15} />
-                  {connectionLoading ? "Disconnecting…" : "Disconnect"}
-                </button>
-              )}
-            </>
-          ) : canManageConnection ? (
-            <button
-              type="button"
-              onClick={connect}
-              disabled={connectionLoading || !selectedWorkspaceId}
-              className="brutal-button mt-3 flex min-h-11 w-full gap-2 px-3 py-2 text-xs"
-            >
+            <div className="flex items-center gap-2">
               <ConnectionIcon size={16} />
-              {connectionLoading ? "Opening…" : `Connect ${connectionName}`}
-            </button>
-          ) : (
-            <p className="mt-3 text-xs text-zinc-500">
-              No connection available.
-            </p>
-          )}
-          {connectionError && (
-            <p role="alert" className="mt-2 text-xs font-bold text-red-700">
-              {connectionError}
-            </p>
-          )}
+              <p className="text-xs font-black uppercase tracking-wide lg:text-[10px]">
+                {connectionName}
+              </p>
+            </div>
+            {connectionLoading && !accounts.length ? (
+              <p className="mt-3 text-xs text-zinc-500">Checking connection…</p>
+            ) : accounts.length ? (
+              <>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
+                  <span className="text-xs font-bold">
+                    {accounts.length} connected
+                  </span>
+                </div>
+                <select
+                  value={selectedAccount}
+                  onChange={(event) => setSelectedAccount(event.target.value)}
+                  aria-label={`Connected ${connectionName} account`}
+                  className="brutal-field mt-2 w-full min-w-0 py-2 text-xs lg:text-[11px]"
+                >
+                  {accounts.map((account) => (
+                    <option key={account.igUserId} value={account.igUserId}>
+                      @
+                      {account.username ||
+                        account.igUsername ||
+                        account.pageName ||
+                        `${connectionName} account`}
+                    </option>
+                  ))}
+                </select>
+                {canManageConnection && (
+                  <button
+                    type="button"
+                    onClick={disconnect}
+                    disabled={connectionLoading}
+                    className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 border-2 border-red-600 bg-white px-3 py-2 text-xs font-black text-red-700 disabled:opacity-50 lg:min-h-9 lg:py-1.5 lg:text-[11px]"
+                  >
+                    <Unplug size={15} />
+                    {connectionLoading ? "Disconnecting…" : "Disconnect"}
+                  </button>
+                )}
+              </>
+            ) : canManageConnection ? (
+              <button
+                type="button"
+                onClick={connect}
+                disabled={connectionLoading || !selectedWorkspaceId}
+                className="brutal-button mt-3 flex min-h-11 w-full gap-2 px-3 py-2 text-xs"
+              >
+                <ConnectionIcon size={16} />
+                {connectionLoading ? "Opening…" : `Connect ${connectionName}`}
+              </button>
+            ) : (
+              <p className="mt-3 text-xs text-zinc-500">
+                No connection available.
+              </p>
+            )}
+            {connectionError && (
+              <p role="alert" className="mt-2 text-xs font-bold text-red-700">
+                {connectionError}
+              </p>
+            )}
           </section>
         )}
 
