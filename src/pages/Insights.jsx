@@ -27,10 +27,12 @@ import {
 } from "recharts";
 import AudienceDemographicsPanel from "../components/AudienceDemographicsPanel";
 export default function Insights() {
-  const {confirm}=useThemedDialog();
+  const { confirm } = useThemedDialog();
   const { igUserId } = useParams();
   const { token } = useAuth();
-  const {hasPermission}=useWorkspaceAuthorization();const canViewAutoDm=hasPermission("AUTO_DM_VIEW"),canEditAutoDm=hasPermission("AUTO_DM_EDIT");
+  const { hasPermission } = useWorkspaceAuthorization();
+  const canViewAutoDm = hasPermission("AUTO_DM_VIEW"),
+    canEditAutoDm = hasPermission("AUTO_DM_EDIT");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -160,9 +162,12 @@ export default function Insights() {
 
   // Delete rule action
   async function handleDeleteRule(ruleId) {
-    if(!canEditAutoDm)return;
+    if (!canEditAutoDm) return;
     if (
-      !await confirm("Are you sure you want to delete this automation rule?",{title:"Delete automation rule",confirmLabel:"Delete"})
+      !(await confirm("Are you sure you want to delete this automation rule?", {
+        title: "Delete automation rule",
+        confirmLabel: "Delete",
+      }))
     )
       return;
     try {
@@ -177,7 +182,7 @@ export default function Insights() {
   // Create rule action
   async function handleCreateRule(e) {
     e.preventDefault();
-    if(!canEditAutoDm)return;
+    if (!canEditAutoDm) return;
     setFormError(null);
 
     if (!selectedReelId) {
@@ -701,19 +706,21 @@ export default function Insights() {
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary rounded-full" />
                   )}
                 </button>
-                {canViewAutoDm&&<button
-                  onClick={() => setActiveTab("automations")}
-                  className={`pb-4 text-sm font-semibold relative transition-colors cursor-pointer ${
-                    activeTab === "automations"
-                      ? "text-accent-primary"
-                      : "text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  Auto-DM Automations
-                  {activeTab === "automations" && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary rounded-full" />
-                  )}
-                </button>}
+                {canViewAutoDm && (
+                  <button
+                    onClick={() => setActiveTab("automations")}
+                    className={`pb-4 text-sm font-semibold relative transition-colors cursor-pointer ${
+                      activeTab === "automations"
+                        ? "text-accent-primary"
+                        : "text-text-secondary hover:text-text-primary"
+                    }`}
+                  >
+                    Auto-DM Automations
+                    {activeTab === "automations" && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary rounded-full" />
+                    )}
+                  </button>
+                )}
               </div>
 
               {activeTab === "insights" ? (
@@ -999,7 +1006,7 @@ export default function Insights() {
 
                   {/* ================= Audience Quality ================= */}
 
-                  <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
+                  {/* <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h2 className="text-lg font-bold text-text-primary">
@@ -1056,8 +1063,6 @@ export default function Insights() {
                     ) : (
                       audienceQuality && (
                         <>
-                          {/* Score */}
-
                           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             <div className="rounded-2xl border border-panel-border bg-bg-deep/30 p-6 flex flex-col items-center justify-center">
                               <AudienceScoreCircle
@@ -1082,7 +1087,6 @@ export default function Insights() {
                                 </span>
                               </div>
                             </div>
-                            {/* Signals */}
 
                             <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                               <MetricItem
@@ -1122,11 +1126,7 @@ export default function Insights() {
                             </div>
                           </div>
 
-                          {/* Analysis */}
-
                           <div className="mt-8 grid md:grid-cols-2 gap-6">
-                            {/* Observations */}
-
                             <div>
                               <h3 className="text-sm font-semibold text-text-primary mb-4">
                                 Analysis
@@ -1164,8 +1164,6 @@ export default function Insights() {
                               </div>
                             </div>
 
-                            {/* Metadata */}
-
                             <div>
                               <h3 className="text-sm font-semibold text-text-primary mb-4">
                                 Analysis Summary
@@ -1201,7 +1199,7 @@ export default function Insights() {
                         </>
                       )
                     )}
-                  </div>
+                  </div> */}
 
                   <div className="md:col-span-4">
                     <AudienceDemographicsPanel
@@ -1210,7 +1208,7 @@ export default function Insights() {
                   </div>
 
                   {/* Historical Growth Panel */}
-                  <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
+                  {/* <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <h2 className="text-lg font-bold tracking-tight text-text-primary mb-1">
@@ -1526,7 +1524,7 @@ export default function Insights() {
                         )}
                       </>
                     )}
-                  </div>
+                  </div> */}
 
                   {/* Reels Gallery Panel (col-span-4) */}
                   <div className="md:col-span-4 p-6 md:p-8 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl">
@@ -1704,28 +1702,30 @@ export default function Insights() {
                         public comment replies on your reels.
                       </p>
                     </div>
-                    {canEditAutoDm&&<button
-                      onClick={() => {
-                        setFormError(null);
-                        setIsCreateModalOpen(true);
-                      }}
-                      className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-95 text-white text-xs font-semibold shadow-lg shadow-accent-primary/25 cursor-pointer flex items-center gap-2 self-start sm:self-auto transition-all"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                    {canEditAutoDm && (
+                      <button
+                        onClick={() => {
+                          setFormError(null);
+                          setIsCreateModalOpen(true);
+                        }}
+                        className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-95 text-white text-xs font-semibold shadow-lg shadow-accent-primary/25 cursor-pointer flex items-center gap-2 self-start sm:self-auto transition-all"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2.5}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                      Create Rule
-                    </button>}
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        Create Rule
+                      </button>
+                    )}
                   </div>
 
                   {loadingRules ? (
@@ -1895,25 +1895,27 @@ export default function Insights() {
                                   </svg>
                                   Logs
                                 </button>
-                                {canEditAutoDm&&<button
-                                  onClick={() => handleDeleteRule(rule.id)}
-                                  className="p-2 rounded-xl bg-panel-light hover:bg-red-500/10 text-text-secondary hover:text-red-400 border border-panel-border cursor-pointer transition-colors flex items-center justify-center"
-                                  title="Delete Rule"
-                                >
-                                  <svg
-                                    className="w-3.5 h-3.5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
+                                {canEditAutoDm && (
+                                  <button
+                                    onClick={() => handleDeleteRule(rule.id)}
+                                    className="p-2 rounded-xl bg-panel-light hover:bg-red-500/10 text-text-secondary hover:text-red-400 border border-panel-border cursor-pointer transition-colors flex items-center justify-center"
+                                    title="Delete Rule"
                                   >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                    />
-                                  </svg>
-                                </button>}
+                                    <svg
+                                      className="w-3.5 h-3.5"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                      />
+                                    </svg>
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
