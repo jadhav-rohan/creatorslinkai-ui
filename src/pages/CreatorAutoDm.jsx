@@ -14,6 +14,7 @@ import AutoDmTemplatePreview from "../components/AutoDmTemplatePreview";
 import AutoDmMediaPicker from "../components/AutoDmMediaPicker";
 import AutoDmRuleCard from "../components/AutoDmRuleCard";
 import AutoDmPdfFields from "../components/AutoDmPdfFields";
+import AutoDmPublicReplies from "../components/AutoDmPublicReplies";
 import { useThemedDialog } from "../context/ThemedDialogContext";
 import { DEFAULT_FOLLOW_REMINDER_MESSAGE } from "../autoDmFollowerGate";
 import {
@@ -21,6 +22,11 @@ import {
   validateAutoDmPdf,
 } from "../autoDmPdf";
 import { autoDmPdfService } from "../services/autoDmPdfService";
+import {
+  normalizePublicReplies,
+  repliesFromRule,
+  validatePublicReplies,
+} from "../autoDmPublicReplies";
 import { openInstagramAuthorization } from "../services/instagramOAuthNavigation";
 
 const accountName = (account) =>
@@ -39,7 +45,7 @@ const newRuleForm = () => ({
   keyword: "",
   responseType: "TEXT",
   dmMessage: "",
-  publicReplyMessage: "",
+  publicReplyMessages: [""],
   requireFollower: false,
   followReminderMessage: "",
   pdfAssetId: null,
@@ -79,7 +85,7 @@ function formFromRule(rule) {
     keyword: rule.keyword || "",
     responseType: rule.responseType || "TEXT",
     dmMessage: rule.dmMessage || "",
-    publicReplyMessage: rule.publicReplyMessage || "",
+    publicReplyMessages: repliesFromRule(rule),
     requireFollower,
     followReminderMessage: requireFollower
       ? rule.followReminderMessage?.trim() || DEFAULT_FOLLOW_REMINDER_MESSAGE
@@ -124,6 +130,7 @@ export default function CreatorAutoDm() {
   const [conflictRule, setConflictRule] = useState(null);
   const [form, setForm] = useState(newRuleForm);
   const [formError, setFormError] = useState("");
+  const [publicRepliesError, setPublicRepliesError] = useState("");
   const [pdfUpload, setPdfUpload] = useState(newPdfUpload);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState("");
@@ -234,6 +241,7 @@ export default function CreatorAutoDm() {
     setEditingRule(null);
     setConflictRule(null);
     setFormError("");
+    setPublicRepliesError("");
     setForm(newRuleForm());
     setPdfUpload(newPdfUpload());
   }
@@ -245,6 +253,7 @@ export default function CreatorAutoDm() {
     setForm(newRuleForm());
     setPdfUpload(newPdfUpload());
     setFormError("");
+    setPublicRepliesError("");
     setNotice("");
     setShowForm(true);
   }
@@ -256,6 +265,7 @@ export default function CreatorAutoDm() {
     setForm(formFromRule(rule));
     setPdfUpload(pdfUploadFromRule(rule));
     setFormError("");
+    setPublicRepliesError("");
     setNotice("");
     setShowForm(true);
     window.requestAnimationFrame(() =>
@@ -306,6 +316,7 @@ export default function CreatorAutoDm() {
     }));
     setPdfUpload(newPdfUpload());
     setFormError("");
+    setPublicRepliesError("");
   }
 
   async function uploadPdf(file) {
@@ -480,7 +491,9 @@ export default function CreatorAutoDm() {
     const mediaId = form.mediaId.trim();
     const keyword = form.keyword.trim();
     const dmMessage = form.dmMessage.trim();
-    const publicReplyMessage = form.publicReplyMessage.trim();
+    const publicReplyMessages = normalizePublicReplies(
+      form.publicReplyMessages,
+    );
     const followReminderMessage = form.followReminderMessage.trim();
     if (!mediaId) {
       setFormError("Select a Reel or post for this Auto-DM rule.");
@@ -515,6 +528,14 @@ export default function CreatorAutoDm() {
       setFormError("PDF button text must be 40 characters or fewer.");
       return;
     }
+    const replyValidationError = validatePublicReplies(
+      form.publicReplyMessages,
+    );
+    if (replyValidationError) {
+      setPublicRepliesError(replyValidationError);
+      return;
+    }
+    setPublicRepliesError("");
     if (form.requireFollower && !followReminderMessage) {
       setFormError(
         "Follow verification reminder is required when follower verification is enabled."
@@ -544,7 +565,7 @@ export default function CreatorAutoDm() {
       followReminderMessage: form.requireFollower
         ? followReminderMessage
         : null,
-      publicReplyMessage,
+      publicReplyMessages,
       pdfAssetId: pdfRule ? form.pdfAssetId : null,
       pdfButtonText: pdfRule ? form.pdfButtonText.trim() || null : null,
       ...(templateRule
@@ -609,6 +630,14 @@ export default function CreatorAutoDm() {
       ) {
         setFormError(
           "This post is no longer available for the connected Instagram account. Refresh your media and select another post."
+        );
+      } else if (
+        /publicReplyMessages|public repl/i.test(error.message || "")
+      ) {
+        setPublicRepliesError(
+          /maximum|more than|at most|5/i.test(error.message || "")
+            ? "You can add a maximum of 5 public replies."
+            : error.message,
         );
       } else setFormError(`${error.message}${support(error)}`);
     } finally {
@@ -987,26 +1016,18 @@ export default function CreatorAutoDm() {
                       }
                     />
                   )}
-                  <label
-                    className={`block font-bold ${
-                      form.responseType !== "TEXT"
-                        ? "sm:col-span-2"
-                        : ""
-                    }`}
-                  >
-                    Public comment reply (optional)
-                    <textarea
-                      value={form.publicReplyMessage}
-                      onChange={(event) =>
-                        setForm((current) => ({
-                          ...current,
-                          publicReplyMessage: event.target.value,
-                        }))
-                      }
-                      rows={5}
-                      className="brutal-field mt-2 w-full"
-                    />
-                  </label>
+                  <AutoDmPublicReplies
+                    values={form.publicReplyMessages}
+                    error={publicRepliesError}
+                    disabled={saving}
+                    onChange={(publicReplyMessages) => {
+                      setForm((current) => ({
+                        ...current,
+                        publicReplyMessages,
+                      }));
+                      setPublicRepliesError("");
+                    }}
+                  />
                 </div>
 
                 {form.responseType === "GENERIC_TEMPLATE" && (

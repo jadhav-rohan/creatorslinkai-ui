@@ -11,6 +11,10 @@ import {
   DEFAULT_PDF_BUTTON_TEXT,
   formatPdfSize,
 } from "../autoDmPdf";
+import {
+  normalizePublicReplies,
+  repliesFromRule,
+} from "../autoDmPublicReplies";
 
 function RuleThumbnail({ rule, media }) {
   const [failed, setFailed] = useState(false);
@@ -45,6 +49,7 @@ export default function AutoDmRuleCard({
   const publishedAt = rule.mediaPublishedAt || media?.publishedAt;
   const permalink = rule.mediaPermalink || media?.permalink;
   const inactive = rule.active === false;
+  const publicReplies = normalizePublicReplies(repliesFromRule(rule));
   return (
     <article
       className={`brutal-card min-w-0 overflow-hidden ${
@@ -151,9 +156,47 @@ export default function AutoDmRuleCard({
               </p>
             </div>
           )}
-          <div className="mt-4 text-sm">
-            <strong className="text-zinc-500">Public reply:</strong>{" "}
-            {rule.publicReplyMessage || "Not configured"}
+          <div className="mt-4 border-t border-zinc-300 pt-3 text-sm">
+            <p className="text-xs font-bold text-zinc-500">
+              Public comment replies
+            </p>
+            {!publicReplies.length ? (
+              <p className="mt-1 text-zinc-600">
+                No public reply will be posted.
+              </p>
+            ) : (
+              <>
+                <div className="mt-2 flex flex-wrap items-start gap-2">
+                  <p className="min-w-0 flex-1 whitespace-pre-wrap">
+                    {publicReplies[0]}
+                  </p>
+                  {publicReplies.length > 1 && (
+                    <span className="shrink-0 border border-zinc-900 bg-yellow-100 px-2 py-1 text-[10px] font-black">
+                      +{publicReplies.length - 1} variation
+                      {publicReplies.length === 2 ? "" : "s"}
+                    </span>
+                  )}
+                </div>
+                {publicReplies.length > 1 && (
+                  <details className="mt-3">
+                    <summary className="cursor-pointer text-xs font-black underline">
+                      View all replies
+                    </summary>
+                    <ol className="mt-2 space-y-2">
+                      {publicReplies.map((reply, index) => (
+                        <li
+                          key={`${reply}-${index}`}
+                          className="whitespace-pre-wrap border border-zinc-300 bg-zinc-50 p-2"
+                        >
+                          <span className="mr-2 font-bold">{index + 1}.</span>
+                          {reply}
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                )}
+              </>
+            )}
           </div>
           {rule.requireFollower === true && (
             <details className="mt-4 border-t-2 border-zinc-900 pt-3 text-sm">
