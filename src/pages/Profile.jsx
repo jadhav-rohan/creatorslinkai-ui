@@ -3,6 +3,8 @@ import { Bell, RefreshCw, UserRound } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { accountService } from "../services/accountService";
 import InstagramConnectionSettings from "../components/InstagramConnectionSettings";
+import { api } from "../api";
+import { useThemedDialog } from "../context/ThemedDialogContext";
 
 const TEXT_FIELDS = [
   ["firstName", "First name", 120],
@@ -159,6 +161,8 @@ export default function Profile() {
   const [notice, setNotice] = useState("");
   const [reload, setReload] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
+  const [deletingMetaData, setDeletingMetaData] = useState(false);
+  const { confirm } = useThemedDialog();
   const savingRef = useRef(false);
 
   useEffect(() => {
@@ -240,6 +244,23 @@ export default function Profile() {
     } finally {
       savingRef.current = false;
       setSaving(false);
+    }
+  }
+
+  async function deleteMetaData() {
+    if (deletingMetaData || !(await confirm(
+      "Permanently delete your Instagram connection, cached analytics, Auto-DM data, uploaded Auto-DM PDFs, and all insight snapshots previously shared with agencies?",
+      { title: "Delete my Instagram data", confirmLabel: "Delete permanently" },
+    ))) return;
+    setDeletingMetaData(true);
+    setNotice("");
+    try {
+      const result = await api.deleteCreatorMetaData(token);
+      setNotice(`Instagram data deleted. Confirmation code: ${result.confirmationCode}`);
+    } catch (error) {
+      setErrors({ form: error.message || "Instagram data could not be deleted." });
+    } finally {
+      setDeletingMetaData(false);
     }
   }
 
@@ -418,6 +439,23 @@ export default function Profile() {
               </Field>
             </div>
           </section>
+
+          {activePersona === "CREATOR" && (
+            <section className="brutal-card border-red-700 p-5 sm:p-7">
+              <h2 className="text-2xl font-black">Privacy and data deletion</h2>
+              <p className="mt-2 text-sm text-zinc-600">
+                Disconnecting removes the live connection and cached analytics but
+                preserves historical snapshots already shared with agencies. Full
+                deletion permanently removes those shared snapshots and all other
+                Instagram-derived data.
+              </p>
+              <button type="button" onClick={deleteMetaData}
+                disabled={deletingMetaData}
+                className="mt-5 border-2 border-red-700 bg-red-50 px-4 py-3 font-black text-red-800">
+                {deletingMetaData ? "Deleting…" : "Delete my Instagram data"}
+              </button>
+            </section>
+          )}
 
           {activePersona === "CREATOR" && <InstagramConnectionSettings />}
 
