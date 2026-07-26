@@ -58,6 +58,9 @@ export const autoDmPdfService = {
     if (confirmed?.status !== "READY") {
       throw new Error("The PDF upload was not confirmed. Please retry the upload.");
     }
-    return confirmed;
+    return {
+      ...confirmed,
+      id: confirmed.id || confirmed.assetId || session.assetId,
+    };
   },
 };
