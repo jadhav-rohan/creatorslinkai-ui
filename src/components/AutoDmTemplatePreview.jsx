@@ -73,7 +73,7 @@ export default function AutoDmTemplatePreview({
               return (
                 <article
                   key={element.id || element.clientKey || index}
-                  className="min-w-[240px] max-w-[280px] flex-1 snap-start overflow-hidden border-2 border-zinc-900 bg-white"
+                  className="w-[78vw] min-w-[220px] max-w-[280px] flex-none snap-start overflow-hidden border-2 border-zinc-900 bg-white"
                 >
                   <ProductImage element={element} />
                   <div className="p-4">

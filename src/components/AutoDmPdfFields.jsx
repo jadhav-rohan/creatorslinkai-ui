@@ -14,7 +14,7 @@ export default function AutoDmPdfFields({
   const busy = upload.status === "uploading" || upload.status === "confirming";
 
   return (
-    <fieldset className="space-y-5 border-2 border-zinc-900 bg-zinc-50 p-4 sm:col-span-2 sm:p-5">
+    <fieldset className="min-w-0 space-y-4 border-2 border-zinc-900 bg-zinc-50 p-3 sm:col-span-2 sm:space-y-5 sm:p-5">
       <legend className="px-2 text-sm font-black">PDF delivery</legend>
 
       <div>
@@ -22,7 +22,7 @@ export default function AutoDmPdfFields({
         <p className="mt-1 text-xs text-zinc-600">
           PDF only · Maximum file size 10 MB
         </p>
-        <label className="mt-3 inline-flex min-h-11 cursor-pointer items-center gap-2 border-2 border-zinc-900 bg-white px-4 py-2 font-black shadow-[3px_3px_0_#18181b] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
+        <label className="mt-3 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 border-2 border-zinc-900 bg-white px-4 py-2 font-black shadow-[3px_3px_0_#18181b] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 sm:w-auto">
           <Upload size={17} />
           {hasFile ? "Replace PDF" : "Choose PDF"}
           <input
@@ -40,10 +40,10 @@ export default function AutoDmPdfFields({
       </div>
 
       {hasFile && (
-        <div className="flex flex-wrap items-center gap-3 border-2 border-zinc-900 bg-white p-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 border-2 border-zinc-900 bg-white p-3">
           <FileText className="shrink-0" size={24} aria-hidden="true" />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-black">{form.pdfFileName}</p>
+            <p className="break-all text-sm font-black sm:truncate sm:text-base">{form.pdfFileName}</p>
             <p className="text-xs text-zinc-600">
               {formatPdfSize(form.pdfSizeBytes)}
             </p>

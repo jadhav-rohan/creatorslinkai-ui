@@ -139,13 +139,13 @@ export default function AutoDmMediaPicker({
 
   if (loading)
     return (
-      <div className="border-2 border-zinc-900 bg-zinc-50 p-4 sm:col-span-2 sm:p-5">
+      <div className="min-w-0 border-2 border-zinc-900 bg-zinc-50 p-3 sm:col-span-2 sm:p-5">
         <p className="font-black">Choose Instagram media</p>
         <div className="mt-4 flex gap-3 overflow-hidden">
           {[1, 2, 3, 4].map((item) => (
             <div
               key={item}
-              className="h-60 w-40 shrink-0 animate-pulse border-2 border-zinc-900 bg-zinc-200 sm:w-48"
+              className="h-56 w-[72vw] max-w-64 shrink-0 animate-pulse border-2 border-zinc-900 bg-zinc-200 sm:h-60 sm:w-48"
             />
           ))}
         </div>
@@ -168,7 +168,7 @@ export default function AutoDmMediaPicker({
     );
 
   return (
-    <div className="border-2 border-zinc-900 bg-zinc-50 p-4 sm:col-span-2 sm:p-5">
+    <div className="min-w-0 border-2 border-zinc-900 bg-zinc-50 p-3 sm:col-span-2 sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="brutal-overline">Step 1</p>
@@ -182,13 +182,13 @@ export default function AutoDmMediaPicker({
         <button
           type="button"
           onClick={refresh}
-          className="w-fit border-2 border-zinc-900 bg-white px-4 py-2 text-sm font-black"
+          className="w-full border-2 border-zinc-900 bg-white px-4 py-2 text-sm font-black sm:w-fit"
         >
           Refresh media
         </button>
       </div>
       <div
-        className="mt-4 inline-flex border-2 border-zinc-900 bg-white p-1"
+        className="mt-4 flex w-full border-2 border-zinc-900 bg-white p-1 sm:inline-flex sm:w-auto"
         role="group"
         aria-label="Filter Instagram media"
       >
@@ -202,7 +202,7 @@ export default function AutoDmMediaPicker({
             type="button"
             aria-pressed={filter === key}
             onClick={() => setFilter(key)}
-            className={`px-4 py-2 text-sm font-black ${
+            className={`min-w-0 flex-1 px-3 py-2 text-sm font-black sm:flex-none sm:px-4 ${
               filter === key ? "bg-yellow-300" : "bg-white hover:bg-zinc-100"
             }`}
           >
@@ -212,7 +212,7 @@ export default function AutoDmMediaPicker({
       </div>
 
       {!displayItems.length ? (
-        <div className="mt-4 border-2 border-dashed border-zinc-400 bg-white p-8 text-center">
+        <div className="mt-4 border-2 border-dashed border-zinc-400 bg-white p-5 text-center sm:p-8">
           <p className="font-black">
             No eligible Instagram media found. Publish a Reel or feed post,
             then refresh this page.
@@ -226,7 +226,11 @@ export default function AutoDmMediaPicker({
           No media matches this filter.
         </div>
       ) : (
-        <div className="mt-4 flex snap-x gap-4 overflow-x-auto px-1 pb-3 pt-1">
+        <>
+          <p className="mt-3 text-xs font-bold text-zinc-500 sm:hidden">
+            Swipe sideways to browse media.
+          </p>
+          <div className="-mx-3 mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-3 pb-4 pt-1 [scrollbar-width:thin] sm:mx-0 sm:mt-4 sm:gap-4 sm:px-1">
           {visible.map((item) => {
             const selected = value === item.mediaId;
             const configuredRule = activeRuleByMedia.get(item.mediaId);
@@ -236,7 +240,7 @@ export default function AutoDmMediaPicker({
             return (
               <article
                 key={item.mediaId}
-                className={`relative w-40 shrink-0 snap-start overflow-hidden border-2 border-zinc-900 bg-white transition-transform sm:w-48 ${
+                className={`relative w-[72vw] max-w-64 shrink-0 snap-start overflow-hidden border-2 border-zinc-900 bg-white transition-transform sm:w-48 ${
                   selected
                     ? "-translate-y-1 bg-yellow-50 shadow-[5px_5px_0_#18181b]"
                     : ""
@@ -317,7 +321,8 @@ export default function AutoDmMediaPicker({
               </article>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -103,7 +103,7 @@ export default function AutoDmTemplateFields({ elements, onChange }) {
           type="button"
           disabled={elements.length >= 10}
           onClick={() => onChange([...elements, createTemplateElement()])}
-          className="flex items-center gap-2 border-2 border-zinc-900 bg-sky-200 px-4 py-2 font-black disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 border-2 border-zinc-900 bg-sky-200 px-4 py-2 font-black disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           <Plus size={17} /> Add product
         </button>
@@ -116,9 +116,9 @@ export default function AutoDmTemplateFields({ elements, onChange }) {
         return (
           <section
             key={element.clientKey || element.id || index}
-            className="border-2 border-zinc-900 bg-white p-4 sm:p-5"
+            className="min-w-0 border-2 border-zinc-900 bg-white p-3 sm:p-5"
           >
-            <header className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-zinc-900 pb-3">
+            <header className="flex flex-col items-stretch gap-3 border-b-2 border-zinc-900 pb-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <h4 className="text-lg font-black">Product {index + 1}</h4>
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -147,7 +147,7 @@ export default function AutoDmTemplateFields({ elements, onChange }) {
                       elements.filter((_, current) => current !== index),
                     )
                   }
-                  className="flex items-center gap-1 border-2 border-red-700 px-3 py-2 text-sm font-black text-red-800 disabled:opacity-30"
+                  className="flex flex-1 items-center justify-center gap-1 border-2 border-red-700 px-3 py-2 text-sm font-black text-red-800 disabled:opacity-30 sm:flex-none"
                 >
                   <Trash2 size={16} /> Remove
                 </button>

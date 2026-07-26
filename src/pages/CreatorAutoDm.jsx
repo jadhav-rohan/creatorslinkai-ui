@@ -569,12 +569,14 @@ export default function CreatorAutoDm() {
     );
 
   return (
-    <main className="brutal-page min-h-[calc(100vh-82px)] p-4 sm:p-6 md:p-8">
+    <main className="brutal-page min-h-[calc(100vh-82px)] min-w-0 p-3 sm:p-6 md:p-8">
       <div className="mx-auto max-w-6xl">
         <header className="flex flex-col gap-5 border-b-2 border-zinc-900 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="brutal-overline">Creator workspace</p>
-            <h1 className="mt-2 text-4xl font-black">Comment Auto-DM</h1>
+            <h1 className="mt-2 text-3xl font-black sm:text-4xl">
+              Comment Auto-DM
+            </h1>
             <p className="mt-2 max-w-3xl text-zinc-600">
               Send one private-reply attempt when a comment on a selected Reel
               or post contains your keyword. A public reply is posted only when
@@ -586,7 +588,7 @@ export default function CreatorAutoDm() {
             <button
               type="button"
               onClick={showForm ? closeEditor : beginCreate}
-              className="brutal-button"
+              className="brutal-button w-full sm:w-auto"
             >
               {showForm ? "Close form" : "Create Auto-DM Rule"}
             </button>
@@ -645,13 +647,13 @@ export default function CreatorAutoDm() {
           </section>
         ) : (
           <>
-            <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <label className="font-bold">
+            <div className="mt-5 flex min-w-0 flex-col gap-4 sm:mt-7 sm:flex-row sm:items-end sm:justify-between">
+              <label className="min-w-0 font-bold">
                 Instagram account
                 <select
                   value={selectedId}
                   onChange={(event) => setSelectedId(event.target.value)}
-                  className="brutal-field mt-2 block min-w-64"
+                  className="brutal-field mt-2 block w-full min-w-0 sm:min-w-64"
                 >
                   {accounts.map((account) => (
                     <option key={account.igUserId} value={account.igUserId}>
@@ -671,11 +673,11 @@ export default function CreatorAutoDm() {
               <form
                 id="auto-dm-rule-editor"
                 onSubmit={submit}
-                className="brutal-card mt-7 bg-white p-5 sm:p-7"
+                className="brutal-card mt-5 min-w-0 bg-white p-3 sm:mt-7 sm:p-7"
               >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-2xl font-black">
+                <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-black sm:text-2xl">
                       {editingRule ? "Edit Auto-DM rule" : "New keyword rule"}
                     </h2>
                     <p className="mt-2 text-sm text-zinc-600">
@@ -688,14 +690,14 @@ export default function CreatorAutoDm() {
                     <button
                       type="button"
                       onClick={closeEditor}
-                      className="border-2 border-zinc-900 bg-white px-4 py-2 font-black"
+                      className="w-full border-2 border-zinc-900 bg-white px-4 py-2 font-black sm:w-auto"
                     >
                       Cancel
                     </button>
                   )}
                 </div>
 
-                <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                <div className="mt-5 grid min-w-0 gap-4 sm:mt-6 sm:grid-cols-2 sm:gap-5">
                   <AutoDmMediaPicker
                     igUserId={selectedId}
                     token={token}
@@ -766,7 +768,7 @@ export default function CreatorAutoDm() {
                           };
                         })
                       }
-                      className={`flex w-full items-center gap-4 border-2 border-zinc-900 p-4 text-left transition-colors ${
+                      className={`flex w-full items-start gap-3 border-2 border-zinc-900 p-3 text-left transition-colors sm:items-center sm:gap-4 sm:p-4 ${
                         form.requireFollower ? "bg-yellow-100" : "bg-zinc-50"
                       }`}
                     >
@@ -802,7 +804,7 @@ export default function CreatorAutoDm() {
                           ‘I've followed’. CreatorLinksAI will verify the follow
                           before sending your configured reply.
                         </p>
-                        <div className="border-2 border-zinc-900 bg-zinc-50 p-4">
+                        <div className="border-2 border-zinc-900 bg-zinc-50 p-3 sm:p-4">
                           <p className="font-black">
                             Follow me to receive this content
                           </p>
@@ -813,11 +815,11 @@ export default function CreatorAutoDm() {
                               )
                             ).replace(/^@/, "")}, then tap “I've followed”.`}
                           </p>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <span className="border border-zinc-900 bg-white px-3 py-2 text-xs font-black">
+                          <div className="mt-3 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+                            <span className="border border-zinc-900 bg-white px-3 py-2 text-center text-xs font-black">
                               Follow on Instagram
                             </span>
-                            <span className="border border-zinc-900 bg-yellow-300 px-3 py-2 text-xs font-black">
+                            <span className="border border-zinc-900 bg-yellow-300 px-3 py-2 text-center text-xs font-black">
                               I've followed
                             </span>
                           </div>
@@ -837,7 +839,7 @@ export default function CreatorAutoDm() {
                             rows={4}
                             className="brutal-field mt-2 w-full resize-y"
                           />
-                          <span className="mt-2 flex items-start justify-between gap-4 text-xs font-normal text-zinc-600">
+                          <span className="mt-2 flex flex-wrap items-start justify-between gap-2 text-xs font-normal text-zinc-600">
                             <span>
                               Sent when someone taps ‘I've followed’ but their
                               follow cannot be confirmed.
@@ -929,11 +931,11 @@ export default function CreatorAutoDm() {
                     )}
                   </div>
                 )}
-                <div className="mt-6 flex flex-col-reverse gap-3 border-t-2 border-zinc-900 pt-5 sm:flex-row sm:justify-end">
+                <div className="sticky bottom-0 z-20 -mx-3 mt-6 flex flex-col-reverse gap-2 border-t-2 border-zinc-900 bg-white px-3 pb-3 pt-3 sm:static sm:mx-0 sm:flex-row sm:justify-end sm:gap-3 sm:p-0 sm:pt-5">
                   <button
                     type="button"
                     onClick={closeEditor}
-                    className="border-2 border-zinc-900 bg-white px-5 py-3 font-black"
+                    className="w-full border-2 border-zinc-900 bg-white px-5 py-3 font-black sm:w-auto"
                   >
                     Cancel
                   </button>
@@ -950,7 +952,7 @@ export default function CreatorAutoDm() {
                         (!form.followReminderMessage.trim() ||
                           form.followReminderMessage.trim().length > 1000))
                     }
-                    className="brutal-button min-w-40"
+                    className="brutal-button w-full sm:min-w-40 sm:w-auto"
                   >
                     {saving
                       ? form.responseType === "GENERIC_TEMPLATE"
