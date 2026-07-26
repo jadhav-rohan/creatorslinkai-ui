@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
           Privacy Policy
         </h1>
         <p className="mt-3 text-sm text-zinc-600">
-          <strong>Effective date:</strong> July 25, 2026
+          <strong>Effective date:</strong> July 26, 2026
         </p>
 
         <div className="mt-10 space-y-10">
@@ -61,7 +61,10 @@ export default function PrivacyPolicy() {
                 media, private-reply and public-reply text, carousel content,
                 follow-confirmation settings, delivery status, and related
                 Instagram comment or recipient identifiers required to process
-                and troubleshoot configured automations.
+                and troubleshoot configured automations. If you configure PDF
+                delivery, we also process the uploaded PDF, its filename, size,
+                storage identifier, expiring download links, and download-link
+                confirmation records.
               </li>
               <li>
                 <strong>AI Script Writer information:</strong> briefs, product
@@ -195,24 +198,54 @@ export default function PrivacyPolicy() {
               applicable law.
             </p>
             <p>
-              Disconnecting Instagram stops future use of that connection but
-              may not automatically delete your account, invoices, media kits,
-              scripts, automation history, security logs, or records we must
-              retain. You may delete supported records in the Creator portal.
-              For account or personal-data deletion requests, contact us below.
-              We may verify your identity and retain limited records where
-              legally permitted or required.
+              <strong>Disconnect Instagram.</strong> Routine disconnection
+              deletes the active Instagram connection and encrypted token,
+              along with cached account and recent-media analytics tied to that
+              connection. It does not delete your CreatorLinksAI account,
+              media kits, invoices, scripts, or Auto-DM configuration. Insight
+              snapshots that you previously approved for a campaign may remain
+              available for the recipient’s historical campaign reporting.
+              Disconnecting does not retrieve copies a recipient already
+              viewed, downloaded, recorded, or retained outside CreatorLinksAI.
+            </p>
+            <p>
+              <strong>Full Instagram data deletion.</strong> Creators may use
+              “Delete my Instagram data” in Profile and Privacy settings. This
+              permanently deletes the Instagram connection and token, cached
+              and historical Instagram analytics, Auto-DM rules and delivery
+              records, follower-gate records, uploaded Auto-DM PDF assets and
+              associated links, and insight snapshots previously shared through
+              CreatorLinksAI. It also removes Instagram-derived profile-picture
+              and creator-catalog ownership links. The operation cannot be
+              undone.
+            </p>
+            <p>
+              You may also initiate full deletion through Meta by removing
+              CreatorLinksAI in Meta’s Apps and Websites settings and selecting
+              “Send Request.” After receiving and verifying Meta’s signed
+              request, we provide a confirmation code and status URL. A full
+              Instagram data deletion does not itself delete your CreatorLinksAI
+              login account or independently supplied media-kit, invoice,
+              billing, tax, or AI-script records.
+            </p>
+            <p>
+              For deletion of your entire CreatorLinksAI account or other
+              personal information, contact us below. We may verify your
+              identity and retain limited records where legally permitted or
+              required, including security, fraud-prevention, financial, or
+              compliance records.
             </p>
           </Section>
 
           <Section title="8. Your choices and rights">
             <p>
-              You may disconnect Instagram, create or delete supported
-              Auto-DM rules and creator records, and approve, decline, refresh,
-              expire, or revoke eligible insight shares through available
-              controls. Depending on your location, you may also have rights to
-              access, correct, delete, restrict, or export personal information,
-              or object to certain processing.
+              You may disconnect Instagram, request full deletion of your
+              Instagram-derived data, create or delete supported Auto-DM rules
+              and creator records, and approve, decline, refresh, expire, or
+              revoke eligible insight shares through available controls.
+              Depending on your location, you may also have rights to access,
+              correct, delete, restrict, or export personal information, or
+              object to certain processing.
             </p>
           </Section>
 

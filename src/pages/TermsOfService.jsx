@@ -23,7 +23,7 @@ export default function TermsOfService() {
           Terms of Service
         </h1>
         <p className="mt-3 text-sm text-zinc-600">
-          <strong>Effective date:</strong> July 25, 2026
+          <strong>Effective date:</strong> July 26, 2026
         </p>
 
         <div className="mt-10 space-y-10">
@@ -89,7 +89,10 @@ export default function TermsOfService() {
             <p>
               You are solely responsible for the rules, keywords, media,
               messages, links, carousel elements, public replies, and
-              follow-confirmation behavior you configure. You must use
+              follow-confirmation behavior you configure. This includes PDFs
+              and other linked content you upload or distribute. You represent
+              that you have the right to upload and share that content and that
+              it is lawful, safe, and does not infringe third-party rights. You must use
               automation only for lawful purposes and provide any notices,
               disclosures, consent, opt-out methods, and advertising disclosures
               required by law or platform policy.
@@ -211,10 +214,28 @@ export default function TermsOfService() {
           <Section title="12. Suspension, termination, and deletion">
             <p>
               You may stop using the service, sign out, and disconnect Instagram
-              at any time. Disconnecting Instagram does not automatically delete
-              your CreatorLinksAI account or all stored records. Account or
-              personal-data deletion may be requested using the contact details
-              below.
+              at any time. Routine disconnection removes the active connection
+              and cached analytics but does not delete your CreatorLinksAI
+              account, Auto-DM rules, independently supplied records, or
+              historical insight snapshots previously approved for agency or
+              brand campaign reporting.
+            </p>
+            <p>
+              Creators may separately use “Delete my Instagram data” in Profile
+              and Privacy settings. That irreversible action deletes the
+              Instagram connection, Instagram-derived analytics, Auto-DM data
+              and uploaded PDF assets, and snapshots previously shared through
+              CreatorLinksAI. Users may also trigger this process through Meta’s
+              Apps and Websites deletion-request mechanism. Full Instagram data
+              deletion does not itself close the CreatorLinksAI login account or
+              delete independently supplied invoices, media kits, billing
+              records, or AI scripts.
+            </p>
+            <p>
+              To request deletion of the entire CreatorLinksAI account or other
+              personal information, use the contact details below. Information
+              already received or retained independently by another person or
+              organization cannot necessarily be retrieved by CreatorLinksAI.
             </p>
             <p>
               We may restrict or terminate access when reasonably necessary to
