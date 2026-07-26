@@ -709,13 +709,12 @@ export default function CreatorAutoDm() {
                         className="brutal-field mt-2 w-full"
                       />
                     </label>
-                  ) : (
+                  ) : !form.requireFollower ? (
                     <div className="border-2 border-zinc-900 bg-emerald-100 p-4 text-sm font-bold">
-                      {form.requireFollower
-                        ? "The carousel is held until the commenter taps ‘I've followed’ and CreatorLinksAI verifies the follow."
-                        : "The carousel is sent immediately as the private reply when the keyword comment is received."}
+                      The carousel is sent immediately as the private reply when
+                      the keyword comment is received.
                     </div>
-                  )}
+                  ) : null}
                   <label className="block font-bold">
                     Public comment reply (optional)
                     <textarea
