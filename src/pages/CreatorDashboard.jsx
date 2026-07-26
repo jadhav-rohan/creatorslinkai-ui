@@ -234,21 +234,28 @@ export default function CreatorDashboard() {
       <div className="mx-auto max-w-6xl">
         <header className="brutal-card p-6 md:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 w-full items-start gap-3 sm:w-auto sm:items-center sm:gap-4">
               <CreatorAvatar primaryUrl={profile?.profilePictureUrl} fallbackUrl={connection.profilePictureUrl} username={connection.username}/>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="brutal-overline">Creator workspace</p>
-                <h1 className="mt-1 text-3xl font-black">
+                <h1 className="mt-1 max-w-full break-all text-2xl font-black leading-tight sm:text-3xl">
                   {connection.connected
                     ? `@${connection.username}`
                     : "Your creator dashboard"}
                 </h1>
-                <p className="mt-2 text-sm text-zinc-600">
-                  Status: <strong className="text-zinc-900">{status}</strong>
+                <p className="mt-2 min-w-0 text-sm leading-relaxed text-zinc-600">
+                  <span>
+                    Status:{" "}
+                    <strong className="text-zinc-900">{status}</strong>
+                  </span>
                   {metrics.capturedAt
-                    ? ` · Last updated ${new Date(
-                        metrics.capturedAt
-                      ).toLocaleString()}`
+                    ? (
+                      <span className="block break-words sm:inline">
+                        <span className="hidden sm:inline"> · </span>
+                        Last updated{" "}
+                        {new Date(metrics.capturedAt).toLocaleString()}
+                      </span>
+                    )
                     : ""}
                 </p>
               </div>
