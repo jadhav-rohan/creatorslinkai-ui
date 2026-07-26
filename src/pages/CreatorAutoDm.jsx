@@ -693,7 +693,7 @@ export default function CreatorAutoDm() {
                       </div>
                     )}
                   </div>
-                  {form.responseType === "TEXT" ? (
+                  {form.responseType === "TEXT" && (
                     <label className="block font-bold">
                       Private DM message *
                       <textarea
@@ -709,13 +709,14 @@ export default function CreatorAutoDm() {
                         className="brutal-field mt-2 w-full"
                       />
                     </label>
-                  ) : !form.requireFollower ? (
-                    <div className="border-2 border-zinc-900 bg-emerald-100 p-4 text-sm font-bold">
-                      The carousel is sent immediately as the private reply when
-                      the keyword comment is received.
-                    </div>
-                  ) : null}
-                  <label className="block font-bold">
+                  )}
+                  <label
+                    className={`block font-bold ${
+                      form.responseType === "GENERIC_TEMPLATE"
+                        ? "sm:col-span-2"
+                        : ""
+                    }`}
+                  >
                     Public comment reply (optional)
                     <textarea
                       value={form.publicReplyMessage}
