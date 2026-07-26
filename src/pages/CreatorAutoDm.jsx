@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, instagramInsightsErrorMessage } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { useWorkspace } from "../context/WorkspaceContext";
@@ -13,8 +13,14 @@ import AutoDmTemplateFields, {
 import AutoDmTemplatePreview from "../components/AutoDmTemplatePreview";
 import AutoDmMediaPicker from "../components/AutoDmMediaPicker";
 import AutoDmRuleCard from "../components/AutoDmRuleCard";
+import AutoDmPdfFields from "../components/AutoDmPdfFields";
 import { useThemedDialog } from "../context/ThemedDialogContext";
 import { DEFAULT_FOLLOW_REMINDER_MESSAGE } from "../autoDmFollowerGate";
+import {
+  DEFAULT_PDF_BUTTON_TEXT,
+  validateAutoDmPdf,
+} from "../autoDmPdf";
+import { autoDmPdfService } from "../services/autoDmPdfService";
 
 const accountName = (account) =>
   account?.username ||
@@ -35,7 +41,17 @@ const newRuleForm = () => ({
   publicReplyMessage: "",
   requireFollower: false,
   followReminderMessage: "",
+  pdfAssetId: null,
+  pdfFileName: "",
+  pdfSizeBytes: null,
+  pdfButtonText: DEFAULT_PDF_BUTTON_TEXT,
   elements: [createTemplateElement()],
+});
+const newPdfUpload = () => ({
+  file: null,
+  status: "idle",
+  progress: 0,
+  error: "",
 });
 const ruleDate = (rule) =>
   new Date(rule.updatedAt || rule.createdAt || 0).getTime();
@@ -56,6 +72,14 @@ function formFromRule(rule) {
     followReminderMessage: requireFollower
       ? rule.followReminderMessage?.trim() || DEFAULT_FOLLOW_REMINDER_MESSAGE
       : "",
+    pdfAssetId: rule.responseType === "PDF" ? rule.pdfAssetId || null : null,
+    pdfFileName: rule.responseType === "PDF" ? rule.pdfFileName || "" : "",
+    pdfSizeBytes:
+      rule.responseType === "PDF" ? rule.pdfSizeBytes ?? null : null,
+    pdfButtonText:
+      rule.responseType === "PDF"
+        ? rule.pdfButtonText || DEFAULT_PDF_BUTTON_TEXT
+        : DEFAULT_PDF_BUTTON_TEXT,
     elements,
   };
 }
@@ -88,10 +112,19 @@ export default function CreatorAutoDm() {
   const [conflictRule, setConflictRule] = useState(null);
   const [form, setForm] = useState(newRuleForm);
   const [formError, setFormError] = useState("");
+  const [pdfUpload, setPdfUpload] = useState(newPdfUpload);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [notice, setNotice] = useState("");
+  const pdfUploadRequest = useRef(0);
+
+  useEffect(
+    () => () => {
+      pdfUploadRequest.current += 1;
+    },
+    [],
+  );
 
   const loadAccounts = useCallback(
     async (signal) => {
@@ -184,26 +217,32 @@ export default function CreatorAutoDm() {
   );
 
   function closeEditor() {
+    pdfUploadRequest.current += 1;
     setShowForm(false);
     setEditingRule(null);
     setConflictRule(null);
     setFormError("");
     setForm(newRuleForm());
+    setPdfUpload(newPdfUpload());
   }
 
   function beginCreate() {
+    pdfUploadRequest.current += 1;
     setEditingRule(null);
     setConflictRule(null);
     setForm(newRuleForm());
+    setPdfUpload(newPdfUpload());
     setFormError("");
     setNotice("");
     setShowForm(true);
   }
 
   function beginEdit(rule) {
+    pdfUploadRequest.current += 1;
     setEditingRule(rule);
     setConflictRule(null);
     setForm(formFromRule(rule));
+    setPdfUpload(newPdfUpload());
     setFormError("");
     setNotice("");
     setShowForm(true);
@@ -232,9 +271,106 @@ export default function CreatorAutoDm() {
     }
   }
 
+  function changeResponseType(responseType) {
+    pdfUploadRequest.current += 1;
+    setForm((current) => ({
+      ...current,
+      responseType,
+      ...(responseType === "PDF"
+        ? {
+            pdfButtonText:
+              current.responseType === "PDF"
+                ? current.pdfButtonText
+                : DEFAULT_PDF_BUTTON_TEXT,
+          }
+        : {
+            pdfAssetId: null,
+            pdfFileName: "",
+            pdfSizeBytes: null,
+            pdfButtonText: DEFAULT_PDF_BUTTON_TEXT,
+          }),
+    }));
+    setPdfUpload(newPdfUpload());
+    setFormError("");
+  }
+
+  async function uploadPdf(file) {
+    if (saving || ["uploading", "confirming"].includes(pdfUpload.status))
+      return;
+    const requestId = ++pdfUploadRequest.current;
+    setForm((current) => ({
+      ...current,
+      pdfAssetId: null,
+      pdfFileName: file.name,
+      pdfSizeBytes: file.size,
+    }));
+    setPdfUpload({
+      file,
+      status: "uploading",
+      progress: 0,
+      error: "",
+    });
+    setFormError("");
+
+    const validationError = await validateAutoDmPdf(file);
+    if (validationError) {
+      setPdfUpload({
+        file,
+        status: "error",
+        progress: 0,
+        error: validationError,
+      });
+      return;
+    }
+
+    try {
+      const confirmed = await autoDmPdfService.uploadAndConfirm({
+        igUserId: selectedId,
+        file,
+        token,
+        onProgress: (progress) => {
+          if (requestId === pdfUploadRequest.current)
+            setPdfUpload((current) => ({ ...current, progress }));
+        },
+        onPhase: (status) => {
+          if (requestId === pdfUploadRequest.current)
+            setPdfUpload((current) => ({
+              ...current,
+              status,
+              progress: 100,
+            }));
+        },
+      });
+      if (requestId !== pdfUploadRequest.current) return;
+      setForm((current) => ({
+        ...current,
+        pdfAssetId: confirmed.id,
+        pdfFileName: confirmed.fileName || file.name,
+        pdfSizeBytes: confirmed.sizeBytes ?? file.size,
+      }));
+      setPdfUpload({
+        file,
+        status: "ready",
+        progress: 100,
+        error: "",
+      });
+    } catch (error) {
+      if (requestId !== pdfUploadRequest.current) return;
+      if (error.status === 401) logout();
+      setForm((current) => ({ ...current, pdfAssetId: null }));
+      setPdfUpload({
+        file,
+        status: "error",
+        progress: 0,
+        error: `${error.message || "The PDF could not be uploaded."}${support(error)}`,
+      });
+    }
+  }
+
   async function submit(event) {
     event.preventDefault();
-    if (!canEdit || saving) return;
+    const pdfBusy = ["uploading", "confirming"].includes(pdfUpload.status);
+    if (!canEdit || saving || pdfBusy) return;
     const mediaId = form.mediaId.trim();
     const keyword = form.keyword.trim();
     const dmMessage = form.dmMessage.trim();
@@ -252,12 +388,25 @@ export default function CreatorAutoDm() {
       );
       return;
     }
-    if (!keyword || (form.responseType === "TEXT" && !dmMessage)) {
+    if (
+      !keyword ||
+      (["TEXT", "PDF"].includes(form.responseType) && !dmMessage)
+    ) {
       setFormError(
         `Keyword${
-          form.responseType === "TEXT" ? " and private DM message" : ""
+          ["TEXT", "PDF"].includes(form.responseType)
+            ? " and message"
+            : ""
         } are required.`
       );
+      return;
+    }
+    if (form.responseType === "PDF" && !form.pdfAssetId) {
+      setFormError("Upload and confirm a PDF before saving this rule.");
+      return;
+    }
+    if (form.pdfButtonText.trim().length > 40) {
+      setFormError("PDF button text must be 40 characters or fewer.");
       return;
     }
     if (form.requireFollower && !followReminderMessage) {
@@ -279,6 +428,8 @@ export default function CreatorAutoDm() {
         return;
       }
     }
+    const pdfRule = form.responseType === "PDF";
+    const templateRule = form.responseType === "GENERIC_TEMPLATE";
     const payload = {
       mediaId,
       keyword,
@@ -288,12 +439,16 @@ export default function CreatorAutoDm() {
         ? followReminderMessage
         : null,
       publicReplyMessage,
-      ...(form.responseType === "GENERIC_TEMPLATE"
+      pdfAssetId: pdfRule ? form.pdfAssetId : null,
+      pdfButtonText: pdfRule ? form.pdfButtonText.trim() || null : null,
+      ...(templateRule
         ? {
             dmMessage: null,
             elements: serializeTemplate(form.elements),
           }
-        : { dmMessage }),
+        : pdfRule
+          ? { dmMessage, elements: [] }
+          : { dmMessage }),
     };
 
     setSaving(true);
@@ -566,15 +721,17 @@ export default function CreatorAutoDm() {
                     <select
                       value={form.responseType}
                       onChange={(event) =>
-                        setForm((current) => ({
-                          ...current,
-                          responseType: event.target.value,
-                        }))
+                        changeResponseType(event.target.value)
+                      }
+                      disabled={
+                        saving ||
+                        ["uploading", "confirming"].includes(pdfUpload.status)
                       }
                       className="brutal-field mt-2 w-full"
                     >
                       <option value="TEXT">Text message</option>
                       <option value="GENERIC_TEMPLATE">Product carousel</option>
+                      <option value="PDF">PDF</option>
                     </select>
                   </label>
                   <label className="block font-bold">
@@ -710,9 +867,21 @@ export default function CreatorAutoDm() {
                       />
                     </label>
                   )}
+                  {form.responseType === "PDF" && (
+                    <AutoDmPdfFields
+                      form={form}
+                      upload={pdfUpload}
+                      disabled={saving}
+                      onFile={uploadPdf}
+                      onRetry={() => uploadPdf(pdfUpload.file)}
+                      onChange={(key, value) =>
+                        setForm((current) => ({ ...current, [key]: value }))
+                      }
+                    />
+                  )}
                   <label
                     className={`block font-bold ${
-                      form.responseType === "GENERIC_TEMPLATE"
+                      form.responseType !== "TEXT"
                         ? "sm:col-span-2"
                         : ""
                     }`}
@@ -772,6 +941,11 @@ export default function CreatorAutoDm() {
                     type="submit"
                     disabled={
                       saving ||
+                      ["uploading", "confirming"].includes(pdfUpload.status) ||
+                      (form.responseType === "PDF" &&
+                        (!form.dmMessage.trim() ||
+                          !form.pdfAssetId ||
+                          form.pdfButtonText.trim().length > 40)) ||
                       (form.requireFollower &&
                         (!form.followReminderMessage.trim() ||
                           form.followReminderMessage.trim().length > 1000))
@@ -781,6 +955,8 @@ export default function CreatorAutoDm() {
                     {saving
                       ? form.responseType === "GENERIC_TEMPLATE"
                         ? "Fetching product details and saving…"
+                        : form.responseType === "PDF"
+                        ? "Saving PDF rule…"
                         : editingRule
                         ? "Saving changes…"
                         : "Creating rule…"

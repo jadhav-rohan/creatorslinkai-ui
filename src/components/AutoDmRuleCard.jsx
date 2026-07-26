@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import AutoDmDeliveredCount from "./AutoDmDeliveredCount";
 import AutoDmTemplatePreview from "./AutoDmTemplatePreview";
 import {
@@ -7,6 +7,10 @@ import {
   autoDmContentLabels,
 } from "./AutoDmMediaPicker";
 import { DEFAULT_FOLLOW_REMINDER_MESSAGE } from "../autoDmFollowerGate";
+import {
+  DEFAULT_PDF_BUTTON_TEXT,
+  formatPdfSize,
+} from "../autoDmPdf";
 
 function RuleThumbnail({ rule, media }) {
   const [failed, setFailed] = useState(false);
@@ -62,11 +66,15 @@ export default function AutoDmRuleCard({
                   className={`border border-zinc-900 px-2 py-1 text-[10px] font-black ${
                     rule.responseType === "GENERIC_TEMPLATE"
                       ? "bg-violet-200"
+                      : rule.responseType === "PDF"
+                        ? "bg-rose-200"
                       : "bg-sky-200"
                   }`}
                 >
                   {rule.responseType === "GENERIC_TEMPLATE"
                     ? "Generic Template"
+                    : rule.responseType === "PDF"
+                      ? "PDF"
                     : "Text"}
                 </span>
                 {rule.requireFollower === true && (
@@ -115,10 +123,31 @@ export default function AutoDmRuleCard({
           {rule.responseType !== "GENERIC_TEMPLATE" && (
             <div className="mt-4">
               <p className="text-xs font-bold text-zinc-500">
-                Private DM message
+                {rule.responseType === "PDF"
+                  ? "PDF message"
+                  : "Private DM message"}
               </p>
               <p className="mt-1 whitespace-pre-wrap border-2 border-zinc-900 bg-zinc-50 p-3 text-sm">
                 {rule.dmMessage || "No message"}
+              </p>
+            </div>
+          )}
+          {rule.responseType === "PDF" && (
+            <div className="mt-4 border-2 border-zinc-900 bg-rose-50 p-3">
+              <div className="flex items-center gap-3">
+                <FileText size={22} className="shrink-0" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black">
+                    {rule.pdfFileName || "PDF attachment"}
+                  </p>
+                  <p className="text-xs text-zinc-600">
+                    {formatPdfSize(rule.pdfSizeBytes)}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 border-t border-zinc-300 pt-3 text-xs">
+                <strong>Button text:</strong>{" "}
+                {rule.pdfButtonText || DEFAULT_PDF_BUTTON_TEXT}
               </p>
             </div>
           )}

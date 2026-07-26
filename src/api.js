@@ -174,6 +174,17 @@ export const api = {
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, { token }),
   getEligibleAutoDmMedia: (igUserId, token, limit = 50, options) =>
     request(withQuery(`/api/v1/instagram/${encodeURIComponent(igUserId)}/auto-dm-rules/eligible-media`, { limit }), { token, ...options }),
+  createAutoDmPdfUploadUrl: (igUserId, payload, token) =>
+    request(`/api/v1/instagram/${encodeURIComponent(igUserId)}/auto-dm-pdfs/upload-url`, {
+      method: "POST",
+      body: payload,
+      token,
+    }),
+  confirmAutoDmPdfUpload: (igUserId, assetId, token) =>
+    request(`/api/v1/instagram/${encodeURIComponent(igUserId)}/auto-dm-pdfs/${encodeURIComponent(assetId)}/confirm`, {
+      method: "POST",
+      token,
+    }),
   createRule: (igUserId, rule, token) =>
     request(`/api/v1/instagram/${igUserId}/auto-dm-rules`, {
       method: "POST",
