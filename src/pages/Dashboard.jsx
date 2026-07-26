@@ -5,6 +5,7 @@ import { useWorkspace } from '../context/WorkspaceContext'
 import { clearConnectionMarker, connectionService, markConnectionInProgress, readConnectionMarker } from '../services/connectionService'
 import { useWorkspaceAuthorization } from '../context/WorkspaceAuthorizationContext'
 import { useThemedDialog } from '../context/ThemedDialogContext'
+import { openInstagramAuthorization } from '../services/instagramOAuthNavigation'
 
 export default function Dashboard() {
   const { confirm } = useThemedDialog()
@@ -72,7 +73,9 @@ export default function Dashboard() {
     try {
       const { authorizationUrl } = await connectionService.connectInstagram(selectedWorkspaceId, token)
       markConnectionInProgress(selectedWorkspaceId, 'INSTAGRAM_LOGIN', accounts.map(account => account.igUserId))
-      window.location.href = authorizationUrl
+      openInstagramAuthorization(authorizationUrl, {
+        onCancel: () => setConnecting(false),
+      })
     } catch (err) {
       if (err.status === 401) logout()
       else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }

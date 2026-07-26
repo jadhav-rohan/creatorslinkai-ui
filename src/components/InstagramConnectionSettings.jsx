@@ -8,6 +8,7 @@ import {
   connectionService,
   markConnectionInProgress,
 } from "../services/connectionService";
+import { openInstagramAuthorization } from "../services/instagramOAuthNavigation";
 
 export default function InstagramConnectionSettings() {
   const { token, logout } = useAuth();
@@ -73,7 +74,9 @@ export default function InstagramConnectionSettings() {
         "INSTAGRAM_LOGIN",
         accounts.map((account) => account.igUserId),
       );
-      window.location.assign(result.authorizationUrl);
+      openInstagramAuthorization(result.authorizationUrl, {
+        onCancel: () => setLoading(false),
+      });
     } catch (requestError) {
       if (requestError.status === 401) logout();
       else setError(requestError.message || "Instagram connection unavailable.");

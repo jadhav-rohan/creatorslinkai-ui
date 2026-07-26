@@ -10,6 +10,7 @@ import {
 import { useCreatorDashboard } from "../hooks/useCreatorDashboard";
 import ReelsPanel from "../components/CreatorReelsPanel";
 import AudienceDemographicsPanel from "../components/AudienceDemographicsPanel";
+import { openInstagramAuthorization } from "../services/instagramOAuthNavigation";
 const compact = new Intl.NumberFormat(undefined, {
   notation: "compact",
   maximumFractionDigits: 1,
@@ -163,7 +164,9 @@ export default function CreatorDashboard() {
     setActionError(null);
     try {
       const x = await connectionService.connectInstagram(workspaceId, token);
-      window.location.assign(x.authorizationUrl);
+      openInstagramAuthorization(x.authorizationUrl, {
+        onCancel: () => setRefreshing(false),
+      });
     } catch (e) {
       setActionError(e.message);
       setRefreshing(false);

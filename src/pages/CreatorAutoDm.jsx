@@ -21,6 +21,7 @@ import {
   validateAutoDmPdf,
 } from "../autoDmPdf";
 import { autoDmPdfService } from "../services/autoDmPdfService";
+import { openInstagramAuthorization } from "../services/instagramOAuthNavigation";
 
 const accountName = (account) =>
   account?.username ||
@@ -263,7 +264,9 @@ export default function CreatorAutoDm() {
         workspaceId,
         token
       );
-      window.location.assign(result.authorizationUrl);
+      openInstagramAuthorization(result.authorizationUrl, {
+        onCancel: () => setConnecting(false),
+      });
     } catch (error) {
       if (error.status === 401) logout();
       else setAccountsError(error);

@@ -26,6 +26,7 @@ import {
   markConnectionInProgress,
 } from "../services/connectionService";
 import { useThemedDialog } from "../context/ThemedDialogContext";
+import { openInstagramAuthorization } from "../services/instagramOAuthNavigation";
 
 const creatorLinks = [
   ["Dashboard", "/creator/dashboard", LayoutDashboard],
@@ -125,7 +126,12 @@ export default function PortalShell({ persona }) {
         creator ? "INSTAGRAM_LOGIN" : "FACEBOOK_LOGIN",
         accounts.map((item) => item.igUserId)
       );
-      window.location.assign(result.authorizationUrl);
+      if (creator) {
+        openInstagramAuthorization(result.authorizationUrl, {
+          onCancel: () => setConnectionLoading(false),
+        });
+      }
+      else window.location.assign(result.authorizationUrl);
     } catch (error) {
       if (error.status === 401) logout();
       else setConnectionError(error.message);
