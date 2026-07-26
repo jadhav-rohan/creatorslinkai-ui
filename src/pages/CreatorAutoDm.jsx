@@ -50,10 +50,21 @@ const newRuleForm = () => ({
 });
 const newPdfUpload = () => ({
   file: null,
+  assetId: null,
   status: "idle",
   progress: 0,
   error: "",
 });
+const pdfUploadFromRule = (rule) =>
+  rule.responseType === "PDF" && rule.pdfAssetId
+    ? {
+        file: null,
+        assetId: rule.pdfAssetId,
+        status: "ready",
+        progress: 100,
+        error: "",
+      }
+    : newPdfUpload();
 const ruleDate = (rule) =>
   new Date(rule.updatedAt || rule.createdAt || 0).getTime();
 
@@ -243,7 +254,7 @@ export default function CreatorAutoDm() {
     setEditingRule(rule);
     setConflictRule(null);
     setForm(formFromRule(rule));
-    setPdfUpload(newPdfUpload());
+    setPdfUpload(pdfUploadFromRule(rule));
     setFormError("");
     setNotice("");
     setShowForm(true);
@@ -298,9 +309,11 @@ export default function CreatorAutoDm() {
   }
 
   async function uploadPdf(file) {
-    if (saving || ["uploading", "confirming"].includes(pdfUpload.status))
+    if (saving || ["uploading", "scanning"].includes(pdfUpload.status))
       return;
     const requestId = ++pdfUploadRequest.current;
+    let phase = "uploading";
+    let pendingAssetId = null;
     setForm((current) => ({
       ...current,
       pdfAssetId: null,
@@ -309,6 +322,7 @@ export default function CreatorAutoDm() {
     }));
     setPdfUpload({
       file,
+      assetId: null,
       status: "uploading",
       progress: 0,
       error: "",
@@ -319,7 +333,8 @@ export default function CreatorAutoDm() {
     if (validationError) {
       setPdfUpload({
         file,
-        status: "error",
+        assetId: null,
+        status: "failed",
         progress: 0,
         error: validationError,
       });
@@ -331,11 +346,17 @@ export default function CreatorAutoDm() {
         igUserId: selectedId,
         file,
         token,
+        onSession: (assetId) => {
+          pendingAssetId = assetId;
+          if (requestId === pdfUploadRequest.current)
+            setPdfUpload((current) => ({ ...current, assetId }));
+        },
         onProgress: (progress) => {
           if (requestId === pdfUploadRequest.current)
             setPdfUpload((current) => ({ ...current, progress }));
         },
         onPhase: (status) => {
+          phase = status;
           if (requestId === pdfUploadRequest.current)
             setPdfUpload((current) => ({
               ...current,
@@ -353,6 +374,7 @@ export default function CreatorAutoDm() {
       }));
       setPdfUpload({
         file,
+        assetId: confirmed.id,
         status: "ready",
         progress: 100,
         error: "",
@@ -361,18 +383,99 @@ export default function CreatorAutoDm() {
       if (requestId !== pdfUploadRequest.current) return;
       if (error.status === 401) logout();
       setForm((current) => ({ ...current, pdfAssetId: null }));
+      const rejected = phase === "scanning" && error.status === 422;
+      const scanUnavailable = phase === "scanning" && error.status === 503;
       setPdfUpload({
         file,
-        status: "error",
+        assetId: scanUnavailable ? pendingAssetId : null,
+        status: rejected
+          ? "rejected"
+          : scanUnavailable
+            ? "temporarily_unavailable"
+            : "failed",
         progress: 0,
-        error: `${error.message || "The PDF could not be uploaded."}${support(error)}`,
+        error: rejected
+          ? "This PDF failed the security scan. Please upload a different file."
+          : scanUnavailable
+            ? "PDF security scanning is temporarily unavailable. Please try again shortly."
+            : `The PDF could not be uploaded or confirmed. Please try again.${
+                error.requestId ? ` Support ID: ${error.requestId}` : ""
+              }`,
       });
+    }
+  }
+
+  async function retryPdf() {
+    if (
+      saving ||
+      ["uploading", "scanning"].includes(pdfUpload.status) ||
+      !pdfUpload.file
+    )
+      return;
+    if (
+      pdfUpload.status !== "temporarily_unavailable" ||
+      !pdfUpload.assetId
+    ) {
+      await uploadPdf(pdfUpload.file);
+      return;
+    }
+
+    const requestId = ++pdfUploadRequest.current;
+    setPdfUpload((current) => ({
+      ...current,
+      status: "scanning",
+      progress: 100,
+      error: "",
+    }));
+    try {
+      const confirmed = await autoDmPdfService.confirm({
+        igUserId: selectedId,
+        assetId: pdfUpload.assetId,
+        token,
+      });
+      if (requestId !== pdfUploadRequest.current) return;
+      setForm((current) => ({
+        ...current,
+        pdfAssetId: confirmed.id,
+        pdfFileName: confirmed.fileName || current.pdfFileName,
+        pdfSizeBytes: confirmed.sizeBytes ?? current.pdfSizeBytes,
+      }));
+      setPdfUpload((current) => ({
+        ...current,
+        assetId: confirmed.id,
+        status: "ready",
+        progress: 100,
+        error: "",
+      }));
+    } catch (error) {
+      if (requestId !== pdfUploadRequest.current) return;
+      if (error.status === 401) logout();
+      setForm((current) => ({ ...current, pdfAssetId: null }));
+      const rejected = error.status === 422;
+      const unavailable = error.status === 503;
+      setPdfUpload((current) => ({
+        ...current,
+        assetId: unavailable ? current.assetId : null,
+        status: rejected
+          ? "rejected"
+          : unavailable
+            ? "temporarily_unavailable"
+            : "failed",
+        progress: 0,
+        error: rejected
+          ? "This PDF failed the security scan. Please upload a different file."
+          : unavailable
+            ? "PDF security scanning is temporarily unavailable. Please try again shortly."
+            : `The PDF could not be confirmed. Please try again.${
+                error.requestId ? ` Support ID: ${error.requestId}` : ""
+              }`,
+      }));
     }
   }
 
   async function submit(event) {
     event.preventDefault();
-    const pdfBusy = ["uploading", "confirming"].includes(pdfUpload.status);
+    const pdfBusy = ["uploading", "scanning"].includes(pdfUpload.status);
     if (!canEdit || saving || pdfBusy) return;
     const mediaId = form.mediaId.trim();
     const keyword = form.keyword.trim();
@@ -730,7 +833,7 @@ export default function CreatorAutoDm() {
                       }
                       disabled={
                         saving ||
-                        ["uploading", "confirming"].includes(pdfUpload.status)
+                        ["uploading", "scanning"].includes(pdfUpload.status)
                       }
                       className="brutal-field mt-2 w-full"
                     >
@@ -878,7 +981,7 @@ export default function CreatorAutoDm() {
                       upload={pdfUpload}
                       disabled={saving}
                       onFile={uploadPdf}
-                      onRetry={() => uploadPdf(pdfUpload.file)}
+                      onRetry={retryPdf}
                       onChange={(key, value) =>
                         setForm((current) => ({ ...current, [key]: value }))
                       }
@@ -946,10 +1049,11 @@ export default function CreatorAutoDm() {
                     type="submit"
                     disabled={
                       saving ||
-                      ["uploading", "confirming"].includes(pdfUpload.status) ||
+                      ["uploading", "scanning"].includes(pdfUpload.status) ||
                       (form.responseType === "PDF" &&
                         (!form.dmMessage.trim() ||
                           !form.pdfAssetId ||
+                          pdfUpload.status !== "ready" ||
                           form.pdfButtonText.trim().length > 40)) ||
                       (form.requireFollower &&
                         (!form.followReminderMessage.trim() ||

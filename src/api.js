@@ -64,7 +64,7 @@ async function request(
       res.status,
       res.headers.get("X-Request-ID") || data?.requestId,
       res.headers.get("Retry-After"),
-      data?.code || data?.error
+      data?.code || data?.title || data?.error
     );
     if (error.code === "BRAND_PORTAL_DISABLED" && !skipBrandPortalDisabled && brandPortalDisabledHandler) {
       await brandPortalDisabledHandler(error);

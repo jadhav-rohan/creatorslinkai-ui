@@ -11,7 +11,7 @@ export default function AutoDmPdfFields({
 }) {
   const hasAsset = Boolean(form.pdfAssetId);
   const hasFile = Boolean(form.pdfFileName);
-  const busy = upload.status === "uploading" || upload.status === "confirming";
+  const busy = upload.status === "uploading" || upload.status === "scanning";
 
   return (
     <fieldset className="min-w-0 space-y-4 border-2 border-zinc-900 bg-zinc-50 p-3 sm:col-span-2 sm:space-y-5 sm:p-5">
@@ -60,8 +60,8 @@ export default function AutoDmPdfFields({
         <div aria-live="polite">
           <div className="flex items-center justify-between gap-3 text-sm font-bold">
             <span>
-              {upload.status === "confirming"
-                ? "Confirming upload…"
+              {upload.status === "scanning"
+                ? "Scanning PDF for security threats…"
                 : "Uploading PDF…"}
             </span>
             <span>{upload.progress}%</span>
@@ -81,17 +81,29 @@ export default function AutoDmPdfFields({
         </div>
       )}
 
+      {upload.status === "ready" && hasAsset && (
+        <p
+          role="status"
+          className="border-2 border-zinc-900 bg-emerald-100 p-3 text-sm font-bold"
+        >
+          PDF uploaded and scanned successfully.
+        </p>
+      )}
+
       {upload.error && (
         <div role="alert" className="border-2 border-red-700 bg-red-50 p-3 text-sm text-red-800">
           <p>{upload.error}</p>
-          {upload.file && (
+          {upload.file && upload.status !== "rejected" && (
             <button
               type="button"
               onClick={onRetry}
               disabled={disabled || busy}
               className="mt-3 inline-flex items-center gap-2 border-2 border-zinc-900 bg-white px-3 py-2 font-black text-zinc-900"
             >
-              <RefreshCw size={15} /> Retry upload
+              <RefreshCw size={15} />{" "}
+              {upload.status === "temporarily_unavailable"
+                ? "Retry security scan"
+                : "Retry upload"}
             </button>
           )}
         </div>

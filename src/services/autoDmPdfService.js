@@ -34,7 +34,30 @@ function uploadDirectly({ uploadUrl, method, headers }, file, onProgress) {
 }
 
 export const autoDmPdfService = {
-  async uploadAndConfirm({ igUserId, file, token, onProgress, onPhase }) {
+  async confirm({ igUserId, assetId, token }) {
+    const confirmed = await api.confirmAutoDmPdfUpload(
+      igUserId,
+      assetId,
+      token,
+    );
+    if (confirmed?.status && confirmed.status !== "READY") {
+      throw new Error("The PDF upload was not confirmed.");
+    }
+    return {
+      ...confirmed,
+      id: confirmed?.id || confirmed?.assetId || assetId,
+      status: "READY",
+    };
+  },
+
+  async uploadAndConfirm({
+    igUserId,
+    file,
+    token,
+    onProgress,
+    onPhase,
+    onSession,
+  }) {
     const session = await api.createAutoDmPdfUploadUrl(
       igUserId,
       {
@@ -47,20 +70,14 @@ export const autoDmPdfService = {
     if (!session?.assetId || !session?.uploadUrl) {
       throw new Error("The PDF upload session could not be created.");
     }
+    onSession?.(session.assetId);
 
     await uploadDirectly(session, file, onProgress);
-    onPhase?.("confirming");
-    const confirmed = await api.confirmAutoDmPdfUpload(
+    onPhase?.("scanning");
+    return autoDmPdfService.confirm({
       igUserId,
-      session.assetId,
+      assetId: session.assetId,
       token,
-    );
-    if (confirmed?.status !== "READY") {
-      throw new Error("The PDF upload was not confirmed. Please retry the upload.");
-    }
-    return {
-      ...confirmed,
-      id: confirmed.id || confirmed.assetId || session.assetId,
-    };
+    });
   },
 };
