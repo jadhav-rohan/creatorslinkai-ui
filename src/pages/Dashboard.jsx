@@ -6,6 +6,7 @@ import { clearConnectionMarker, connectionService, markConnectionInProgress, rea
 import { useWorkspaceAuthorization } from '../context/WorkspaceAuthorizationContext'
 import { useThemedDialog } from '../context/ThemedDialogContext'
 import { openInstagramAuthorization } from '../services/instagramOAuthNavigation'
+import { requireOAuthAuthorizationUrl } from '../utils/safeUrl'
 
 export default function Dashboard() {
   const { confirm } = useThemedDialog()
@@ -109,7 +110,7 @@ export default function Dashboard() {
       const response = await connectionService.connectFacebook(selectedWorkspaceId, token)
       if (!response?.authorizationUrl) throw new Error('The server did not return a Meta authorization URL.')
       markConnectionInProgress(selectedWorkspaceId, 'FACEBOOK_LOGIN', metaAccounts.map(account => account.igUserId))
-      window.location.assign(response.authorizationUrl)
+      window.location.assign(requireOAuthAuthorizationUrl(response.authorizationUrl))
     } catch (err) {
       if (err.status === 401) logout()
       else if (err.status === 403) { setError('You do not have access to this workspace.'); reloadWorkspaces() }

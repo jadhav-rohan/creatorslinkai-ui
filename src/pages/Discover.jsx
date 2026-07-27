@@ -6,6 +6,7 @@ import { useWorkspace } from '../context/WorkspaceContext'
 import AddToCreatorListDialog from '../components/AddToCreatorListDialog'
 import AddToCampaignDialog from '../components/AddToCampaignDialog'
 import { useWorkspaceAuthorization } from '../context/WorkspaceAuthorizationContext'
+import { safeExternalUrl, safeInstagramUrl, safeRemoteImageUrl } from '../utils/safeUrl'
 
 export default function Discover() {
   const { token, logout } = useAuth()
@@ -156,9 +157,9 @@ export default function Discover() {
             <div className="p-6 rounded-3xl bg-panel/50 backdrop-blur-xl border border-panel-border shadow-xl flex flex-col justify-between min-h-[220px]">
               <div>
                 <div className="flex items-center gap-4 mb-4">
-                  {profile.profilePictureUrl ? (
+                  {safeRemoteImageUrl(profile.profilePictureUrl) ? (
                     <img
-                      src={profile.profilePictureUrl}
+                      src={safeRemoteImageUrl(profile.profilePictureUrl)}
                       alt={profile.username}
                       className="w-14 h-14 rounded-full border border-panel-border object-cover"
                     />
@@ -169,9 +170,9 @@ export default function Discover() {
                   )}
                   <div>
                     <h2 className="font-bold text-base text-text-primary">@{profile.username}</h2>
-                    {profile.website && (
+                    {safeExternalUrl(profile.website) && (
                       <a 
-                        href={profile.website} 
+                        href={safeExternalUrl(profile.website)}
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="text-xs text-accent-primary hover:text-accent-secondary transition-colors truncate max-w-[160px] block"
@@ -277,9 +278,9 @@ export default function Discover() {
                         </div>
 
                         {/* Link to Instagram post */}
-                        {m.permalink && (
+                        {safeInstagramUrl(m.permalink) && (
                           <a 
-                            href={m.permalink} 
+                            href={safeInstagramUrl(m.permalink)}
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="p-1.5 rounded-lg bg-accent-primary/10 border border-accent-primary/20 hover:bg-accent-primary/25 text-accent-primary transition-all flex items-center justify-center"

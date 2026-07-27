@@ -15,10 +15,11 @@ import {
   normalizePublicReplies,
   repliesFromRule,
 } from "../autoDmPublicReplies";
+import { safeInstagramUrl, safeRemoteImageUrl } from "../utils/safeUrl";
 
 function RuleThumbnail({ rule, media }) {
   const [failed, setFailed] = useState(false);
-  const source = rule.mediaThumbnailUrl || media?.thumbnailUrl || media?.mediaUrl;
+  const source = safeRemoteImageUrl(rule.mediaThumbnailUrl || media?.thumbnailUrl || media?.mediaUrl);
   const contentType = rule.mediaContentType || media?.contentType;
   if (!source || failed)
     return <AutoDmMediaPlaceholder contentType={contentType} />;
@@ -47,7 +48,7 @@ export default function AutoDmRuleCard({
   const contentType = rule.mediaContentType || media?.contentType;
   const caption = rule.mediaCaption || media?.caption || "Caption unavailable";
   const publishedAt = rule.mediaPublishedAt || media?.publishedAt;
-  const permalink = rule.mediaPermalink || media?.permalink;
+  const permalink = safeInstagramUrl(rule.mediaPermalink || media?.permalink);
   const inactive = rule.active === false;
   const publicReplies = normalizePublicReplies(repliesFromRule(rule));
   return (

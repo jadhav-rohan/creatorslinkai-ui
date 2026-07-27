@@ -8,6 +8,7 @@ import {useMediaKit} from "../hooks/useMediaKit";
 import {mediaKitService} from "../services/mediaKitService";
 import {creatorDashboardService} from "../services/creatorDashboardService";
 import {useThemedDialog} from "../context/ThemedDialogContext";
+import {safeExternalUrl,safeRemoteImageUrl} from "../utils/safeUrl";
 
 const priceFields=[["reel","Reel"],["story","Story"],["post","Post"],["video","Video"],["collaboration","Collaboration"]];
 const compact=new Intl.NumberFormat(undefined,{notation:"compact",maximumFractionDigits:1});
@@ -57,7 +58,7 @@ function ProfileAvatar({primaryUrl,fallbackUrl,display}){
   const [failed,setFailed]=useState([]);
   const url=[primaryUrl,fallbackUrl].find(item=>item&&!failed.includes(item));
   return <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-sky-200 text-xl font-black">
-    {url?<img src={url} alt={`${display} profile`} onError={()=>setFailed(current=>[...current,url])} className="h-full w-full object-cover"/>:initials(display)}
+    {safeRemoteImageUrl(url)?<img src={safeRemoteImageUrl(url)} alt={`${display} profile`} onError={()=>setFailed(current=>[...current,url])} className="h-full w-full object-cover"/>:initials(display)}
   </div>;
 }
 
@@ -76,7 +77,7 @@ function Preview({server,draft,userProfile}){
         <div><p className="brutal-overline">Pricing</p><dl className="mt-3 grid grid-cols-2 gap-3">{priceFields.map(([key,label])=><div key={key}><dt className="text-sm text-zinc-500">{label}</dt><dd className="font-mono font-bold">{money(draft.pricing[key],draft.currency)}</dd></div>)}</dl></div>
         <div>
           <p className="brutal-overline">Brands worked with</p>
-          {draft.brandCollaborations.length?<ul className="mt-2 space-y-2">{draft.brandCollaborations.map((item,index)=><li key={`${item.brandName}-${index}`} className="flex flex-wrap items-center justify-between gap-2 border border-zinc-900 bg-zinc-100 px-3 py-2 text-sm"><strong>{item.brandName||"Unnamed brand"}</strong>{item.evidenceUrl&&<a href={item.evidenceUrl} target="_blank" rel="noopener noreferrer" className="font-black underline">View work</a>}</li>)}</ul>:<span className="mt-2 block text-sm text-zinc-500">No brands added yet.</span>}
+          {draft.brandCollaborations.length?<ul className="mt-2 space-y-2">{draft.brandCollaborations.map((item,index)=><li key={`${item.brandName}-${index}`} className="flex flex-wrap items-center justify-between gap-2 border border-zinc-900 bg-zinc-100 px-3 py-2 text-sm"><strong>{item.brandName||"Unnamed brand"}</strong>{safeExternalUrl(item.evidenceUrl)&&<a href={safeExternalUrl(item.evidenceUrl)} target="_blank" rel="noopener noreferrer" className="font-black underline">View work</a>}</li>)}</ul>:<span className="mt-2 block text-sm text-zinc-500">No brands added yet.</span>}
         </div>
         <div><p className="brutal-overline">Contact</p><p className="mt-2 break-all text-sm">{draft.email||"Email not provided"}</p><p className="mt-1 break-all text-sm">{draft.phone||"Phone not provided"}</p></div>
       </div>

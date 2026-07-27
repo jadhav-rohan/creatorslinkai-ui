@@ -1,3 +1,5 @@
+import { requireOAuthAuthorizationUrl } from "../utils/safeUrl";
+
 const OVERLAY_ID = "instagram-mobile-oauth-handoff";
 
 export function isMobileDevice() {
@@ -9,8 +11,9 @@ export function isMobileDevice() {
 }
 
 export function openInstagramAuthorization(authorizationUrl, { onCancel } = {}) {
+  const safeAuthorizationUrl = requireOAuthAuthorizationUrl(authorizationUrl);
   if (!isMobileDevice()) {
-    window.location.assign(authorizationUrl);
+    window.location.assign(safeAuthorizationUrl);
     return;
   }
 
@@ -39,7 +42,7 @@ export function openInstagramAuthorization(authorizationUrl, { onCancel } = {}) 
   document.body.appendChild(overlay);
 
   overlay.querySelector("[data-copy]").addEventListener("click", async () => {
-    const copied = await copyText(authorizationUrl);
+    const copied = await copyText(safeAuthorizationUrl);
     const status = overlay.querySelector("[data-copy-status]");
     status.hidden = false;
     status.textContent = copied

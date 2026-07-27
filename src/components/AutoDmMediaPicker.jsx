@@ -7,6 +7,7 @@ import {
   Images,
 } from "lucide-react";
 import { api } from "../api";
+import { safeInstagramUrl, safeRemoteImageUrl } from "../utils/safeUrl";
 
 export const autoDmContentLabels = {
   REEL: "Reel",
@@ -33,7 +34,9 @@ export function AutoDmMediaPlaceholder({ contentType }) {
 }
 
 function MediaPreview({ item, failed, onFail }) {
-  const source = item.thumbnailUrl || item.mediaThumbnailUrl || item.mediaUrl;
+  const source = safeRemoteImageUrl(
+    item.thumbnailUrl || item.mediaThumbnailUrl || item.mediaUrl,
+  );
   if (!source || failed)
     return <AutoDmMediaPlaceholder contentType={item.contentType} />;
   if (!item.thumbnailUrl && !item.mediaThumbnailUrl && item.mediaType === "VIDEO")
@@ -306,9 +309,9 @@ export default function AutoDmMediaPicker({
                     Edit rule
                   </button>
                 )}
-                {item.permalink && (
+                {safeInstagramUrl(item.permalink) && (
                   <a
-                    href={item.permalink}
+                    href={safeInstagramUrl(item.permalink)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(event) => event.stopPropagation()}

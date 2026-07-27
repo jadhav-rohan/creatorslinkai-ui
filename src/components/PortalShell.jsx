@@ -27,6 +27,7 @@ import {
 } from "../services/connectionService";
 import { useThemedDialog } from "../context/ThemedDialogContext";
 import { openInstagramAuthorization } from "../services/instagramOAuthNavigation";
+import { requireOAuthAuthorizationUrl } from "../utils/safeUrl";
 
 const creatorLinks = [
   ["Dashboard", "/creator/dashboard", LayoutDashboard],
@@ -131,7 +132,7 @@ export default function PortalShell({ persona }) {
           onCancel: () => setConnectionLoading(false),
         });
       }
-      else window.location.assign(result.authorizationUrl);
+      else window.location.assign(requireOAuthAuthorizationUrl(result.authorizationUrl));
     } catch (error) {
       if (error.status === 401) logout();
       else setConnectionError(error.message);

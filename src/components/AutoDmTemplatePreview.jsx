@@ -9,11 +9,13 @@ import {
   deriveProductLink,
   productPlatform,
 } from "./AutoDmTemplateFields";
+import { safeExternalUrl, safeRemoteImageUrl } from "../utils/safeUrl";
 
 function ProductImage({ element }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [element.imageUrl]);
-  if (!element.imageUrl || failed)
+  const imageUrl = safeRemoteImageUrl(element.imageUrl);
+  if (!imageUrl || failed)
     return (
       <div className="flex h-36 w-full flex-col items-center justify-center border-b-2 border-zinc-900 bg-zinc-200 text-zinc-500">
         <PackageOpen size={32} />
@@ -22,7 +24,7 @@ function ProductImage({ element }) {
     );
   return (
     <img
-      src={element.imageUrl}
+      src={imageUrl}
       alt={`${element.title || "Product"} preview`}
       loading="lazy"
       onError={() => setFailed(true)}
@@ -68,8 +70,9 @@ export default function AutoDmTemplatePreview({
                 null;
               const buttonTitle =
                 generatedButton?.title || productPlatform(link).button;
-              const buttonUrl =
-                generatedButton?.url || element.defaultActionUrl || link;
+              const buttonUrl = safeExternalUrl(
+                generatedButton?.url || element.defaultActionUrl || link
+              );
               return (
                 <article
                   key={element.id || element.clientKey || index}

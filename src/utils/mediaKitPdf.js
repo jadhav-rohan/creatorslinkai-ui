@@ -5,18 +5,49 @@ const MUTED=[82,82,91];
 const PAPER=[250,250,250];
 const WHITE=[255,255,255];
 const PAGE={width:210,height:297,margin:14};
+const MAX_PROFILE_IMAGE_BYTES=5*1024*1024;
+const MAX_PROFILE_IMAGE_DIMENSION=4096;
+const MAX_PROFILE_IMAGE_PIXELS=16_000_000;
+const PROFILE_IMAGE_TYPES=new Set(["image/jpeg","image/png"]);
 
 const valueOrDash=value=>value==null||value===""?"-":String(value);
 const compact=value=>value==null?"-":new Intl.NumberFormat(undefined,{notation:"compact",maximumFractionDigits:1}).format(value);
 const price=(value,currency)=>value==null?"-":`${currency||""} ${Number(value).toLocaleString(undefined,{maximumFractionDigits:2})}`.trim();
 const safeName=value=>(value||"creator").replace(/^@/,"").replace(/[^a-z0-9-_]+/gi,"-").replace(/^-+|-+$/g,"").toLowerCase()||"creator";
 
+function hasSupportedImageSignature(bytes,type){
+  if(type==="image/jpeg"){
+    return bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff;
+  }
+  return bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47
+    &&bytes[4]===0x0d&&bytes[5]===0x0a&&bytes[6]===0x1a&&bytes[7]===0x0a;
+}
+
+async function hasSafeImageDimensions(blob){
+  if(typeof createImageBitmap!=="function")return true;
+  const bitmap=await createImageBitmap(blob);
+  const {width,height}=bitmap;
+  bitmap.close();
+  return width>0&&height>0
+    &&width<=MAX_PROFILE_IMAGE_DIMENSION
+    &&height<=MAX_PROFILE_IMAGE_DIMENSION
+    &&width*height<=MAX_PROFILE_IMAGE_PIXELS;
+}
+
 async function imageData(url){
   if(!url)return null;
   try{
+    const parsedUrl=new URL(url,window.location.origin);
+    if(parsedUrl.protocol!=="https:"&&parsedUrl.origin!==window.location.origin)return null;
     const response=await fetch(url,{mode:"cors"});
     if(!response.ok)return null;
+    const declaredSize=Number(response.headers.get("content-length"));
+    if(Number.isFinite(declaredSize)&&declaredSize>MAX_PROFILE_IMAGE_BYTES)return null;
     const blob=await response.blob();
+    const type=blob.type.toLowerCase().split(";")[0];
+    if(!PROFILE_IMAGE_TYPES.has(type)||blob.size===0||blob.size>MAX_PROFILE_IMAGE_BYTES)return null;
+    const signature=new Uint8Array(await blob.slice(0,8).arrayBuffer());
+    if(!hasSupportedImageSignature(signature,type)||!await hasSafeImageDimensions(blob))return null;
     return await new Promise((resolve,reject)=>{
       const reader=new FileReader();
       reader.onload=()=>resolve(reader.result);
