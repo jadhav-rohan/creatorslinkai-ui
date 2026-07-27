@@ -73,6 +73,20 @@ const pdfUploadFromRule = (rule) =>
     : newPdfUpload();
 const ruleDate = (rule) =>
   new Date(rule.updatedAt || rule.createdAt || 0).getTime();
+const responseTypeLabel = {
+  TEXT: "Text message",
+  GENERIC_TEMPLATE: "Product carousel",
+  PDF: "PDF",
+};
+const pdfStatusLabel = {
+  idle: "Not uploaded",
+  uploading: "Uploading",
+  scanning: "Security scan",
+  ready: "Ready",
+  rejected: "Rejected",
+  temporarily_unavailable: "Scan unavailable",
+  failed: "Upload failed",
+};
 
 function formFromRule(rule) {
   const requireFollower = rule.requireFollower === true;
@@ -234,6 +248,22 @@ export default function CreatorAutoDm() {
       }),
     [rules]
   );
+  const selectedMediaSummary =
+    mediaById.get(form.mediaId) ||
+    (editingRule?.mediaId === form.mediaId
+      ? {
+          caption: editingRule.mediaCaption,
+          contentType: editingRule.mediaContentType,
+        }
+      : null);
+  const mediaFormError =
+    formError &&
+    (Boolean(conflictRule) ||
+      /select a reel|reel or post|instagram media|post is no longer/i.test(
+        formError,
+      ))
+      ? formError
+      : "";
 
   function closeEditor() {
     pdfUploadRequest.current += 1;
@@ -832,6 +862,60 @@ export default function CreatorAutoDm() {
                   )}
                 </div>
 
+                <section
+                  aria-label="Auto-DM configuration summary"
+                  className="mt-4 border-2 border-zinc-900 bg-yellow-50 p-3 sm:sticky sm:top-[76px] sm:z-20 sm:mt-5 sm:p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="brutal-overline">Configuration summary</p>
+                    <span className="border border-zinc-900 bg-white px-2 py-1 text-[10px] font-black uppercase">
+                      {editingRule ? "Editing" : "Draft"}
+                    </span>
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
+                    <div className="min-w-0">
+                      <dt className="text-[10px] font-black uppercase tracking-wide text-zinc-500">
+                        Media
+                      </dt>
+                      <dd className="mt-0.5 truncate font-bold">
+                        {form.mediaId
+                          ? selectedMediaSummary?.caption?.trim() ||
+                            selectedMediaSummary?.contentType ||
+                            "Selected media"
+                          : "Not selected"}
+                      </dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-[10px] font-black uppercase tracking-wide text-zinc-500">
+                        Keyword
+                      </dt>
+                      <dd className="mt-0.5 truncate font-bold">
+                        {form.keyword.trim() || "Not set"}
+                      </dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-[10px] font-black uppercase tracking-wide text-zinc-500">
+                        Response
+                      </dt>
+                      <dd className="mt-0.5 font-bold">
+                        {responseTypeLabel[form.responseType] ||
+                          form.responseType}
+                        {form.responseType === "PDF"
+                          ? ` · ${pdfStatusLabel[pdfUpload.status] || "Pending"}`
+                          : ""}
+                      </dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-[10px] font-black uppercase tracking-wide text-zinc-500">
+                        Follow gate
+                      </dt>
+                      <dd className="mt-0.5 font-bold">
+                        {form.requireFollower ? "Required" : "Off"}
+                      </dd>
+                    </div>
+                  </dl>
+                </section>
+
                 <div className="mt-5 grid min-w-0 gap-4 sm:mt-6 sm:grid-cols-2 sm:gap-5">
                   <AutoDmMediaPicker
                     igUserId={selectedId}
@@ -847,11 +931,32 @@ export default function CreatorAutoDm() {
                     onItemsLoaded={setEligibleMedia}
                     support={support}
                   />
+                  {mediaFormError && (
+                    <div
+                      role="alert"
+                      className="border-2 border-red-700 bg-red-50 p-3 text-red-800 sm:col-span-2"
+                    >
+                      <p>{mediaFormError}</p>
+                      {conflictRule && (
+                        <button
+                          type="button"
+                          onClick={() => beginEdit(conflictRule)}
+                          className="mt-3 border-2 border-zinc-900 bg-white px-4 py-2 font-black text-zinc-900"
+                        >
+                          Edit existing rule
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="border-t-2 border-zinc-900 pt-5 sm:col-span-2">
-                    <p className="brutal-overline">Automation settings</p>
+                    <p className="brutal-overline">Step 2</p>
                     <h3 className="mt-1 text-xl font-black">
-                      Trigger and response
+                      Configure the trigger
                     </h3>
+                    <p className="mt-1 text-sm text-zinc-600">
+                      Choose how the private response is delivered and enter the
+                      comment keyword that activates it.
+                    </p>
                   </div>
                   <label className="block font-bold">
                     Response type
@@ -885,6 +990,16 @@ export default function CreatorAutoDm() {
                       className="brutal-field mt-2 w-full"
                     />
                   </label>
+                  <div className="border-t-2 border-zinc-900 pt-5 sm:col-span-2">
+                    <p className="brutal-overline">Step 3</p>
+                    <h3 className="mt-1 text-xl font-black">
+                      Configure the response
+                    </h3>
+                    <p className="mt-1 text-sm text-zinc-600">
+                      Only settings relevant to the selected response type are
+                      shown below.
+                    </p>
+                  </div>
                   <div className="sm:col-span-2">
                     <button
                       type="button"
@@ -988,7 +1103,7 @@ export default function CreatorAutoDm() {
                     )}
                   </div>
                   {form.responseType === "TEXT" && (
-                    <label className="block font-bold">
+                    <label className="block font-bold sm:col-span-2">
                       Private DM message *
                       <textarea
                         value={form.dmMessage}
@@ -1016,6 +1131,27 @@ export default function CreatorAutoDm() {
                       }
                     />
                   )}
+                  {form.responseType === "GENERIC_TEMPLATE" && (
+                    <div className="min-w-0 sm:col-span-2">
+                      <AutoDmTemplateFields
+                        elements={form.elements}
+                        onChange={(elements) =>
+                          setForm((current) => ({ ...current, elements }))
+                        }
+                      />
+                      <AutoDmTemplatePreview elements={form.elements} />
+                    </div>
+                  )}
+                  <div className="border-t-2 border-zinc-900 pt-5 sm:col-span-2">
+                    <p className="brutal-overline">Step 4 · Optional</p>
+                    <h3 className="mt-1 text-xl font-black">
+                      Public comment replies
+                    </h3>
+                    <p className="mt-1 text-sm text-zinc-600">
+                      Add public variations only when you also want to reply
+                      beneath the matching Instagram comment.
+                    </p>
+                  </div>
                   <AutoDmPublicReplies
                     values={form.publicReplyMessages}
                     error={publicRepliesError}
@@ -1030,35 +1166,21 @@ export default function CreatorAutoDm() {
                   />
                 </div>
 
-                {form.responseType === "GENERIC_TEMPLATE" && (
-                  <>
-                    <AutoDmTemplateFields
-                      elements={form.elements}
-                      onChange={(elements) =>
-                        setForm((current) => ({ ...current, elements }))
-                      }
-                    />
-                    <AutoDmTemplatePreview elements={form.elements} />
-                  </>
-                )}
-                {formError && (
+                {formError && !mediaFormError && (
                   <div
                     role="alert"
                     className="mt-5 border-2 border-red-700 bg-red-50 p-3 text-red-800"
                   >
                     <p>{formError}</p>
-                    {conflictRule && (
-                      <button
-                        type="button"
-                        onClick={() => beginEdit(conflictRule)}
-                        className="mt-3 border-2 border-zinc-900 bg-white px-4 py-2 font-black text-zinc-900"
-                      >
-                        Edit existing rule
-                      </button>
-                    )}
                   </div>
                 )}
-                <div className="sticky bottom-0 z-20 -mx-3 mt-6 flex flex-col-reverse gap-2 border-t-2 border-zinc-900 bg-white px-3 pb-3 pt-3 sm:static sm:mx-0 sm:flex-row sm:justify-end sm:gap-3 sm:p-0 sm:pt-5">
+                <div className="sticky bottom-0 z-30 -mx-3 mt-6 border-t-2 border-zinc-900 bg-white px-3 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-3px_0_rgba(24,24,27,.08)] sm:static sm:mx-0 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-0 sm:pt-5 sm:shadow-none">
+                  <p className="mb-2 text-center text-xs font-bold text-zinc-600 sm:mb-0 sm:text-left">
+                    {form.mediaId
+                      ? `${responseTypeLabel[form.responseType]} response ready to review`
+                      : "Select Instagram media to continue"}
+                  </p>
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
                   <button
                     type="button"
                     onClick={closeEditor}
@@ -1094,6 +1216,7 @@ export default function CreatorAutoDm() {
                       ? "Save changes"
                       : "Create Rule"}
                   </button>
+                  </div>
                 </div>
               </form>
             )}
