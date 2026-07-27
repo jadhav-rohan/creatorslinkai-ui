@@ -18,7 +18,23 @@
   --radius-3xl: 0rem;
 }
 
-:root { --shadow-brutal: 4px 4px 0 #18181b; }
+:root {
+  --nb-border: 2px;
+  --nb-shadow-offset: 4px;
+  --shadow-brutal: var(--nb-shadow-offset) var(--nb-shadow-offset) 0 #18181b;
+  --shadow-brutal-secondary: 3px 3px 0 #18181b;
+  --nb-page-padding: 2rem;
+  --nb-card-padding: 1.5rem;
+  --nb-section-gap: 1.75rem;
+  --nb-grid-gap: 1rem;
+  --nb-form-gap: 1.25rem;
+  --nb-control-height: 48px;
+  --nb-display-size: 2.25rem;
+  --nb-section-title-size: 1.5rem;
+  --nb-card-title-size: 1.125rem;
+  --nb-metric-size: 1.875rem;
+  --nb-icon-size: 17px;
+}
 * { box-sizing: border-box; }
 body { margin:0; background:#fafafa; color:#09090b; font-family:var(--font-sans); -webkit-font-smoothing:antialiased; }
 h1,h2,h3,h4 { font-family:var(--font-sans); }
@@ -35,7 +51,7 @@ input:-webkit-autofill { -webkit-text-fill-color:#09090b; -webkit-box-shadow:0 0
 .rounded-xl,.rounded-2xl,.rounded-3xl { border-radius:0!important; }
 
 .brutal-page { background:#fafafa; color:#09090b; }
-.brutal-card { background:#fff; border:2px solid #18181b; border-radius:0; box-shadow:var(--shadow-brutal); }
+.brutal-card { background:#fff; border:var(--nb-border) solid #18181b; border-radius:0; box-shadow:var(--shadow-brutal); }
 .brutal-card:hover { transform:translate(-1px,-1px); box-shadow:6px 6px 0 #18181b; }
 .brutal-overline { font-size:12px; line-height:16px; font-weight:700; letter-spacing:2.4px; text-transform:uppercase; }
 .brutal-button { min-height:52px; align-items:center; justify-content:center; padding:12px 24px; background:#fde047; color:#18181b; border:2px solid #18181b; border-radius:0; box-shadow:var(--shadow-brutal); font-weight:800; }
@@ -43,13 +59,110 @@ input:-webkit-autofill { -webkit-text-fill-color:#09090b; -webkit-box-shadow:0 0
 .brutal-button:disabled { cursor:not-allowed; opacity:.55; }
 .brutal-field { min-height:44px; padding:10px 14px; border:2px solid #18181b!important; background:#fff; box-shadow:0 1px 2px rgb(0 0 0/.05); }
 
+/* Shared Neo-Brutalist density primitives. These keep visual hierarchy
+ * consistent without changing the structure of individual screens. */
+.nb-page-shell { padding:var(--nb-page-padding); }
+.nb-card-pad { padding:var(--nb-card-padding); }
+.nb-section-gap { margin-top:var(--nb-section-gap); }
+.nb-compact-grid { gap:var(--nb-grid-gap); }
+.nb-form-stack { row-gap:var(--nb-form-gap); }
+.nb-display { font-size:var(--nb-display-size); line-height:1.08; }
+.nb-section-title { font-size:var(--nb-section-title-size); line-height:1.15; }
+.nb-card-title { font-size:var(--nb-card-title-size); line-height:1.25; }
+.nb-metric-value { font-size:var(--nb-metric-size); line-height:1; }
+.nb-secondary-card { box-shadow:var(--shadow-brutal-secondary); }
+.nb-secondary-action {
+  min-height:var(--nb-control-height);
+  padding:10px 18px;
+}
+.nb-icon { width:var(--nb-icon-size); height:var(--nb-icon-size); }
+
+@media (max-width:639px) {
+  :root {
+    --nb-shadow-offset: 3px;
+    --shadow-brutal-secondary: 2px 2px 0 #18181b;
+    --nb-page-padding: .875rem;
+    --nb-card-padding: 1rem;
+    --nb-section-gap: 1.375rem;
+    --nb-grid-gap: .75rem;
+    --nb-form-gap: 1rem;
+    --nb-control-height: 48px;
+    --nb-display-size: 1.8rem;
+    --nb-section-title-size: 1.25rem;
+    --nb-card-title-size: 1.05rem;
+    --nb-metric-size: 1.625rem;
+    --nb-icon-size: 15px;
+  }
+
+  .brutal-card:hover {
+    transform:none;
+    box-shadow:var(--shadow-brutal);
+  }
+  .brutal-button {
+    min-height:48px;
+    padding:10px 16px;
+  }
+  .brutal-field {
+    min-height:42px;
+    padding:8px 11px;
+  }
+  textarea.brutal-field { padding:10px 11px; }
+  .brutal-overline {
+    font-size:10px;
+    line-height:14px;
+    letter-spacing:2px;
+  }
+  .nb-form-stack > * + * { margin-top:var(--nb-form-gap); }
+
+  /* Compatibility layer for established screens that already use the shared
+   * brutal-page/card primitives. This deliberately changes density only. */
+  .brutal-page.p-4,
+  .brutal-page.p-5,
+  .brutal-page.p-6,
+  .brutal-page.p-8 {
+    padding:var(--nb-page-padding);
+  }
+  .brutal-page .brutal-card.p-5,
+  .brutal-page .brutal-card.p-6,
+  .brutal-page .brutal-card.p-7,
+  .brutal-page .brutal-card.p-8 {
+    padding:var(--nb-card-padding);
+  }
+  .brutal-page h1.text-3xl,
+  .brutal-page h1.text-4xl,
+  .brutal-page h1.text-5xl {
+    font-size:var(--nb-display-size);
+    line-height:1.08;
+  }
+  .brutal-page h2.text-2xl,
+  .brutal-page h2.text-3xl {
+    font-size:var(--nb-section-title-size);
+    line-height:1.15;
+  }
+  .brutal-page h3.text-xl,
+  .brutal-page h3.text-2xl {
+    font-size:var(--nb-card-title-size);
+    line-height:1.25;
+  }
+  .brutal-page label > .brutal-field.mt-2 {
+    margin-top:.375rem;
+  }
+  .brutal-page form.space-y-6 {
+    --tw-space-y-reverse:0;
+  }
+  .brutal-page form.space-y-6 > :not(:last-child) {
+    margin-block-start:0;
+    margin-block-end:var(--nb-form-gap);
+  }
+}
+
 /*
- * Use a denser desktop scale at normal browser zoom. Mobile and tablet sizing
- * stays untouched so controls retain their existing tap targets.
+ * Use a denser desktop scale at normal browser zoom while retaining accessible
+ * control sizes and the same Neo-Brutalist hierarchy.
  */
 @media (min-width:1024px) {
   :root {
-    --shadow-brutal:3px 3px 0 #18181b;
+    --nb-shadow-offset:3px;
     font-size:14px;
   }
 

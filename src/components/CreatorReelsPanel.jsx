@@ -25,35 +25,35 @@ export default function CreatorReelsPanel({reels,onRefresh,refreshing}){
   const [expandedId,setExpandedId]=useState(null);
   const expandedReel=reels.find(reel=>reel.mediaId===expandedId);
   const visibleReels=expandedReel?[expandedReel]:reels;
-  return <section aria-labelledby="reels-heading" className="mt-7">
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-      <div><p className="brutal-overline">Stored Reel details</p><h2 id="reels-heading" className="mt-2 text-2xl font-black">Recent Reels Performance</h2></div>
+  return <section aria-labelledby="reels-heading" className="nb-section-gap">
+    <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+      <div><p className="brutal-overline">Stored Reel details</p><h2 id="reels-heading" className="nb-section-title mt-1.5 font-black">Recent Reels Performance</h2></div>
       {!reels.length&&<button onClick={onRefresh} disabled={refreshing} className="brutal-button">{refreshing?"Refreshing…":"Refresh insights"}</button>}
     </div>
-    {!reels.length?<div className="brutal-card p-6"><p>No stored Reel details are available yet.</p></div>:<div className={expandedReel?"":"flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4"}>
+    {!reels.length?<div className="brutal-card nb-card-pad"><p>No stored Reel details are available yet.</p></div>:<div className={expandedReel?"":"flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3"}>
       {visibleReels.map((reel)=>{
         const index=reels.findIndex(item=>item.mediaId===reel.mediaId);
         const expanded=reel.mediaId===expandedId;
         const engagement=reel.viewCount>0?reel.totalInteractions/reel.viewCount*100:null;
-        return <article key={reel.mediaId} className={`brutal-card ${expanded?"w-full p-4 sm:p-6":"w-[min(88vw,390px)] shrink-0 snap-start p-4"}`}>
-          <div className={expanded?"grid gap-5 sm:grid-cols-[auto_minmax(0,1fr)]":""}>
+        return <article key={reel.mediaId} className={`brutal-card nb-secondary-card ${expanded?"w-full p-3 sm:p-5":"w-[min(84vw,370px)] shrink-0 snap-start p-3 sm:p-4"}`}>
+          <div className={expanded?"grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)]":""}>
             <ReelThumbnail reel={reel} index={index} expanded={expanded}/>
-            <div className={expanded?"min-w-0":"mt-4"}>
+            <div className={expanded?"min-w-0":"mt-3"}>
               <button type="button" onClick={()=>setExpandedId(expanded?null:reel.mediaId)} aria-expanded={expanded} className="block w-full text-left">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 font-black">{reel.caption||`Reel #${index+1}`}</h3>
+                    <h3 className="nb-card-title line-clamp-2 font-black">{reel.caption||`Reel #${index+1}`}</h3>
                     <p className="mt-1 break-all font-mono text-xs text-zinc-500">{reel.mediaId}</p>
                     <p className="mt-1 text-xs text-zinc-500">{reel.timestamp?new Date(reel.timestamp).toLocaleString():"Date unavailable"}</p>
                   </div>
                   <span aria-hidden className={`text-xl font-black transition-transform ${expanded?"rotate-45":""}`}>＋</span>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 border-t-2 border-zinc-900 pt-4">
+                <div className="mt-3 grid grid-cols-2 gap-3 border-t-2 border-zinc-900 pt-3">
                   <span><small className="block uppercase text-zinc-500">Views</small><strong className="font-mono">{format(reel.viewCount)}</strong></span>
                   <span><small className="block uppercase text-zinc-500">Reel engagement</small><strong className="font-mono">{pct(engagement)}</strong></span>
                 </div>
               </button>
-              {expanded&&<dl className="mt-5 grid grid-cols-2 gap-x-5 gap-y-4 border-t-2 border-zinc-900 pt-5 sm:grid-cols-3 lg:grid-cols-4">
+              {expanded&&<dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t-2 border-zinc-900 pt-4 sm:grid-cols-3 lg:grid-cols-4">
                 {[["Views",reel.viewCount],["Likes",reel.likeCount],["Comments",reel.commentCount],["Saves",reel.savedCount],["Shares",reel.shareCount],["Reach",reel.reach],["Total interactions",reel.totalInteractions],["Follows",reel.follows],["Profile visits",reel.profileVisits],["Average watch time",durationFromMilliseconds(reel.averageWatchTime)],["Total watch time",durationFromMilliseconds(reel.totalWatchTime)]].map(([label,value])=><div key={label}><dt className="text-xs uppercase tracking-wider text-zinc-500">{label}</dt><dd className="mt-1 font-mono font-bold">{typeof value==="number"?full.format(value):value}</dd></div>)}
               </dl>}
             </div>

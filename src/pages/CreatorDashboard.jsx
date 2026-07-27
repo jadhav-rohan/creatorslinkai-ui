@@ -25,9 +25,9 @@ const percent = (value) =>
       })}%`;
 function MetricCard({ label, value }) {
   return (
-    <article aria-label={`${label}: ${value}`} className="brutal-card p-5">
+    <article aria-label={`${label}: ${value}`} className="brutal-card nb-card-pad nb-secondary-card">
       <p className="brutal-overline text-zinc-500">{label}</p>
-      <p className="mt-4 font-mono text-3xl font-bold">{value}</p>
+      <p className="nb-metric-value mt-3 font-mono font-bold">{value}</p>
     </article>
   );
 }
@@ -52,7 +52,7 @@ function CreatorAvatar({ primaryUrl, fallbackUrl, username }) {
   const [failedUrls, setFailedUrls] = useState([]);
   const pictureUrl = [primaryUrl, fallbackUrl].find(url => url && !failedUrls.includes(url));
   return (
-    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-yellow-300 text-xl font-black">
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-yellow-300 text-lg font-black sm:h-16 sm:w-16 sm:text-xl">
       {pictureUrl ? (
         <img
           src={pictureUrl}
@@ -192,7 +192,7 @@ export default function CreatorDashboard() {
   }
   if (loading && !data)
     return (
-      <main className="brutal-page min-h-[calc(100vh-82px)] p-6 md:p-8">
+      <main className="brutal-page nb-page-shell min-h-[calc(100vh-74px)]">
         <div className="mx-auto max-w-6xl">
           <Skeleton />
         </div>
@@ -200,11 +200,11 @@ export default function CreatorDashboard() {
     );
   if (error && !data)
     return (
-      <main className="brutal-page min-h-[calc(100vh-82px)] p-6 md:p-8">
+      <main className="brutal-page nb-page-shell min-h-[calc(100vh-74px)]">
         <div className="mx-auto max-w-3xl">
-          <div className="brutal-card p-8">
+          <div className="brutal-card nb-card-pad">
             <p className="brutal-overline">Dashboard unavailable</p>
-            <h1 className="mt-3 text-4xl font-black">
+            <h1 className="nb-display mt-3 font-black">
               We couldn’t load your creator dashboard.
             </h1>
             <p className="mt-3 text-zinc-600">
@@ -230,20 +230,20 @@ export default function CreatorDashboard() {
     );
   if (!data) return null;
   return (
-    <main className="brutal-page min-h-[calc(100vh-82px)] p-6 md:p-8">
+    <main className="brutal-page nb-page-shell min-h-[calc(100vh-74px)]">
       <div className="mx-auto max-w-6xl">
-        <header className="brutal-card p-6 md:p-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <header className="brutal-card nb-card-pad workspace-card">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 w-full items-start gap-3 sm:w-auto sm:items-center sm:gap-4">
               <CreatorAvatar primaryUrl={profile?.profilePictureUrl} fallbackUrl={connection.profilePictureUrl} username={connection.username}/>
               <div className="min-w-0 flex-1">
                 <p className="brutal-overline">Creator workspace</p>
-                <h1 className="mt-1 max-w-full break-all text-2xl font-black leading-tight sm:text-3xl">
+                <h1 className="nb-display mt-1 max-w-full break-all font-black">
                   {connection.connected
                     ? `@${connection.username}`
                     : "Your creator dashboard"}
                 </h1>
-                <p className="mt-2 min-w-0 text-sm leading-relaxed text-zinc-600">
+                <p className="mt-1.5 min-w-0 text-sm leading-snug text-zinc-600">
                   <span>
                     Status:{" "}
                     <strong className="text-zinc-900">{status}</strong>
@@ -290,7 +290,7 @@ export default function CreatorDashboard() {
                   <button
                     onClick={refreshInsights}
                     disabled={refreshing}
-                    className="border-2 border-zinc-900 bg-white px-5 py-3 font-bold shadow-[4px_4px_0_#18181b]"
+                    className="nb-secondary-action border-2 border-zinc-900 bg-white font-bold shadow-[3px_3px_0_#18181b]"
                   >
                     {refreshing
                       ? "Refreshing live insights…"
@@ -323,27 +323,27 @@ export default function CreatorDashboard() {
         <div
           role="tablist"
           aria-label="Creator dashboard sections"
-          className="mt-7 flex gap-2 border-b-2 border-zinc-900 pb-3"
+          className="nb-section-gap flex gap-2 overflow-x-auto border-b-2 border-zinc-900 pb-3"
         >
           <button
             role="tab"
             aria-selected="true"
-            className="border-2 border-zinc-900 bg-yellow-300 px-5 py-3 font-black"
+            className="nb-secondary-action shrink-0 border-2 border-zinc-900 bg-yellow-300 font-black"
           >
             Metrics Overview
           </button>
           <Link
             to="/creator/auto-dm"
-            className="inline-flex items-center border-2 border-zinc-900 bg-white px-5 py-3 font-black"
+            className="nb-secondary-action inline-flex shrink-0 items-center border-2 border-zinc-900 bg-white font-black"
           >
             Auto-DM Automations
           </Link>
         </div>
         <div role="tabpanel">
           {!connection.connected ? (
-            <section className="brutal-card mt-7 bg-yellow-300 p-8">
+            <section className="brutal-card nb-card-pad nb-section-gap bg-yellow-300">
               <p className="brutal-overline">Get started</p>
-              <h2 className="mt-3 text-3xl font-black">
+              <h2 className="nb-section-title mt-2 font-black">
                 Connect your Instagram
               </h2>
               <p className="mt-3 max-w-xl">
@@ -361,8 +361,8 @@ export default function CreatorDashboard() {
           ) : (
             <>
               {connection.needsReconnect && (
-                <section className="mt-7 border-2 border-zinc-900 bg-rose-200 p-6 shadow-[4px_4px_0_#18181b]">
-                  <h2 className="text-2xl font-black">
+                <section className="nb-card-pad nb-section-gap border-2 border-zinc-900 bg-rose-200 shadow-[3px_3px_0_#18181b]">
+                  <h2 className="nb-section-title font-black">
                     Instagram authorization needs attention
                   </h2>
                   <p className="mt-2">
@@ -372,8 +372,8 @@ export default function CreatorDashboard() {
                 </section>
               )}
               {!metrics.available ? (
-                <section className="brutal-card mt-7 p-8">
-                  <h2 className="text-2xl font-black">
+                <section className="brutal-card nb-card-pad nb-section-gap">
+                  <h2 className="nb-section-title font-black">
                     Instagram is connected, but no insight snapshot is available
                     yet.
                   </h2>
@@ -393,7 +393,7 @@ export default function CreatorDashboard() {
                 <>
                   <section
                     aria-label="Primary Instagram metrics"
-                    className="mt-7 grid grid-cols-2 gap-4 lg:grid-cols-4"
+                    className="nb-compact-grid nb-section-gap grid grid-cols-2 lg:grid-cols-4"
                   >
                     <MetricCard
                       label="Followers"
@@ -412,11 +412,11 @@ export default function CreatorDashboard() {
                       value={metric(metrics.averageLikes)}
                     />
                   </section>
-                  <section className="brutal-card mt-7 p-6">
+                  <section className="brutal-card nb-card-pad nb-secondary-card nb-section-gap">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                       <div>
                         <p className="brutal-overline">Stored insights</p>
-                        <h2 className="mt-2 text-2xl font-black">
+                        <h2 className="nb-section-title mt-2 font-black">
                           Latest Instagram snapshot
                         </h2>
                       </div>
@@ -424,7 +424,7 @@ export default function CreatorDashboard() {
                         Metrics from the latest stored Instagram snapshot.
                       </p>
                     </div>
-                    <dl className="mt-6 grid grid-cols-2 gap-5 md:grid-cols-5">
+                    <dl className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-5">
                       {[
                         ["Media count", integer.format(metrics.mediaCount)],
                         ["Account reach", metric(metrics.accountReach)],
@@ -450,7 +450,7 @@ export default function CreatorDashboard() {
                     <>
                       <section
                         aria-label="Complete stored Instagram metrics"
-                        className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+                        className="nb-compact-grid nb-section-gap grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
                       >
                         {[
                           ["Followers", data.insights.followersCount],

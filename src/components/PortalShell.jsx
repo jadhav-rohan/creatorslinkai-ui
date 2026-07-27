@@ -47,7 +47,7 @@ function AccountAvatar({ url, name }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [url]);
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-sky-200 font-black lg:h-9 lg:w-9 lg:text-xs">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden border-2 border-zinc-900 bg-sky-200 text-sm font-black lg:h-9 lg:w-9 lg:text-xs">
       {url && !failed ? (
         <img
           src={url}
@@ -187,17 +187,17 @@ export default function PortalShell({ persona }) {
   return (
     <div className="min-h-screen bg-bg-deep text-text-primary lg:grid lg:grid-cols-[208px_minmax(0,1fr)]">
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(82vw,280px)] flex-col border-r-2 border-zinc-900 bg-white transition-transform lg:sticky lg:top-0 lg:h-screen lg:w-[208px] lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(80vw,268px)] flex-col border-r-2 border-zinc-900 bg-white transition-transform lg:sticky lg:top-0 lg:h-screen lg:w-[208px] lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-label={`${persona} portal navigation`}
       >
-        <div className="flex min-h-[82px] items-center justify-between border-b-2 border-zinc-900 px-5 lg:min-h-[68px] lg:px-4">
+        <div className="flex min-h-[74px] items-center justify-between border-b-2 border-zinc-900 px-4 lg:min-h-[68px] lg:px-4">
           <div>
-            <strong className="text-lg font-black tracking-tight lg:text-base">
+            <strong className="text-base font-black tracking-tight lg:text-base">
               CreatorLinksAI
             </strong>
-            <span className="mt-2 block w-fit rounded-full border border-zinc-900 bg-emerald-200 px-3 py-1 text-[11px] font-black uppercase lg:px-2.5 lg:py-0.5 lg:text-[9px]">
+            <span className="mt-1.5 block w-fit rounded-full border border-zinc-900 bg-emerald-200 px-2.5 py-0.5 text-[10px] font-black uppercase lg:px-2.5 lg:py-0.5 lg:text-[9px]">
               {creator
                 ? "CREATOR"
                 : workspaceType === "AGENCY"
@@ -211,25 +211,25 @@ export default function PortalShell({ persona }) {
             aria-label="Close navigation"
             className="flex h-11 w-11 items-center justify-center lg:hidden"
           >
-            <X size={22} />
+            <X size={20} />
           </button>
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto p-4 lg:space-y-1 lg:p-3">
+        <nav className="flex-1 space-y-1.5 overflow-y-auto p-3 lg:space-y-1 lg:p-3">
           {links.map(([label, to, Icon, comingSoon]) => (
             <NavLink
               key={to}
               to={to}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `flex min-h-12 items-center gap-3 border-2 px-4 py-3 font-black transition-transform lg:min-h-10 lg:gap-2.5 lg:px-3 lg:py-2 lg:text-sm ${
+                `flex min-h-11 items-center gap-2.5 border-2 px-3 py-2.5 text-sm font-black transition-transform lg:min-h-10 lg:gap-2.5 lg:px-3 lg:py-2 lg:text-sm ${
                   isActive
                     ? "border-zinc-900 bg-yellow-300 shadow-[4px_4px_0_#18181b]"
                     : "border-transparent bg-white hover:border-zinc-900 hover:bg-zinc-100"
                 }`
               }
             >
-              <Icon size={17} strokeWidth={2.2} />
+              <Icon className="nb-icon" strokeWidth={2.2} />
               <span>{label}</span>
               {comingSoon && (
                 <span className="ml-auto rounded-full border border-zinc-900 bg-sky-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide">
@@ -312,7 +312,7 @@ export default function PortalShell({ persona }) {
           </section>
         )}
 
-        <div className="border-t-2 border-zinc-900 p-5 lg:p-3">
+        <div className="border-t-2 border-zinc-900 p-4 lg:p-3">
           <div className="flex min-w-0 items-center gap-3">
             <AccountAvatar url={profile?.profilePictureUrl} name={name} />
             <div className="min-w-0">
@@ -323,7 +323,7 @@ export default function PortalShell({ persona }) {
           <Link
             to={creator ? "/creator/profile" : "/brand/profile"}
             onClick={() => setOpen(false)}
-            className="mt-3 flex min-h-10 items-center gap-2 border-2 border-zinc-900 bg-white px-3 py-2 text-sm font-black lg:min-h-9 lg:text-xs"
+            className="mt-2.5 flex min-h-11 items-center gap-2 border-2 border-zinc-900 bg-white px-3 py-2 text-sm font-black lg:min-h-9 lg:text-xs"
           >
             <UserRound size={16} />
             Account settings
@@ -331,7 +331,7 @@ export default function PortalShell({ persona }) {
           <button
             onClick={() => logout()}
             disabled={loggingOut}
-            className="mt-4 flex min-h-11 items-center gap-2 font-black text-red-600 disabled:cursor-not-allowed disabled:opacity-50 lg:mt-3 lg:min-h-9 lg:text-xs"
+            className="mt-2.5 flex min-h-11 items-center gap-2 text-sm font-black text-red-600 disabled:cursor-not-allowed disabled:opacity-50 lg:mt-3 lg:min-h-9 lg:text-xs"
           >
             <LogOut size={17} />
             {loggingOut ? "Signing Out…" : "Sign Out"}
@@ -348,7 +348,7 @@ export default function PortalShell({ persona }) {
         />
       )}
       <div className="min-w-0">
-        <header className="sticky top-0 z-30 flex min-h-[82px] items-center gap-4 border-b-2 border-zinc-900 bg-white px-4 sm:px-6 lg:min-h-[68px] lg:px-6">
+        <header className="sticky top-0 z-30 flex min-h-[74px] items-center gap-3 border-b-2 border-zinc-900 bg-white px-3 sm:px-5 lg:min-h-[68px] lg:px-6">
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -356,11 +356,11 @@ export default function PortalShell({ persona }) {
             aria-expanded={open}
             className="flex h-11 w-11 items-center justify-center border-2 border-zinc-900 bg-yellow-300 lg:hidden"
           >
-            <Menu size={22} />
+            <Menu size={20} />
           </button>
           <div>
-            <p className="text-xs text-zinc-500">Welcome back,</p>
-            <p className="font-black">{name}</p>
+            <p className="text-[11px] text-zinc-500 sm:text-xs">Welcome back,</p>
+            <p className="text-sm font-black sm:text-base">{name}</p>
           </div>
         </header>
         <Outlet />
