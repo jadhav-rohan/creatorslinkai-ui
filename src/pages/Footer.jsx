@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { Camera } from "lucide-react";
 
 export default function Footer() {
   const location = useLocation();
@@ -13,6 +14,17 @@ export default function Footer() {
         </p>
 
         <div className="flex items-center gap-6">
+          <a
+            href="https://www.instagram.com/creatorlinksai/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 transition-colors hover:text-indigo-400"
+            aria-label="Follow CreatorLinksAI on Instagram"
+          >
+            <Camera size={16} aria-hidden="true" />
+            Instagram
+          </a>
+
           <Link
             to="/privacy-policy"
             className="transition-colors hover:text-indigo-400"

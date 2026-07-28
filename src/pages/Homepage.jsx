@@ -618,7 +618,19 @@ export default function Homepage() {
           </div>
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-yellow-300">Connect</p>
-            <div className="mt-4 grid gap-3 text-sm text-zinc-300"><a href="mailto:support@creatorlinksai.com">Contact</a><span className="text-zinc-500">Social links coming soon</span></div>
+            <div className="mt-4 grid gap-3 text-sm text-zinc-300">
+              <a href="mailto:support@creatorlinksai.com">Contact</a>
+              <a
+                href="https://www.instagram.com/creatorlinksai/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-2"
+                aria-label="Follow CreatorLinksAI on Instagram"
+              >
+                <Camera size={16} aria-hidden="true" />
+                @creatorlinksai
+              </a>
+            </div>
           </div>
         </div>
         <div className="border-t border-zinc-700 px-4 py-5 text-center text-xs text-zinc-500">© {new Date().getFullYear()} CreatorLinksAI. Built for creators.</div>
