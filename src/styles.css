@@ -160,6 +160,153 @@ input:-webkit-autofill {
   box-shadow: 0 1px 2px rgb(0 0 0/0.05);
 }
 
+/* Public homepage */
+.homepage-shell {
+  --homepage-ink: #18181b;
+  scroll-behavior: smooth;
+}
+.homepage-shell a {
+  transition: transform 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+.homepage-shell nav a:hover,
+.homepage-shell nav button:hover,
+.homepage-shell footer a:hover {
+  color: #6f963f;
+}
+.homepage-nav-link {
+  display: flex;
+  min-height: 0;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  padding: 1px 0.2rem 0;
+  font: inherit;
+}
+.homepage-window {
+  border: 2px solid var(--homepage-ink);
+  background: #fff;
+  box-shadow: 7px 7px 0 var(--homepage-ink);
+}
+.homepage-sticker {
+  width: fit-content;
+  border: 2px solid var(--homepage-ink);
+  padding: 0.55rem 0.8rem;
+  box-shadow: 3px 3px 0 var(--homepage-ink);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+.homepage-link-button,
+.homepage-dark-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  border: 2px solid var(--homepage-ink);
+  font-weight: 900;
+}
+.homepage-link-button {
+  background: #fffdf5;
+}
+.homepage-dark-button {
+  background: var(--homepage-ink);
+  color: #fff;
+  box-shadow: 4px 4px 0 rgba(255, 255, 255, 0.75);
+}
+.homepage-link-button:hover,
+.homepage-dark-button:hover,
+.homepage-shell .brutal-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--homepage-ink);
+}
+.homepage-link-button:active,
+.homepage-dark-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+.homepage-dot-grid {
+  background-image: radial-gradient(#18181b 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+.homepage-blob {
+  border: 2px solid var(--homepage-ink);
+  border-radius: 44% 56% 61% 39% / 52% 38% 62% 48%;
+  filter: blur(0.2px);
+  opacity: 0.72;
+  pointer-events: none;
+}
+.homepage-reveal {
+  animation: homepage-reveal 650ms ease-out both;
+}
+.homepage-float {
+  animation: homepage-float 5s ease-in-out infinite;
+}
+.homepage-marquee {
+  animation: homepage-marquee 28s linear infinite;
+}
+.homepage-shell details > summary::-webkit-details-marker {
+  display: none;
+}
+.homepage-shell details[open] {
+  box-shadow: 6px 6px 0 #18181b;
+}
+@keyframes homepage-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes homepage-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0.25deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-0.25deg);
+  }
+}
+@keyframes homepage-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .homepage-shell {
+    scroll-behavior: auto;
+  }
+  .homepage-reveal,
+  .homepage-float,
+  .homepage-marquee {
+    animation: none;
+  }
+  .homepage-shell *,
+  .homepage-shell *::before,
+  .homepage-shell *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+@media (max-width: 639px) {
+  .homepage-window {
+    box-shadow: 4px 4px 0 var(--homepage-ink);
+  }
+  .homepage-sticker {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.6rem;
+  }
+  .homepage-float {
+    animation: none;
+  }
+}
+
 /* Shared Neo-Brutalist density primitives. These keep visual hierarchy
  * consistent without changing the structure of individual screens. */
 .nb-page-shell {

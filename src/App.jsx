@@ -48,6 +48,7 @@ import BrandPortalRouteGuard from "./components/BrandPortalRouteGuard";
 import BrandComingSoon from "./pages/BrandComingSoon";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Homepage from "./pages/Homepage";
 
 export default function App() {
   return (
@@ -57,7 +58,7 @@ export default function App() {
           <WorkspaceProvider>
             <WorkspaceAuthorizationProvider>
               <Routes>
-                <Route path="/" element={<PortalHomeRedirect />} />
+                <Route path="/" element={<Homepage />} />
                 <Route path="/login" element={<PortalSelect />} />
                 <Route
                   path="/register"
