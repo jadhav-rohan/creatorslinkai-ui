@@ -11,6 +11,18 @@ import { useCreatorDashboard } from "../hooks/useCreatorDashboard";
 import ReelsPanel from "../components/CreatorReelsPanel";
 import AudienceDemographicsPanel from "../components/AudienceDemographicsPanel";
 import { openInstagramAuthorization } from "../services/instagramOAuthNavigation";
+import {
+  Activity,
+  BarChart3,
+  Bookmark,
+  Eye,
+  Heart,
+  Image,
+  MessageCircle,
+  Play,
+  Share2,
+  Users,
+} from "lucide-react";
 const compact = new Intl.NumberFormat(undefined, {
   notation: "compact",
   maximumFractionDigits: 1,
@@ -23,10 +35,41 @@ const percent = (value) =>
     : `${Number(value).toLocaleString(undefined, {
         maximumFractionDigits: 2,
       })}%`;
+const metricPresentation = {
+  Followers: [Users, "bg-emerald-100"],
+  "Engagement rate": [Activity, "bg-violet-100"],
+  "Average views": [Eye, "bg-sky-100"],
+  "Average likes": [Heart, "bg-orange-100"],
+  "Total posts": [Image, "bg-sky-100"],
+  "Reel views": [Play, "bg-sky-100"],
+  "Reel likes": [Heart, "bg-violet-100"],
+  "Reel comments": [MessageCircle, "bg-violet-100"],
+  "Reel saves": [Bookmark, "bg-yellow-100"],
+  "Reel shares": [Share2, "bg-yellow-100"],
+  "Reel reach": [Users, "bg-emerald-100"],
+  "Total interactions": [Activity, "bg-violet-100"],
+  "Account reach": [Users, "bg-emerald-100"],
+  "Profile views": [Eye, "bg-emerald-100"],
+  Impressions: [BarChart3, "bg-yellow-100"],
+  "Reels analyzed": [Play, "bg-sky-100"],
+};
+
 function MetricCard({ label, value }) {
+  const [Icon, iconTone] = metricPresentation[label] || [
+    BarChart3,
+    "bg-zinc-100",
+  ];
   return (
     <article aria-label={`${label}: ${value}`} className="brutal-card nb-card-pad nb-secondary-card">
-      <p className="brutal-overline text-zinc-500">{label}</p>
+      <div className="flex items-start justify-between gap-3">
+        <p className="brutal-overline min-w-0 text-zinc-500">{label}</p>
+        <span
+          aria-hidden="true"
+          className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 border-zinc-900 ${iconTone}`}
+        >
+          <Icon size={15} strokeWidth={2.25} />
+        </span>
+      </div>
       <p className="nb-metric-value mt-3 font-mono font-bold">{value}</p>
     </article>
   );
