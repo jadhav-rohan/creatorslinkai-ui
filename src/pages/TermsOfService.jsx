@@ -41,9 +41,9 @@ export default function TermsOfService() {
               CreatorLinksAI MVP-1 provides a Creator portal. Available features
               may include creator registration and email verification, Instagram
               connection management, insights, Auto-DM, AI-assisted script
-              writing, media kits, invoices, and creator-controlled insight
-              sharing. Brand and Agency functionality marked “Coming Soon” is
-              unavailable in MVP-1 and is not promised by any particular date.
+              writing, media kits, and invoices. Brand and Agency functionality
+              marked “Coming Soon” is unavailable in MVP-1 and is not promised
+              by any particular date.
             </p>
             <p>
               Features may be changed, limited, suspended, or discontinued as
@@ -140,22 +140,7 @@ export default function TermsOfService() {
             </p>
           </Section>
 
-          <Section title="8. Creator-controlled insight sharing">
-            <p>
-              Where available, an insight-sharing request does not grant access
-              until you approve it. You are responsible for confirming the
-              requester, campaign, selected deliverable, metrics, and optional
-              expiration before approval. Approved snapshots may be retained by
-              their recipient after access expires or is revoked.
-            </p>
-            <p>
-              Revocation prevents future access through CreatorLinksAI as
-              designed but cannot retrieve information that a recipient already
-              viewed, downloaded, recorded, or lawfully retained.
-            </p>
-          </Section>
-
-          <Section title="9. Your content and license">
+          <Section title="8. Your content and license">
             <p>
               You retain ownership of content and information you submit. You
               grant CreatorLinksAI a non-exclusive, worldwide, limited license
@@ -171,7 +156,7 @@ export default function TermsOfService() {
             </p>
           </Section>
 
-          <Section title="10. Acceptable use">
+          <Section title="9. Acceptable use">
             <p>You may not:</p>
             <List>
               <li>
@@ -201,7 +186,7 @@ export default function TermsOfService() {
             </List>
           </Section>
 
-          <Section title="11. Intellectual property">
+          <Section title="10. Intellectual property">
             <p>
               CreatorLinksAI and its software, design, branding, and service
               content are owned by us or our licensors. Except for rights
@@ -211,25 +196,22 @@ export default function TermsOfService() {
             </p>
           </Section>
 
-          <Section title="12. Suspension, termination, and deletion">
+          <Section title="11. Suspension, termination, and deletion">
             <p>
               You may stop using the service, sign out, and disconnect Instagram
               at any time. Routine disconnection removes the active connection
               and cached analytics but does not delete your CreatorLinksAI
-              account, Auto-DM rules, independently supplied records, or
-              historical insight snapshots previously approved for agency or
-              brand campaign reporting.
+              account, Auto-DM rules, or independently supplied records.
             </p>
             <p>
               Creators may separately use “Delete my Instagram data” in Profile
               and Privacy settings. That irreversible action deletes the
               Instagram connection, Instagram-derived analytics, Auto-DM data
-              and uploaded PDF assets, and snapshots previously shared through
-              CreatorLinksAI. Users may also trigger this process through Meta’s
-              Apps and Websites deletion-request mechanism. Full Instagram data
-              deletion does not itself close the CreatorLinksAI login account or
-              delete independently supplied invoices, media kits, billing
-              records, or AI scripts.
+              and uploaded PDF assets. Users may also trigger this process
+              through Meta’s Apps and Websites deletion-request mechanism. Full
+              Instagram data deletion does not itself close the CreatorLinksAI
+              login account or delete independently supplied invoices, media
+              kits, billing records, or AI scripts.
             </p>
             <p>
               To request deletion of the entire CreatorLinksAI account or other
@@ -246,7 +228,7 @@ export default function TermsOfService() {
             </p>
           </Section>
 
-          <Section title="13. Availability and disclaimers">
+          <Section title="12. Availability and disclaimers">
             <p>
               CreatorLinksAI is provided on an “as is” and “as available” basis
               to the extent permitted by law. We do not guarantee uninterrupted
@@ -257,7 +239,7 @@ export default function TermsOfService() {
             </p>
           </Section>
 
-          <Section title="14. Limitation of liability">
+          <Section title="13. Limitation of liability">
             <p>
               To the fullest extent permitted by applicable law, CreatorLinksAI
               will not be liable for indirect, incidental, special,
@@ -269,7 +251,7 @@ export default function TermsOfService() {
             </p>
           </Section>
 
-          <Section title="15. Changes">
+          <Section title="14. Changes">
             <p>
               We may update these Terms as the service or applicable
               requirements change. Revised Terms will be published with a new
@@ -279,7 +261,7 @@ export default function TermsOfService() {
             </p>
           </Section>
 
-          <Section title="16. Contact">
+          <Section title="15. Contact">
             <p>
               Questions about these Terms may be sent to{" "}
               <a

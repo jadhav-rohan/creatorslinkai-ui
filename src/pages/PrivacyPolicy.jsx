@@ -82,13 +82,6 @@ export default function PrivacyPolicy() {
                 secrets.
               </li>
               <li>
-                <strong>Insight-sharing information:</strong> requests presented
-                to you, your approval or refusal, selected deliverable, shared
-                metric snapshots, expiration, refresh, and revocation history.
-                Sharing is creator-controlled and does not provide access to
-                your Creator workspace or unrelated account-wide information.
-              </li>
-              <li>
                 <strong>Usage and security information:</strong> IP address,
                 browser and device information, timestamps, request identifiers,
                 errors, rate-limit events, and activity needed to operate,
@@ -113,8 +106,8 @@ export default function PrivacyPolicy() {
                 availability.
               </li>
               <li>
-                Generate and manage AI-assisted scripts, media kits, invoices,
-                and creator-approved insight snapshots.
+                Generate and manage AI-assisted scripts, media kits, and
+                invoices.
               </li>
               <li>
                 Maintain, secure, measure, debug, and improve CreatorLinksAI and
@@ -143,11 +136,6 @@ export default function PrivacyPolicy() {
                 To infrastructure, hosting, database, email, monitoring,
                 support, document-generation, and AI service providers acting
                 for us to operate the applicable feature.
-              </li>
-              <li>
-                To a requesting business only when you expressly approve an
-                insight-sharing request, limited to the selected deliverable and
-                shared snapshot.
               </li>
               <li>
                 When required by law, to protect rights and safety, investigate
@@ -202,11 +190,7 @@ export default function PrivacyPolicy() {
               deletes the active Instagram connection and encrypted token,
               along with cached account and recent-media analytics tied to that
               connection. It does not delete your CreatorLinksAI account,
-              media kits, invoices, scripts, or Auto-DM configuration. Insight
-              snapshots that you previously approved for a campaign may remain
-              available for the recipient’s historical campaign reporting.
-              Disconnecting does not retrieve copies a recipient already
-              viewed, downloaded, recorded, or retained outside CreatorLinksAI.
+              media kits, invoices, scripts, or Auto-DM configuration.
             </p>
             <p>
               <strong>Full Instagram data deletion.</strong> Creators may use
@@ -214,10 +198,9 @@ export default function PrivacyPolicy() {
               permanently deletes the Instagram connection and token, cached
               and historical Instagram analytics, Auto-DM rules and delivery
               records, follower-gate records, uploaded Auto-DM PDF assets and
-              associated links, and insight snapshots previously shared through
-              CreatorLinksAI. It also removes Instagram-derived profile-picture
-              and creator-catalog ownership links. The operation cannot be
-              undone.
+              associated links. It also removes Instagram-derived
+              profile-picture and creator-catalog ownership links. The
+              operation cannot be undone.
             </p>
             <p>
               You may also initiate full deletion through Meta by removing
@@ -241,11 +224,10 @@ export default function PrivacyPolicy() {
             <p>
               You may disconnect Instagram, request full deletion of your
               Instagram-derived data, create or delete supported Auto-DM rules
-              and creator records, and approve, decline, refresh, expire, or
-              revoke eligible insight shares through available controls.
-              Depending on your location, you may also have rights to access,
-              correct, delete, restrict, or export personal information, or
-              object to certain processing.
+              and creator records through available controls. Depending on your
+              location, you may also have rights to access, correct, delete,
+              restrict, or export personal information, or object to certain
+              processing.
             </p>
           </Section>
 
