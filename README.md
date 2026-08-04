@@ -11,6 +11,7 @@ cp .env.example .env
 ```
 
 Edit `.env` to point at your backend:
+
 ```
 VITE_API_BASE_URL=http://localhost:8080
 ```
@@ -20,13 +21,16 @@ VITE_API_BASE_URL=http://localhost:8080
 ```bash
 npm run dev
 ```
+
 Opens on **http://localhost:5173**.
 
 **Backend config needed for this to work:**
+
 ```bash
 export CORS_ALLOWED_ORIGINS="http://localhost:5173"
 export IG_OAUTH_SUCCESS_REDIRECT="http://localhost:5173/#/connected"
 ```
+
 Note the `/#/connected` (not `/connected`) - this app uses `HashRouter`, so the route
 lives after the `#`. The backend appends `?igUserId=...` to whatever you set here, and
 `.../#/connected?igUserId=123` resolves correctly - React Router parses the query string
@@ -73,6 +77,7 @@ after an exact match from the local creator catalog supplies a real `creatorProf
 ```bash
 export IG_OAUTH_SELECT_REDIRECT="http://localhost:5173/#/select-page"
 ```
+
 Without this, the backend returns the selection options as raw JSON instead of redirecting here - set it alongside `IG_OAUTH_SUCCESS_REDIRECT`.
 
 ## Meta brand connection and Creator Marketplace
@@ -89,6 +94,7 @@ separate and continues to power insights and auto-DM functionality.
 ```bash
 npm run build
 ```
+
 Outputs static files to `dist/` - deploy to Vercel, Netlify, or any static host. Set
 `VITE_API_BASE_URL` to your deployed backend URL (e.g. the Railway domain) before building,
 and update the backend's `CORS_ALLOWED_ORIGINS` and `IG_OAUTH_SUCCESS_REDIRECT` to match
