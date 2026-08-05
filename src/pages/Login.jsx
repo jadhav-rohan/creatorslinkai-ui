@@ -2,10 +2,12 @@ import { useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useRateLimitCountdown } from "../hooks/useRateLimitCountdown";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const requestInFlight = useRef(false);
@@ -113,15 +115,20 @@ export default function Login() {
             >
               Password
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="w-full px-4 py-3 rounded-xl bg-bg-deep/60 border border-panel-border text-text-primary placeholder:text-text-secondary/30 text-sm focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 outline-none transition-all"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full rounded-xl border border-panel-border bg-bg-deep/60 px-4 py-3 pr-12 text-sm text-text-primary outline-none transition-all placeholder:text-text-secondary/30 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20"
+              />
+              <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute right-1 top-1/2 flex h-9 min-h-0 w-9 -translate-y-1/2 items-center justify-center text-text-secondary hover:text-text-primary">
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button
